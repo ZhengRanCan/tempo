@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
+import AppPageHeader from '../../components/AppPageHeader.vue'
 import type { Goal, PlanCalendarDay } from '../../models'
 import { buildPlanCalendarDays } from '../../models/plan'
 import { formatDate } from '../../services/date'
@@ -46,13 +47,13 @@ async function loadCalendar(): Promise<void> {
 }
 
 function goCreateGoal(): void {
-  uni.navigateTo({
+  uni.switchTab({
     url: '/pages/goal-create/index'
   })
 }
 
 function goToday(): void {
-  uni.navigateTo({
+  uni.switchTab({
     url: '/pages/today/index'
   })
 }
@@ -60,13 +61,11 @@ function goToday(): void {
 
 <template>
   <view class="page">
-    <view class="header">
-      <text class="eyebrow">任务日历</text>
-      <text class="title">{{ goal?.title || '还没有计划' }}</text>
-      <text class="hint">
-        先看最近 7 天，每天只保留能执行的小步骤。
-      </text>
-    </view>
+    <AppPageHeader
+      eyebrow="任务日历"
+      :title="goal?.title || '还没有计划'"
+      hint="先看最近 7 天，每天只保留能执行的小步骤。"
+    />
 
     <view
       v-if="isLoading"

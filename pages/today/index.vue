@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
+import AppPageHeader from '../../components/AppPageHeader.vue'
 import type { Goal, TodayView } from '../../models'
 import { buildTodayView, getTaskStatusLabel } from '../../models/plan'
 import { formatDate } from '../../services/date'
@@ -41,13 +42,13 @@ async function loadToday(): Promise<void> {
 }
 
 function goCreateGoal(): void {
-  uni.navigateTo({
+  uni.switchTab({
     url: '/pages/goal-create/index'
   })
 }
 
 function goCalendar(): void {
-  uni.navigateTo({
+  uni.switchTab({
     url: '/pages/plan-calendar/index'
   })
 }
@@ -65,13 +66,11 @@ function getStatusText(status: TodayView['tasks'][number]['status']): string {
 
 <template>
   <view class="page">
-    <view class="header">
-      <text class="eyebrow">今日任务</text>
-      <text class="title">{{ goal?.title || '今天先选一个目标' }}</text>
-      <text class="hint">
-        只看今天最值得推进的一小步。
-      </text>
-    </view>
+    <AppPageHeader
+      eyebrow="今日任务"
+      :title="goal?.title || '今天先选一个目标'"
+      hint="只看今天最值得推进的一小步。"
+    />
 
     <view
       v-if="isLoading"

@@ -206,7 +206,7 @@ async function handleSubmit(): Promise<void> {
       title: '计划已生成',
       icon: 'success'
     })
-    uni.navigateTo({
+    uni.switchTab({
       url: '/pages/plan-calendar/index'
     })
   } catch {

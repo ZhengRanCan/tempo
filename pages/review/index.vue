@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, reactive, ref } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
+import AppPageHeader from '../../components/AppPageHeader.vue'
 import type { DailyPlan, EnergyLevel, Goal, ReviewTaskStatus, Task } from '../../models'
 import { buildDailyReview } from '../../models/review'
 import { formatDate } from '../../services/date'
@@ -147,7 +148,7 @@ async function handleSaveReview(): Promise<void> {
 }
 
 function goCreateGoal(): void {
-  uni.navigateTo({
+  uni.switchTab({
     url: '/pages/goal-create/index'
   })
 }
@@ -155,13 +156,11 @@ function goCreateGoal(): void {
 
 <template>
   <view class="page">
-    <view class="header">
-      <text class="eyebrow">晚间复盘</text>
-      <text class="title">{{ goal?.title || '今天先有一个目标' }}</text>
-      <text class="hint">
-        只记录今天真实推进到哪里，明天再继续。
-      </text>
-    </view>
+    <AppPageHeader
+      eyebrow="晚间复盘"
+      :title="goal?.title || '今天先有一个目标'"
+      hint="只记录今天真实推进到哪里，明天再继续。"
+    />
 
     <view
       v-if="isLoading"

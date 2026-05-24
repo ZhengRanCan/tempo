@@ -1,9 +1,9 @@
 {
   "pages": [
     {
-      "path": "pages/goal-create/index",
+      "path": "pages/today/index",
       "style": {
-        "navigationBarTitleText": "Tempo"
+        "navigationBarTitleText": "今日任务"
       }
     },
     {
@@ -13,15 +13,21 @@
       }
     },
     {
-      "path": "pages/today/index",
+      "path": "pages/goal-create/index",
       "style": {
-        "navigationBarTitleText": "今日任务"
+        "navigationBarTitleText": "创建目标"
       }
     },
     {
       "path": "pages/review/index",
       "style": {
         "navigationBarTitleText": "晚间复盘"
+      }
+    },
+    {
+      "path": "pages/profile/index",
+      "style": {
+        "navigationBarTitleText": "我的"
       }
     }
   ],
@@ -30,5 +36,29 @@
     "navigationBarTitleText": "Tempo",
     "navigationBarBackgroundColor": "#f8f4ec",
     "backgroundColor": "#f8f4ec"
+  },
+  "tabBar": {
+    "color": "#7c7568",
+    "selectedColor": "#555ac0",
+    "backgroundColor": "#fffdf8",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/today/index",
+        "text": "今日"
+      },
+      {
+        "pagePath": "pages/plan-calendar/index",
+        "text": "日历"
+      },
+      {
+        "pagePath": "pages/goal-create/index",
+        "text": "创建"
+      },
+      {
+        "pagePath": "pages/profile/index",
+        "text": "我的"
+      }
+    ]
   }
 }

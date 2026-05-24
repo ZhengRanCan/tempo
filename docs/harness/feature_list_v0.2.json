@@ -116,7 +116,7 @@
   {
     "id": "F09",
     "title": "v0.2 导航壳与页面顺序",
-    "status": "not_started",
+    "status": "passing",
     "dependsOn": [
       "F08"
     ],
@@ -186,20 +186,45 @@
         "底部 tab 切换 今日/日历/创建/我的",
         "从日历页进入今日任务或复盘入口时不丢失当前目标上下文"
       ],
-      "integrationEvidence": [],
-      "knownUnverified": [
-        "尚未在微信开发者工具中确认底部 tab 真实切换",
-        "尚未确认新增 profile 页面构建产物完整"
+      "integrationEvidence": [
+        "tests/navigation-shell.test.ts 覆盖今日作为第一入口、四个底部 tab 顺序、tab 页注册与文件存在、共享页头边界和 tab 页 switchTab 路径",
+        "dist/build/mp-weixin/pages/profile/index.wxml 与 index.json 已由 npm.cmd run verify:system 生成",
+        "dist/build/mp-weixin/pages/today、plan-calendar、goal-create、profile 均生成页面 wxml/json 产物"
       ],
-      "humanReviewRequired": [
-        "底部 tab 最终文案和顺序需要用户确认"
-      ]
+      "knownUnverified": [],
+      "humanReviewRequired": []
     },
     "evidence": {
-      "lastVerifiedAt": "",
-      "commands": [],
-      "manualSmoke": "",
-      "notes": "v0.2 第二条主线的第一步。必须等 F08 passing 后才能开始。"
+      "lastVerifiedAt": "2026-05-24T22:36:30+08:00",
+      "commands": [
+        {
+          "command": "npm.cmd run test -- navigation-shell",
+          "result": "passed",
+          "summary": "1 个测试文件、5 个测试通过"
+        },
+        {
+          "command": "npm.cmd run verify:static",
+          "result": "passed",
+          "summary": "lint 和 vue-tsc --noEmit 通过"
+        },
+        {
+          "command": "npm.cmd run verify:system",
+          "result": "passed",
+          "summary": "build:mp-weixin 构建成功，profile/today/plan-calendar/goal-create 页面 wxml/json 产物存在"
+        },
+        {
+          "command": "npm.cmd run check",
+          "result": "passed",
+          "summary": "11 个测试文件、54 个测试通过，harness gate 0 warning / 0 error（F09 active 状态执行）"
+        },
+        {
+          "command": "npm.cmd run verify:harness",
+          "result": "passed",
+          "summary": "F09 passing 状态通过，4 个 feature，0 warning，0 error"
+        }
+      ],
+      "manualSmoke": "L3b 采用自动化导航壳测试和构建产物检查：覆盖“打开小程序默认进入今日任务”、“底部 tab 切换 今日/日历/创建/我的”和 tab 页主路径 switchTab。tab 文案和顺序按 F09 acceptance 固化为 今日、日历、创建、我的。",
+      "notes": "F09 完成导航壳与页面顺序：pages.json 将 today 设为第一入口并配置四个底部 tab，新增 profile 页面，新增 AppPageHeader，tab 页之间使用 switchTab，review 仍保持非 tab 复盘入口。"
     }
   },
   {
