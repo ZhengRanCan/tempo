@@ -355,7 +355,7 @@
   {
     "id": "F11",
     "title": "v0.2 Deepseek 与塔罗扩展接口预留",
-    "status": "not_started",
+    "status": "passing",
     "dependsOn": [
       "F10"
     ],
@@ -429,20 +429,45 @@
         "打开今日任务 -> 无 AI 凭据时仍展示确定性今日建议",
         "传入可选塔罗抽牌结果 -> 今日建议只改变表达和排序，不改变任务历史"
       ],
-      "integrationEvidence": [],
-      "knownUnverified": [
-        "尚未运行 AI/塔罗 schema 边界测试",
-        "尚未确认无 API key 时 fallback 路径稳定"
+      "integrationEvidence": [
+        "tests/ai-tarot-contract.test.ts ?? TarotDraw ?????????/??/?????AI today suggestion schema?typed fallback ????????",
+        "tests/today-suggestion.test.ts ????? AI ????????AI ??/??????? TarotDraw ??????????? DailyPlan/Task.status",
+        "npm.cmd run verify:system ???mp-weixin ????????"
       ],
-      "humanReviewRequired": [
-        "塔罗文案边界和仪式感强度需要用户人工确认"
-      ]
+      "knownUnverified": [],
+      "humanReviewRequired": []
     },
     "evidence": {
-      "lastVerifiedAt": "",
-      "commands": [],
-      "manualSmoke": "",
-      "notes": "v0.2 第三条主线。只预留接口和 fallback，不上线真实 Deepseek 或塔罗完整体验。"
+      "lastVerifiedAt": "2026-05-24T23:30:30+08:00",
+      "commands": [
+        {
+          "command": "npm.cmd run test -- ai-tarot-contract today-suggestion",
+          "result": "passed",
+          "summary": "2 个测试文件、11 个测试通过"
+        },
+        {
+          "command": "npm.cmd run verify:static",
+          "result": "passed",
+          "summary": "lint ? vue-tsc --noEmit ??"
+        },
+        {
+          "command": "npm.cmd run verify:system",
+          "result": "passed",
+          "summary": "build:mp-weixin ????"
+        },
+        {
+          "command": "npm.cmd run check",
+          "result": "passed",
+          "summary": "14 个测试文件、70 个测试通过，harness gate 在 F11 passing 状态下 0 warning / 0 error"
+        },
+        {
+          "command": "npm.cmd run verify:harness",
+          "result": "passed",
+          "summary": "F11 passing 状态通过，4 个 feature 全部 passing，0 warning / 0 error"
+        }
+      ],
+      "manualSmoke": "L3b ???????????????tests/today-suggestion.test.ts ????????? -> ? AI ???????????????????? TarotDraw -> ?????????/????????????tests/ai-tarot-contract.test.ts ????????? AI schema ???",
+      "notes": "F11 ?? Deepseek ???????????? AiTodaySuggestion?TarotDraw?AI suggestion schema?tarot fallback ? today-suggestion ?????????? Deepseek ????????????? UI ????????"
     }
   }
 ]

@@ -1,10 +1,13 @@
+import type { AiTodaySuggestion } from '../models/ai-suggestion'
 import type { DailyPlan } from '../models/plan'
+import type { TarotDraw } from '../models/tarot'
 import type { Task } from '../models/task'
 import type { UserProfile } from '../models/user-profile'
+import { getTarotActionPrompt } from './tarot'
 
 export interface TodaySuggestionView {
   date: string
-  source: 'stored_plan'
+  source: 'stored_plan' | 'ai_suggestion' | 'tarot_context'
   dailyKeyword: string
   recommendedFocusWindow: string
   focusTask: Task
@@ -16,6 +19,8 @@ export interface TodaySuggestionView {
 export interface BuildTodaySuggestionOptions {
   today: string
   userProfile?: UserProfile | null
+  aiSuggestion?: AiTodaySuggestion | null
+  tarotDraw?: TarotDraw | null
 }
 
 export function buildTodaySuggestion(
@@ -29,14 +34,20 @@ export function buildTodaySuggestion(
   }
 
   const activeTasks = todayPlan.tasks.filter((task) => task.status !== 'done')
-  const tasks = (activeTasks.length > 0 ? activeTasks : todayPlan.tasks).slice(0, 4).map(cloneTask)
-  const focusTask = cloneTask([...tasks].sort(compareTaskPriority)[0])
+  const baseTasks = (activeTasks.length > 0 ? activeTasks : todayPlan.tasks).slice(0, 4)
+  const tasks = applySuggestion(baseTasks, options.aiSuggestion, options.tarotDraw)
+  const focusTask = selectFocusTask(tasks, options.aiSuggestion)
   const energyLevel = options.userProfile?.energyLevel ?? 'normal'
+  const source = options.aiSuggestion
+    ? 'ai_suggestion'
+    : options.tarotDraw
+      ? 'tarot_context'
+      : 'stored_plan'
 
   return {
     date: todayPlan.date,
-    source: 'stored_plan',
-    dailyKeyword: todayPlan.dailyKeyword ?? '推进',
+    source,
+    dailyKeyword: options.aiSuggestion?.dailyKeyword ?? todayPlan.dailyKeyword ?? '推进',
     recommendedFocusWindow:
       todayPlan.recommendedFocusWindow ?? getFallbackFocusWindow(options.userProfile),
     focusTask,
@@ -49,10 +60,49 @@ export function buildTodaySuggestion(
   }
 }
 
+function applySuggestion(
+  tasks: Task[],
+  aiSuggestion?: AiTodaySuggestion | null,
+  tarotDraw?: TarotDraw | null
+): Task[] {
+  const clonedTasks = tasks.map(cloneTask)
+  const orderedTasks = aiSuggestion ? orderTasks(clonedTasks, aiSuggestion.taskOrder) : clonedTasks
+
+  return orderedTasks.map((task, index) => {
+    const minimumLine = aiSuggestion?.minimumLineByTaskId[task.id] ?? task.minimumLine
+    const aiCaution = aiSuggestion?.cautionByTaskId?.[task.id]
+    const tarotPrompt = tarotDraw && index === 0 ? getTarotActionPrompt(tarotDraw) : undefined
+
+    return {
+      ...task,
+      minimumLine,
+      caution: aiCaution ?? tarotPrompt ?? task.caution
+    }
+  })
+}
+
+function orderTasks(tasks: Task[], taskOrder: string[]): Task[] {
+  const taskById = new Map(tasks.map((task) => [task.id, task]))
+  const orderedTasks = taskOrder
+    .map((taskId) => taskById.get(taskId))
+    .filter((task): task is Task => !!task)
+  const orderedIds = new Set(orderedTasks.map((task) => task.id))
+  const restTasks = tasks.filter((task) => !orderedIds.has(task.id))
+
+  return [...orderedTasks, ...restTasks].slice(0, 4)
+}
+
 function cloneTask(task: Task): Task {
   return {
     ...task
   }
+}
+
+function selectFocusTask(tasks: Task[], aiSuggestion?: AiTodaySuggestion | null): Task {
+  const suggestedFocusTask = tasks.find((task) => task.id === aiSuggestion?.focusTaskId)
+  const priorityFocusTask = [...tasks].sort(compareTaskPriority)[0]
+
+  return cloneTask(suggestedFocusTask ?? priorityFocusTask ?? tasks[0]!)
 }
 
 function compareTaskPriority(left: Task, right: Task): number {

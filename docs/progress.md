@@ -2,22 +2,22 @@
 
 ## 当前 feature
 
-- `F10`：v0.2 核心组件与页面视觉整理
-- 状态：`passing```
+- `F11`：v0.2 Deepseek 与塔罗扩展接口预留
+- 状态：`passing`
 
 ## 当前状态
 
-- 项目阶段：App v0.2 第二条主线第二步 F10 已完成，下一步进入 F11 Deepseek 与塔罗扩展接口预留
-- 当前工作边界：v0.1 功能清单已归档；v0.2 按“数据层整理 -> UI/导航整理 -> Deepseek/塔罗接口预留”顺序推进。F08/F09/F10 已 passing，下一次任务应按依赖选择 F11
-- Harness 状态：项目地图与规则文件已集中到 `docs/harness/`
-- F01、F02、F03、F04、F05、F06、F07 已作为 v0.1 基线归档到 `docs/log/v0.1/feature_list_v0.1.json`
+- 项目阶段：App v0.2 F08-F11 全部完成并通过门禁。
+- 当前工作边界：v0.2 已按“数据层整理 -> 导航壳 -> 核心组件 -> Deepseek/塔罗接口预留”顺序推进完成。
+- Harness 状态：F08、F09、F10、F11 均为 `passing`，最终 harness gate 通过后交接。
+- F01、F02、F03、F04、F05、F06、F07 已作为 v0.1 基线归档到 `docs/log/v0.1/feature_list_v0.1.json`。
 
 ## 功能状态摘要
 
 - `F08` passing
 - `F09` passing
 - `F10` passing
-- `F11` not_started
+- `F11` passing
 - 当前工作功能清单位置：`docs/harness/feature_list.json`
 - v0.2 版本化功能清单位置：`docs/harness/feature_list_v0.2.json`
 - v0.1 归档功能清单位置：`docs/log/v0.1/feature_list_v0.1.json`
@@ -97,7 +97,7 @@
 - `2026-05-24` v0.2 UI 规则已补充：F09/F10 明确要求先遵守 `docs/harness/DESIGN.md`，再读取 `docs/design/visual-system.md` 和 `docs/design/components.md`；`docs/design/components.md` 与 `docs/design/pages.md` 已清理为 v0.2 口径
 
 - `2026-05-24` F08 已完成数据层整理与兼容边界：新增旧数据 normalize 兼容、storage `read*` 明确状态结果、`today-suggestion` 计算视图服务；未引入真实 Deepseek、塔罗 UI 或云端存储
-- `npm.cmd run test -- data-layer storage`：通过，2 个测试文件、10 个测试通过
+- `npm.cmd run test -- data-layer storage`：通过，2 个测试文件、11 个测试通过
 - `npm.cmd run verify:static`：通过
 - `npm.cmd run verify:system`：通过，`build:mp-weixin` 构建成功
 - `npm.cmd run check`：通过，10 个测试文件、49 个测试通过，harness gate 0 warning / 0 error
@@ -120,6 +120,15 @@
 - `npm.cmd run verify:harness`：通过，F10 passing 状态下 4 个 feature，0 warning，0 error
 - F10 L3b：`tests/ui-components.test.ts` 自动化覆盖核心组件结构和主要页面接入；today/calendar/review 既有路径测试继续通过
 
+- `2026-05-24` F11 已完成 Deepseek 与塔罗扩展接口预留：新增 `AiTodaySuggestion`、`TarotDraw`、AI suggestion schema、tarot fallback 和 `today-suggestion` 扩展入口；未接入真实 Deepseek 网络请求、云函数、完整塔罗 UI 或隐私数据上传。
+- `npm.cmd run test -- ai-tarot-contract today-suggestion`：通过，2 个测试文件、10 个测试通过。
+- `npm.cmd run verify:static`：通过。
+- `npm.cmd run verify:system`：通过，`build:mp-weixin` 构建成功。
+- `npm.cmd run check`：通过，14 个测试文件、70 个测试通过，F11 passing 状态下 harness gate 0 warning / 0 error。
+- F11 L3b：`tests/today-suggestion.test.ts` 自动化覆盖无 AI 凭据 fallback、可选 TarotDraw 影响表达、AI 排序/表达影响和不修改原始 DailyPlan/Task.status；`tests/ai-tarot-contract.test.ts` 自动化覆盖塔罗文案边界、AI schema 边界和 typed fallback。
+
+- `npm.cmd run verify:harness`：通过，F11 passing 状态下 4 个 feature 全部 passing，0 warning / 0 error。
+
 ## 阻塞项
 
 - F01 无剩余阻塞项，A05 最终页面手动冒烟已由用户确认通过
@@ -132,7 +141,7 @@
 
 ## 下一步
 
-- 按功能选择规则启动 F11 Deepseek 与塔罗扩展接口预留
+- v0.2 F08-F11 已全部 passing；后续进入下一个版本或按新的 feature_list 继续。
 
 ## 交接说明
 
