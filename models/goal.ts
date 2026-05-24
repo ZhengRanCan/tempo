@@ -1,3 +1,10 @@
+import {
+  LEGACY_FALLBACK_TIMESTAMP,
+  isRecord,
+  readOptionalString,
+  readPositiveInteger
+} from './common'
+
 export interface Goal {
   id: string
   title: string
@@ -33,6 +40,35 @@ export type BuildGoalResult =
     }
 
 const ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
+
+export function normalizeGoal(value: unknown): Goal | null {
+  if (!isRecord(value)) {
+    return null
+  }
+
+  const id = readOptionalString(value.id)
+  const title = readOptionalString(value.title)
+  const deadline = readOptionalString(value.deadline)
+  const dailyAvailableMinutes = readPositiveInteger(value.dailyAvailableMinutes)
+
+  if (!id || !title || !deadline || !ISO_DATE_PATTERN.test(deadline) || !dailyAvailableMinutes) {
+    return null
+  }
+
+  const createdAt = readOptionalString(value.createdAt) ?? LEGACY_FALLBACK_TIMESTAMP
+  const updatedAt = readOptionalString(value.updatedAt) ?? createdAt
+  const description = readOptionalString(value.description)
+
+  return {
+    id,
+    title,
+    description,
+    deadline,
+    dailyAvailableMinutes,
+    createdAt,
+    updatedAt
+  }
+}
 
 export function validateGoalInput(
   input: CreateGoalInput,

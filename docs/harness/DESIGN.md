@@ -87,13 +87,18 @@ MBTI、星座、时辰、每日关键词只作为轻量个性化表达。
 
 ## 设计文档路由
 
-- 视觉系统：docs/design/visual-system.md
-- 组件规范：docs/design/components.md
-- 页面规范：docs/design/pages.md
-- 状态与交互：docs/design/interaction-states.md
-- 文案与表达规则：docs/design/content-rules.md
+- 本文件是设计总入口，定义产品气质、设计原则和禁止边界。
+- `docs/design/visual-system.md`：色彩、字号、间距、圆角和视觉 token。
+- `docs/design/components.md`：组件结构、组件状态和组件使用规则。
+- `docs/design/pages.md`：页面信息层级、页面顺序和页面内主行动。
+- `docs/design/interaction-states.md`：加载、成功、失败、空状态和可点击区域。
+- `docs/design/content-rules.md`：按钮、错误、AI 陪伴和仪式感文案边界。
 
-只有修改对应页面、组件、状态或文案时，才读取对应细节文档。
+修改页面、组件、交互或视觉样式时，必须先读本文件。
+需要落到具体实现时，再读取对应细节文档。
+
+如果细节文档与本文件冲突，以本文件为准。
+如果本文件与 `docs/harness/CONSTRAINTS.md` 冲突，以 `CONSTRAINTS.md` 为准。
 
 ---
 
@@ -107,4 +112,3 @@ MBTI、星座、时辰、每日关键词只作为轻量个性化表达。
 - 状态颜色必须搭配文字或图标，不得只依赖颜色。
 - MBTI、星座、时辰、每日关键词不得成为主视觉核心。
 - 不使用大面积渐变、玻璃拟态、强阴影或高压倒计时。
-- 如果 DESIGN.md 与 CONSTRAINTS.md 冲突，以 CONSTRAINTS.md 为准。

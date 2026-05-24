@@ -12,7 +12,8 @@
     "verify:static": "npm run lint && npm run typecheck",
     "verify:feature": "npm run test",
     "verify:system": "npm run build:mp-weixin",
-    "check": "npm run verify:static && npm run verify:feature && npm run verify:system"
+    "verify:harness": "node scripts/harness-gate.mjs",
+    "check": "npm run verify:static && npm run verify:feature && npm run verify:system && npm run verify:harness"
   },
   "dependencies": {
     "@dcloudio/uni-app": "3.0.0-alpha-5010120260519001",

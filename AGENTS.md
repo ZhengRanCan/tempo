@@ -15,9 +15,9 @@
 - `docs/progress.md`：当前状态摘要和交接说明
 - `docs/decisions.md`：长期重要决策
 - `docs/log/`：后续按 day1、log1 等方式记录的流水日志
-- `docs/harness/feature_list.json`：功能规格、状态、修改范围、验证要求和完成证据
-- `docs/harness/verification-policy.md`：三层验证闸门
-- `docs/harness/instrumentation.md`：工程信号采集和记录规则
+- `docs/harness/feature_list.json`：当前版本功能规格、状态、修改范围、验证要求和完成证据
+- `docs/harness/verification-policy.md`：三层验证闸门和 harness gate
+- `docs/harness/instrumentation.md`：验证结果记录位置速查
 - `docs/harness/PRODUCT_SPEC.md`：产品定义和 MVP 边界
 - `docs/harness/CONSTRAINTS.md`：产品、AI、安全、工程硬约束
 - `docs/harness/ARCHITECTURE.md`：架构、类型、模块边界
@@ -39,7 +39,7 @@
 - 涉及 AI、隐私、密钥、日期规则或任务重排：`docs/harness/CONSTRAINTS.md`
 - 修改测试、验证命令或 CI 配置：`docs/harness/INITIALIZATION_CONTRACT.md`
 - 判断功能是否完成：`docs/harness/verification-policy.md`
-- 记录验证、失败或手动冒烟：`docs/harness/instrumentation.md`
+- 查找验证、失败或手动冒烟的记录位置：`docs/harness/instrumentation.md`
 
 不要默认读取所有文档。
 
@@ -47,7 +47,7 @@
 
 ## 功能状态
 
-功能项指 `docs/harness/feature_list.json` 中的 F01-F07。
+功能项指 `docs/harness/feature_list.json` 中的当前版本功能列表。
 
 状态只能是：
 
@@ -76,7 +76,7 @@
 2. 确定当前 feature。
 3. 如需开始新 feature，将其状态改为 `active`。
 4. 只修改当前 feature 的 `scope` 允许范围。
-5. 实现后按 `docs/harness/verification-policy.md` 执行 L1/L2/L3。
+5. 实现后按 `docs/harness/verification-policy.md` 执行 L1/L2/L3 和 `verify:harness`。
 6. 更新当前 feature 的 `evidence`。
 7. 更新 `docs/progress.md`。
 8. 如有长期决策，更新 `docs/decisions.md`。
@@ -91,7 +91,8 @@
 - acceptance 全部满足
 - L1 静态校验通过
 - L2 功能验证通过
-- 如触发 L3 条件，系统确认通过或已有手动冒烟记录
+- 如触发 L3 条件，L3a 系统确认和 L3b 用户路径证据均已记录
+- `npm run verify:harness` 通过
 - `docs/harness/feature_list.json` 的 `evidence` 已更新
 - `docs/progress.md` 已更新
 - 没有未解释的临时文件、`console.log`、`debugger` 或无关改动

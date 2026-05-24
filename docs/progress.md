@@ -2,26 +2,25 @@
 
 ## 当前 feature
 
-- `F07`：自动重排后续计划
+- `F08`：v0.2 数据层整理与兼容边界
 - 状态：`passing`
 
 ## 当前状态
 
-- 项目阶段：MVP 功能实现初期
-- 当前工作边界：F07 自动重排后续计划已完成，MVP 功能清单已全部通过
+- 项目阶段：App v0.2 第一条主线 F08 已完成，下一步进入 F09 导航壳与页面顺序
+- 当前工作边界：v0.1 功能清单已归档；v0.2 按“数据层整理 -> UI/导航整理 -> Deepseek/塔罗接口预留”顺序推进。F08 已 passing，下一次任务应按依赖选择 F09
 - Harness 状态：项目地图与规则文件已集中到 `docs/harness/`
-- F01、F02、F03、F04、F05、F06、F07 已通过。F07 范围限定在 `services/replanner.ts`、`services/planner.ts`、`services/date.ts`、`models/plan.ts`、`models/task.ts`、`models/review.ts` 和 `tests/replanner.test.ts`。F07 只实现确定性重排，不调用真实 AI、不做多人协作、不生成长期统计报表
+- F01、F02、F03、F04、F05、F06、F07 已作为 v0.1 基线归档到 `docs/log/v0.1/feature_list_v0.1.json`
 
 ## 功能状态摘要
 
-- `F01` passing
-- `F02` passing
-- `F03` passing
-- `F04` passing
-- `F05` passing
-- `F06` passing
-- `F07` passing
-- 功能清单位置：`docs/harness/feature_list.json`
+- `F08` passing
+- `F09` not_started
+- `F10` not_started
+- `F11` not_started
+- 当前工作功能清单位置：`docs/harness/feature_list.json`
+- v0.2 版本化功能清单位置：`docs/harness/feature_list_v0.2.json`
+- v0.1 归档功能清单位置：`docs/log/v0.1/feature_list_v0.1.json`
 
 ## 最近完成
 
@@ -36,7 +35,7 @@
 
 ## 当前验证状态
 
-- `docs/harness/feature_list.json`：JSON 合法，7 个 feature，0 个 active，7 个 passing
+- `docs/harness/feature_list.json`：v0.2 当前功能清单，4 个 feature，0 个 active，1 个 passing，3 个 not_started
 - `npm.cmd run test -- goal-create`：通过，6 个测试通过
 - `npm.cmd run verify:static`：通过
 - `npm.cmd run verify:system`：通过，`build:mp-weixin` 构建成功
@@ -82,10 +81,31 @@
 - `npm.cmd run check`：通过，8 个测试文件、39 个测试通过
 - F07 实现自动重排后续计划：根据晚间复盘把部分完成和未完成任务转成后续补做任务；高优先级任务优先排入后续日期；每日任务总时长不超过 `dailyAvailableMinutes`；复盘当天已完成、部分完成和跳过状态作为历史保留；不可行时返回 `infeasible` 和调整建议
 - 已知：PowerShell 直接执行 `npm run check` 会被本机 execution policy 拦截，当前环境使用 `npm.cmd run check`
+- `2026-05-24` harness 第三层已从纯文档规则升级为轻量门禁：新增 `scripts/harness-gate.mjs` 和 `docs/log/smoke-template.md`
+- `2026-05-24` `package.json` 已新增 `verify:harness`，并接入 `npm run check`
+- `2026-05-24` `docs/harness/verification-policy.md` 已把 L3 拆为 L3a 系统构建确认和 L3b 用户路径证据；新 active feature 必须定义 `completionGate`
+- `2026-05-24` 调试/验证文档已收敛：人工评估表并入 `docs/harness/verification-policy.md`，`docs/harness/instrumentation.md` 改为记录位置速查，删除独立评估文档
+- `2026-05-24` `docs/template/**` 已加入 ESLint ignore，避免下载的教程示例代码参与项目 lint
+- `npm.cmd run verify:harness`：通过；当前 7 个旧 feature 缺少 `completionGate`，脚本以 legacy warning 汇总，不阻塞 v0.1 基线
+- `npm.cmd run check`：通过，8 个测试文件、39 个测试通过；新增 harness gate 也通过
+- `2026-05-24` 调试/验证文档收敛后重新执行 `npm.cmd run check`：通过，8 个测试文件、39 个测试通过；仍只有 F01-F07 legacy `completionGate` warning
+- `2026-05-24` v0.1 功能清单已归档到 `docs/log/v0.1/feature_list_v0.1.json`
+- `2026-05-24` v0.2 工作计划已写入 `docs/log/v0.2/work-plan.md`
+- `2026-05-24` v0.2 功能清单已生成：`docs/harness/feature_list.json` 作为当前工作入口，`docs/harness/feature_list_v0.2.json` 作为版本化清单；F08 为 active，F09-F11 按依赖顺序 not_started
+- `2026-05-24` v0.2 清单生成后执行 `npm.cmd run verify:harness`：通过，4 个 feature，1 个 active，3 个 not_started，0 warning，0 error
+- `2026-05-24` v0.2 清单生成后执行 `npm.cmd run check`：通过，8 个测试文件、39 个测试通过，mp-weixin 构建通过，harness gate 通过
+- `2026-05-24` v0.2 UI 规则已补充：F09/F10 明确要求先遵守 `docs/harness/DESIGN.md`，再读取 `docs/design/visual-system.md` 和 `docs/design/components.md`；`docs/design/components.md` 与 `docs/design/pages.md` 已清理为 v0.2 口径
+
+- `2026-05-24` F08 已完成数据层整理与兼容边界：新增旧数据 normalize 兼容、storage `read*` 明确状态结果、`today-suggestion` 计算视图服务；未引入真实 Deepseek、塔罗 UI 或云端存储
+- `npm.cmd run test -- data-layer storage`：通过，2 个测试文件、10 个测试通过
+- `npm.cmd run verify:static`：通过
+- `npm.cmd run verify:system`：通过，`build:mp-weixin` 构建成功
+- `npm.cmd run check`：通过，10 个测试文件、49 个测试通过，harness gate 0 warning / 0 error
+- `npm.cmd run verify:harness`：通过，F08 passing 状态下 4 个 feature，0 warning，0 error
+- F08 L3b：`tests/data-layer.test.ts` 自动化覆盖“创建目标 -> 保存计划 -> 打开今日任务生成建议视图”和“无本地数据 -> 明确空结果”两条用户路径
 
 ## 阻塞项
 
-- 无当前 harness 阻塞项
 - F01 无剩余阻塞项，A05 最终页面手动冒烟已由用户确认通过
 - F02 无剩余阻塞项
 - F03 无剩余阻塞项
@@ -96,7 +116,7 @@
 
 ## 下一步
 
-- MVP 功能清单 F01-F07 均已通过；后续可进行完整小程序手动回归或进入下一批功能规划
+- 按功能选择规则启动 F09 导航壳与页面顺序；F10/F11 仍需等待依赖 passing
 
 ## 交接说明
 

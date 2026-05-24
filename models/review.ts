@@ -1,4 +1,10 @@
 import type { EnergyLevel, TaskStatus } from './common'
+import {
+  LEGACY_FALLBACK_TIMESTAMP,
+  isEnergyLevel,
+  isRecord,
+  readOptionalString
+} from './common'
 
 export interface DailyReview {
   id: string
@@ -20,6 +26,42 @@ export interface BuildDailyReviewInput {
   energy?: EnergyLevel
   taskStatusById: Record<string, ReviewTaskStatus>
   note?: string
+}
+
+const ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
+
+export function normalizeDailyReview(value: unknown): DailyReview | null {
+  if (!isRecord(value)) {
+    return null
+  }
+
+  const date = readOptionalString(value.date)
+  const goalId = readOptionalString(value.goalId)
+
+  if (!date || !goalId || !ISO_DATE_PATTERN.test(date)) {
+    return null
+  }
+
+  const completedTaskIds = readStringList(value.completedTaskIds)
+  const partialTaskIds = readStringList(value.partialTaskIds).filter(
+    (taskId) => !completedTaskIds.includes(taskId)
+  )
+  const skippedTaskIds = readStringList(value.skippedTaskIds).filter(
+    (taskId) => !completedTaskIds.includes(taskId) && !partialTaskIds.includes(taskId)
+  )
+  const note = readOptionalString(value.note)
+
+  return {
+    id: readOptionalString(value.id) ?? `${goalId}:${date}`,
+    date,
+    goalId,
+    energy: isEnergyLevel(value.energy) ? value.energy : 'normal',
+    completedTaskIds,
+    partialTaskIds,
+    skippedTaskIds,
+    note,
+    createdAt: readOptionalString(value.createdAt) ?? LEGACY_FALLBACK_TIMESTAMP
+  }
 }
 
 export function buildDailyReview(
@@ -55,4 +97,12 @@ function collectTaskIds(
   return Object.entries(taskStatusById)
     .filter(([, taskStatus]) => taskStatus === status)
     .map(([taskId]) => taskId)
+}
+
+function readStringList(value: unknown): string[] {
+  if (!Array.isArray(value)) {
+    return []
+  }
+
+  return [...new Set(value.map(readOptionalString).filter((item): item is string => !!item))]
 }

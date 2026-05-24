@@ -1,0 +1,532 @@
+[
+  {
+    "id": "F01",
+    "title": "创建目标",
+    "status": "passing",
+    "dependsOn": [],
+    "behavior": "用户输入目标名称、截止日期、每日可用时间和目标说明后，可以创建并保存一个目标。",
+    "scope": {
+      "pages": ["pages/goal-create/index.vue"],
+      "components": [],
+      "services": ["services/storage.ts"],
+      "models": ["models/goal.ts", "models/common.ts"],
+      "schemas": [],
+      "tests": ["tests/goal-create.test.ts"]
+    },
+    "acceptance": [
+      {
+        "id": "A01",
+        "text": "目标名称为空时阻止创建并返回提示",
+        "method": "automated"
+      },
+      {
+        "id": "A02",
+        "text": "截止日期为空时阻止创建并返回提示",
+        "method": "automated"
+      },
+      {
+        "id": "A03",
+        "text": "每日可用时间为空或无效时阻止创建并返回提示",
+        "method": "automated"
+      },
+      {
+        "id": "A04",
+        "text": "合法输入可以生成目标数据并写入统一存储入口",
+        "method": "mixed"
+      },
+      {
+        "id": "A05",
+        "text": "页面可完成一次创建目标的手动冒烟流程",
+        "method": "manual_smoke"
+      }
+    ],
+    "verify": {
+      "static": "npm run verify:static",
+      "feature": "npm run test -- goal-create",
+      "system": "npm run verify:system"
+    },
+    "outOfScope": [
+      "不生成 AI 计划",
+      "不实现任务日历页",
+      "不接入云开发",
+      "不处理自动重排"
+    ],
+    "evidence": {
+      "lastVerifiedAt": "2026-05-21",
+      "commands": [
+        {
+          "command": "npm.cmd run test -- goal-create",
+          "result": "passed",
+          "notes": "6 tests passed; covers A01-A04 validation, past deadline rejection, today deadline allowance and storage save path."
+        },
+        {
+          "command": "npm.cmd run verify:static",
+          "result": "passed",
+          "notes": "lint and vue-tsc passed."
+        },
+        {
+          "command": "npm.cmd run verify:system",
+          "result": "passed",
+          "notes": "mp-weixin build completed; existing os alias and Sass deprecation warnings remain non-blocking."
+        },
+        {
+          "command": "npm.cmd run check",
+          "result": "passed",
+          "notes": "full static, feature and system verification passed after past-deadline and design-token fixes."
+        }
+      ],
+      "manualSmoke": "2026-05-23: User confirmed final manual smoke passed in Weixin DevTools. Goal creation page can complete the create-goal flow after the post-feedback fixes.",
+      "notes": "F01 implementation is complete. Automated coverage passes, deadline picker starts from today, model validation rejects dates before today, page styling follows design guidance, and final manual smoke passed. Feature can be treated as passing."
+    }
+  },
+  {
+    "id": "F02",
+    "title": "用户状态与偏好输入",
+    "status": "passing",
+    "dependsOn": [],
+    "behavior": "用户可以输入 MBTI、偏好工作时段和当前能量状态，并保存为用户偏好。",
+    "scope": {
+      "pages": ["pages/goal-create/index.vue"],
+      "components": [],
+      "services": ["services/storage.ts"],
+      "models": ["models/user-profile.ts"],
+      "schemas": [],
+      "tests": ["tests/user-profile.test.ts"]
+    },
+    "acceptance": [
+      {
+        "id": "A01",
+        "text": "可以保存用户偏好",
+        "method": "mixed"
+      },
+      {
+        "id": "A02",
+        "text": "能量状态字段存在默认值",
+        "method": "automated"
+      },
+      {
+        "id": "A03",
+        "text": "偏好只影响任务表达和排序",
+        "method": "automated"
+      },
+      {
+        "id": "A04",
+        "text": "不输出严肃心理判断或预测结论",
+        "method": "automated"
+      }
+    ],
+    "verify": {
+      "static": "npm run verify:static",
+      "feature": "npm run test -- user-profile",
+      "system": "npm run verify:system"
+    },
+    "outOfScope": [
+      "不做心理测评",
+      "不生成健康或命运预测",
+      "不改变计划生成算法",
+      "不接入云端用户画像"
+    ],
+    "evidence": {
+      "lastVerifiedAt": "2026-05-23",
+      "commands": [
+        {
+          "command": "npm.cmd run test -- user-profile",
+          "result": "passed",
+          "notes": "4 tests passed; covers A01 storage save, A02 default energy level, A03 expression/ordering-only boundary, and A04 forbidden serious psychology/health/fate claims."
+        },
+        {
+          "command": "npm.cmd run verify:static",
+          "result": "passed",
+          "notes": "lint and vue-tsc passed after adding the user preference model and goal-create preference UI."
+        },
+        {
+          "command": "npm.cmd run verify:system",
+          "result": "passed",
+          "notes": "mp-weixin build completed; existing os alias and Sass deprecation warnings remain non-blocking."
+        },
+        {
+          "command": "npm.cmd run check",
+          "result": "passed",
+          "notes": "full static, feature and system verification passed; 3 test files and 11 tests passed."
+        }
+      ],
+      "manualSmoke": "Mixed verification note: goal-create now exposes a low-pressure preference section with work-style selection, energy selection, optional MBTI input, and a secondary save-preference action. Final Weixin DevTools click-through can still be used as a product smoke check if desired.",
+      "notes": "F02 implementation is complete. UserProfile now includes default energyLevel normal, optional MBTI, preferred work style, preferred focus minutes and a boundary that limits preferences to task expression and light ordering. Preference data is saved through services/storage.ts and the page avoids psychological diagnosis or prediction wording."
+    }
+  },
+  {
+    "id": "F03",
+    "title": "初始任务拆解",
+    "status": "passing",
+    "dependsOn": ["F01", "F02"],
+    "behavior": "系统根据目标、截止日期和每日可用时间生成按日期排列的初始任务计划。",
+    "scope": {
+      "pages": [],
+      "components": [],
+      "services": ["services/planner.ts", "services/date.ts"],
+      "models": ["models/goal.ts", "models/plan.ts", "models/task.ts"],
+      "schemas": [],
+      "tests": ["tests/planner.smoke.test.ts", "tests/planner.test.ts"]
+    },
+    "acceptance": [
+      {
+        "id": "A01",
+        "text": "至少生成 7 天计划，除非截止日期不足 7 天",
+        "method": "automated"
+      },
+      {
+        "id": "A02",
+        "text": "每天任务总时长不超过每日可用时间",
+        "method": "automated"
+      },
+      {
+        "id": "A03",
+        "text": "每个任务都有标题、预计时长、优先级和最低完成线",
+        "method": "automated"
+      },
+      {
+        "id": "A04",
+        "text": "计划无法在截止日期前完成时返回不可行状态",
+        "method": "automated"
+      }
+    ],
+    "verify": {
+      "static": "npm run verify:static",
+      "feature": "npm run test -- planner",
+      "system": "npm run verify:system"
+    },
+    "outOfScope": [
+      "不调用真实 AI",
+      "不实现日历页面",
+      "不处理晚间复盘",
+      "不做自动重排"
+    ],
+    "evidence": {
+      "lastVerifiedAt": "2026-05-23",
+      "commands": [
+        {
+          "command": "npm.cmd run test -- planner",
+          "result": "passed",
+          "notes": "9 planner tests passed across planner.test.ts and planner.smoke.test.ts; covers A01-A04, low-energy minimum-line behavior, and generated DailyPlan persistence through the unified storage entry."
+        },
+        {
+          "command": "npm.cmd run verify:static",
+          "result": "passed",
+          "notes": "lint and vue-tsc passed after deterministic starter planner updates and goal-create planner integration."
+        },
+        {
+          "command": "npm.cmd run verify:system",
+          "result": "passed",
+          "notes": "mp-weixin build completed; existing os alias and Sass deprecation warnings remain non-blocking."
+        },
+        {
+          "command": "npm.cmd run check",
+          "result": "passed",
+          "notes": "full static, feature and system verification passed; 4 test files and 19 tests passed."
+        }
+      ],
+      "manualSmoke": "",
+      "notes": "F03 implementation is complete. planner.ts builds a deterministic dated starter plan without real AI, keeps each day within dailyAvailableMinutes, gives every task title/estimatedMinutes/priority/minimumLine, adapts low-energy language toward the minimum line, and returns infeasible when the start date is after the deadline or daily time is too small for an executable task. 2026-05-23 follow-up fixed the goal-create integration gap: tapping Generate Plan now builds the starter plan and saves DailyPlan[] through saveDailyPlans before showing the success toast. Displaying the plan remains F04 scope."
+    }
+  },
+  {
+    "id": "F04",
+    "title": "任务日历页面",
+    "status": "passing",
+    "dependsOn": ["F03"],
+    "behavior": "用户可以按日期查看每日任务安排，并区分任务完成状态。",
+    "scope": {
+      "pages": ["pages/"],
+      "components": [],
+      "services": ["services/storage.ts"],
+      "models": ["models/plan.ts", "models/task.ts"],
+      "schemas": [],
+      "tests": ["tests/plan-calendar.test.ts"]
+    },
+    "acceptance": [
+      {
+        "id": "A01",
+        "text": "可以看到按日期分组的任务列表",
+        "method": "mixed"
+      },
+      {
+        "id": "A02",
+        "text": "可以区分已完成、未完成、部分完成任务",
+        "method": "mixed"
+      },
+      {
+        "id": "A03",
+        "text": "可以进入今日任务页",
+        "method": "manual_smoke"
+      },
+      {
+        "id": "A04",
+        "text": "无任务数据时显示低压力空状态",
+        "method": "manual_smoke"
+      }
+    ],
+    "verify": {
+      "static": "npm run verify:static",
+      "feature": "npm run test -- plan-calendar",
+      "system": "npm run verify:system"
+    },
+    "outOfScope": [
+      "不实现任务重排",
+      "不实现复盘提交",
+      "不做完整日历同步",
+      "不接入第三方日历"
+    ],
+    "evidence": {
+      "lastVerifiedAt": "2026-05-23",
+      "commands": [
+        {
+          "command": "npm.cmd run test -- plan-calendar",
+          "result": "passed",
+          "notes": "4 tests passed; covers current-goal storage lookup, stored DailyPlan retrieval, date-grouped visible calendar days, status labels and empty view data."
+        },
+        {
+          "command": "npm.cmd run verify:static",
+          "result": "passed",
+          "notes": "lint and vue-tsc passed after adding plan-calendar page, today placeholder entry, storage current-goal helpers and plan calendar model helpers."
+        },
+        {
+          "command": "npm.cmd run verify:system",
+          "result": "passed",
+          "notes": "mp-weixin build completed; existing os alias and Sass deprecation warnings remain non-blocking."
+        },
+        {
+          "command": "npm.cmd run check",
+          "result": "passed",
+          "notes": "full static, feature and system verification passed; 5 test files and 23 tests passed."
+        }
+      ],
+      "manualSmoke": "2026-05-23: User confirmed F04 manual smoke passed in Weixin DevTools. Plan calendar shows date-grouped tasks, visible status labels, the View Today Task entry opens the today placeholder page, and the empty state is low-pressure.",
+      "notes": "F04 implementation is complete. Added plan-calendar page focused on the nearest 7 days, low-pressure empty state, current-goal storage lookup, task status labels, and a minimal today page placeholder only for the F04 navigation entry. Updating pages.json was required to register the new mini-program pages."
+    }
+  },
+  {
+    "id": "F05",
+    "title": "今日任务页",
+    "status": "passing",
+    "dependsOn": ["F03", "F04"],
+    "behavior": "系统根据今天日期、昨天完成情况和当天状态展示今日任务建议。",
+    "scope": {
+      "pages": ["pages/"],
+      "components": [],
+      "services": ["services/date.ts", "services/storage.ts"],
+      "models": ["models/plan.ts", "models/task.ts", "models/user-profile.ts"],
+      "schemas": [],
+      "tests": ["tests/today.test.ts"]
+    },
+    "acceptance": [
+      {
+        "id": "A01",
+        "text": "显示今日最重要任务",
+        "method": "mixed"
+      },
+      {
+        "id": "A02",
+        "text": "显示最低完成线",
+        "method": "mixed"
+      },
+      {
+        "id": "A03",
+        "text": "显示推荐专注时段",
+        "method": "mixed"
+      },
+      {
+        "id": "A04",
+        "text": "低能量状态优先降低任务压力",
+        "method": "automated"
+      }
+    ],
+    "verify": {
+      "static": "npm run verify:static",
+      "feature": "npm run test -- today",
+      "system": "npm run verify:system"
+    },
+    "outOfScope": [
+      "不提交晚间复盘",
+      "不自动重排后续计划",
+      "不接入推送提醒",
+      "不做完整日历同步"
+    ],
+    "evidence": {
+      "lastVerifiedAt": "2026-05-23",
+      "commands": [
+        {
+          "command": "npm.cmd run test -- today",
+          "result": "passed",
+          "notes": "6 tests passed; covers A01 focus task selection, A02 minimum line display data, A03 recommended focus window, low-energy fallback focus window, A04 low-energy pressure reduction, and no-task empty state."
+        },
+        {
+          "command": "npm.cmd run verify:static",
+          "result": "passed",
+          "notes": "lint and vue-tsc passed after replacing today placeholder with the real today task view."
+        },
+        {
+          "command": "npm.cmd run verify:system",
+          "result": "passed",
+          "notes": "mp-weixin build completed; existing os alias and Sass deprecation warnings remain non-blocking."
+        },
+        {
+          "command": "npm.cmd run check",
+          "result": "passed",
+          "notes": "full static, feature and system verification passed; 6 test files and 29 tests passed."
+        }
+      ],
+      "manualSmoke": "Mixed verification note: today page now reads the current goal, DailyPlan[] and UserProfile through storage, then displays today's focus task, minimum line, recommended focus window, low-pressure energy note and today's task list. Final Weixin DevTools click-through can still be used as a product smoke check if desired.",
+      "notes": "F05 implementation is complete. buildTodayView selects today's highest-priority active task, keeps the minimum line visible, uses the daily recommended focus window or work-style fallback, and reduces pressure for low-energy users. The page does not submit reviews, trigger replanning, add reminders or perform calendar sync."
+    }
+  },
+  {
+    "id": "F06",
+    "title": "晚间复盘",
+    "status": "passing",
+    "dependsOn": ["F05"],
+    "behavior": "用户可以记录当日任务完成情况、能量状态和简短复盘备注。",
+    "scope": {
+      "pages": ["pages/"],
+      "components": [],
+      "services": ["services/storage.ts"],
+      "models": ["models/review.ts", "models/task.ts"],
+      "schemas": [],
+      "tests": ["tests/review.test.ts"]
+    },
+    "acceptance": [
+      {
+        "id": "A01",
+        "text": "可以记录任务完成、部分完成或未完成",
+        "method": "mixed"
+      },
+      {
+        "id": "A02",
+        "text": "可以记录当天能量状态",
+        "method": "mixed"
+      },
+      {
+        "id": "A03",
+        "text": "可以保存复盘备注",
+        "method": "mixed"
+      },
+      {
+        "id": "A04",
+        "text": "复盘备注为空时仍可保存结构化状态",
+        "method": "automated"
+      }
+    ],
+    "verify": {
+      "static": "npm run verify:static",
+      "feature": "npm run test -- review",
+      "system": "npm run verify:system"
+    },
+    "outOfScope": [
+      "不生成长期统计报表",
+      "不自动重排后续计划",
+      "不做社交分享",
+      "不上传复盘隐私数据"
+    ],
+    "evidence": {
+      "lastVerifiedAt": "2026-05-23",
+      "commands": [
+        {
+          "command": "npm.cmd run test -- review",
+          "result": "passed",
+          "notes": "5 tests passed; covers A01 completed/partial/unfinished task recording, A02 energy recording, A03 optional note saving, A04 empty-note structured save, and same-day review replacement."
+        },
+        {
+          "command": "npm.cmd run verify:static",
+          "result": "passed",
+          "notes": "lint and vue-tsc passed after adding review model builder and review page."
+        },
+        {
+          "command": "npm.cmd run verify:system",
+          "result": "passed",
+          "notes": "mp-weixin build completed; existing os alias and Sass deprecation warnings remain non-blocking."
+        },
+        {
+          "command": "npm.cmd run check",
+          "result": "passed",
+          "notes": "full static, feature and system verification passed; 7 test files and 34 tests passed."
+        }
+      ],
+      "manualSmoke": "Mixed verification note: review page now lets the user mark each today task as done, partial or unfinished, choose today's energy state, optionally enter a short note, and save through saveDailyReview. Final Weixin DevTools click-through can still be used as a product smoke check if desired.",
+      "notes": "F06 implementation is complete. buildDailyReview creates structured DailyReview records with completedTaskIds, partialTaskIds, skippedTaskIds, energy and optional trimmed note. Empty notes still save valid structured review data. The review page is lightweight and does not trigger replanning, statistics, sharing or uploads."
+    }
+  },
+  {
+    "id": "F07",
+    "title": "自动重排后续计划",
+    "status": "passing",
+    "dependsOn": ["F06"],
+    "behavior": "系统根据晚间复盘结果调整后续任务安排，并保留历史记录。",
+    "scope": {
+      "pages": [],
+      "components": [],
+      "services": ["services/replanner.ts", "services/planner.ts", "services/date.ts"],
+      "models": ["models/plan.ts", "models/task.ts", "models/review.ts"],
+      "schemas": [],
+      "tests": ["tests/replanner.test.ts"]
+    },
+    "acceptance": [
+      {
+        "id": "A01",
+        "text": "未完成任务会被移动到后续日期",
+        "method": "automated"
+      },
+      {
+        "id": "A02",
+        "text": "高优先级任务优先保留",
+        "method": "automated"
+      },
+      {
+        "id": "A03",
+        "text": "重排后每日任务总时长不超过可用时间",
+        "method": "automated"
+      },
+      {
+        "id": "A04",
+        "text": "重排后保留已完成任务历史",
+        "method": "automated"
+      }
+    ],
+    "verify": {
+      "static": "npm run verify:static",
+      "feature": "npm run test -- replanner",
+      "system": "npm run verify:system"
+    },
+    "outOfScope": [
+      "不删除历史复盘",
+      "不调用真实 AI",
+      "不做多人协作",
+      "不生成长期统计报表"
+    ],
+    "evidence": {
+      "lastVerifiedAt": "2026-05-23",
+      "commands": [
+        {
+          "command": "npm.cmd run test -- replanner",
+          "result": "passed",
+          "notes": "5 tests passed; covers A01 moving partial/skipped tasks to future dates, A02 high-priority ordering, A03 daily available-time cap, A04 reviewed-day history preservation, and infeasible replanning."
+        },
+        {
+          "command": "npm.cmd run verify:static",
+          "result": "passed",
+          "notes": "lint and vue-tsc passed after adding deterministic replanner logic and date helper."
+        },
+        {
+          "command": "npm.cmd run verify:system",
+          "result": "passed",
+          "notes": "mp-weixin build completed; existing os alias and Sass deprecation warnings remain non-blocking."
+        },
+        {
+          "command": "npm.cmd run check",
+          "result": "passed",
+          "notes": "full static, feature and system verification passed; 8 test files and 39 tests passed."
+        }
+      ],
+      "manualSmoke": "",
+      "notes": "F07 implementation is complete. replanAfterReview applies the evening review to the reviewed day, keeps completed tasks as history, creates carryover tasks for partial/skipped work, schedules higher-priority carryovers first into future dates without exceeding dailyAvailableMinutes, and returns infeasible suggestions when the remaining window cannot hold the work. It does not call real AI, delete review history, support collaboration or generate long-term statistics."
+    }
+  }
+]

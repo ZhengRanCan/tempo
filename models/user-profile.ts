@@ -1,4 +1,12 @@
 import type { EnergyLevel, WorkStyle } from './common'
+import {
+  LEGACY_FALLBACK_TIMESTAMP,
+  isEnergyLevel,
+  isRecord,
+  isWorkStyle,
+  readOptionalString,
+  readPositiveInteger
+} from './common'
 
 export type RitualPreference = 'simple' | 'warm' | 'energetic'
 
@@ -32,6 +40,27 @@ export const DEFAULT_ENERGY_LEVEL: EnergyLevel = 'normal'
 export const DEFAULT_WORK_STYLE: WorkStyle = 'flexible'
 export const DEFAULT_PREFERRED_FOCUS_MINUTES = 30
 export const DEFAULT_RITUAL_PREFERENCE: RitualPreference = 'simple'
+
+const RITUAL_PREFERENCES: readonly RitualPreference[] = ['simple', 'warm', 'energetic']
+
+export function normalizeUserProfile(value: unknown): UserProfile | null {
+  if (!isRecord(value)) {
+    return null
+  }
+
+  return {
+    id: readOptionalString(value.id) ?? 'local-user',
+    energyLevel: isEnergyLevel(value.energyLevel) ? value.energyLevel : DEFAULT_ENERGY_LEVEL,
+    mbti: normalizeMbti(readOptionalString(value.mbti)),
+    workStyle: isWorkStyle(value.workStyle) ? value.workStyle : DEFAULT_WORK_STYLE,
+    preferredFocusMinutes:
+      readPositiveInteger(value.preferredFocusMinutes) ?? DEFAULT_PREFERRED_FOCUS_MINUTES,
+    ritualPreference: isRitualPreference(value.ritualPreference)
+      ? value.ritualPreference
+      : DEFAULT_RITUAL_PREFERENCE,
+    updatedAt: readOptionalString(value.updatedAt) ?? LEGACY_FALLBACK_TIMESTAMP
+  }
+}
 
 export function buildUserProfile(
   input: CreateUserProfileInput = {},
@@ -67,6 +96,10 @@ function normalizeMbti(value?: string): string | undefined {
   const mbti = value?.trim().toUpperCase()
 
   return mbti || undefined
+}
+
+function isRitualPreference(value: unknown): value is RitualPreference {
+  return RITUAL_PREFERENCES.includes(value as RitualPreference)
 }
 
 function parsePreferredFocusMinutes(value?: string | number): number | null {

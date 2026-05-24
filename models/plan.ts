@@ -1,5 +1,7 @@
 import type { Task } from './task'
+import { normalizeTask } from './task'
 import type { TaskStatus } from './common'
+import { isRecord, readOptionalString } from './common'
 import type { UserProfile } from './user-profile'
 
 export interface DailyPlan {
@@ -37,6 +39,41 @@ export interface TodayView {
   tasks: Task[]
   energyLevel: UserProfile['energyLevel']
   pressureNote: string
+}
+
+const ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
+
+export function normalizeDailyPlan(value: unknown, fallbackGoalId?: string): DailyPlan | null {
+  if (!isRecord(value)) {
+    return null
+  }
+
+  const date = readOptionalString(value.date)
+  const goalId = readOptionalString(value.goalId) ?? fallbackGoalId
+
+  if (!date || !goalId || !ISO_DATE_PATTERN.test(date)) {
+    return null
+  }
+
+  const rawTasks = Array.isArray(value.tasks) ? value.tasks : []
+  const tasks = rawTasks
+    .map((task) =>
+      normalizeTask(task, {
+        goalId,
+        date
+      })
+    )
+    .filter((task): task is Task => task !== null)
+  const dailyKeyword = readOptionalString(value.dailyKeyword)
+  const recommendedFocusWindow = readOptionalString(value.recommendedFocusWindow)
+
+  return {
+    date,
+    goalId,
+    tasks,
+    dailyKeyword,
+    recommendedFocusWindow
+  }
 }
 
 export function buildPlanCalendarDays(

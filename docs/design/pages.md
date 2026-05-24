@@ -2,7 +2,7 @@
 
 ## 目的
 
-本文档定义 MVP 阶段主要页面的布局目标和信息层级。
+本文档定义 v0.2 阶段主要页面的布局目标和信息层级。
 
 本文件不提供完整 UI 设计稿，只约束 agent 实现页面时的结构和优先级。
 
@@ -134,17 +134,17 @@
 
 ## 页面导航
 
-MVP 阶段建议主路径：
+v0.2 阶段建议底部 tab 顺序：
 
 ```text
-goal-create
+today
 → plan-calendar
-→ today
-→ review
-→ plan-calendar
+→ goal-create
+→ profile
 ```
 
-today 页面应成为用户每日打开后的核心页面。
+today 页面应成为用户每日打开后的第一入口。
+review 页面不放入底部 tab，优先从 today 或 plan-calendar 的当天任务路径进入。
 
 ---
 
