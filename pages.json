@@ -1,0 +1,34 @@
+{
+  "pages": [
+    {
+      "path": "pages/goal-create/index",
+      "style": {
+        "navigationBarTitleText": "Tempo"
+      }
+    },
+    {
+      "path": "pages/plan-calendar/index",
+      "style": {
+        "navigationBarTitleText": "任务日历"
+      }
+    },
+    {
+      "path": "pages/today/index",
+      "style": {
+        "navigationBarTitleText": "今日任务"
+      }
+    },
+    {
+      "path": "pages/review/index",
+      "style": {
+        "navigationBarTitleText": "晚间复盘"
+      }
+    }
+  ],
+  "globalStyle": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "Tempo",
+    "navigationBarBackgroundColor": "#f8f4ec",
+    "backgroundColor": "#f8f4ec"
+  }
+}

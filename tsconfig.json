@@ -1,0 +1,30 @@
+{
+  "extends": "@vue/tsconfig/tsconfig.dom.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "target": "ES2022",
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "skipLibCheck": true,
+    "types": ["@dcloudio/types", "node"],
+    "paths": {
+      "@/*": ["*"]
+    }
+  },
+  "include": [
+    "main.ts",
+    "App.vue",
+    "pages/**/*.vue",
+    "config/**/*.ts",
+    "models/**/*.ts",
+    "schemas/**/*.ts",
+    "services/**/*.ts",
+    "scripts/**/*.mjs",
+    "tests/**/*.ts",
+    "vite.config.ts",
+    "vitest.config.ts",
+    "env.d.ts"
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "name": "tempo",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev:mp-weixin": "node scripts/uni-run.mjs -p mp-weixin",
+    "build:mp-weixin": "node scripts/uni-run.mjs build -p mp-weixin",
+    "lint": "eslint .",
+    "typecheck": "vue-tsc --noEmit",
+    "test": "vitest run",
+    "verify:static": "npm run lint && npm run typecheck",
+    "verify:feature": "npm run test",
+    "verify:system": "npm run build:mp-weixin",
+    "check": "npm run verify:static && npm run verify:feature && npm run verify:system"
+  },
+  "dependencies": {
+    "@dcloudio/uni-app": "3.0.0-alpha-5010120260519001",
+    "@dcloudio/uni-mp-weixin": "3.0.0-alpha-5010120260519001",
+    "vue": "3.4.21"
+  },
+  "devDependencies": {
+    "@dcloudio/types": "3.4.31",
+    "@dcloudio/vite-plugin-uni": "3.0.0-alpha-5010120260519001",
+    "@eslint/js": "9.39.4",
+    "@types/node": "22.19.0",
+    "@vue/tsconfig": "0.9.1",
+    "eslint": "9.39.4",
+    "eslint-plugin-vue": "10.9.1",
+    "globals": "17.6.0",
+    "sass": "1.99.0",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.59.4",
+    "vite": "5.2.8",
+    "vitest": "3.2.4",
+    "vue-tsc": "3.3.1"
+  }
+}
