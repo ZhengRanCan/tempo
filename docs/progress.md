@@ -2,13 +2,13 @@
 
 ## 当前 feature
 
-- `F09`：v0.2 导航壳与页面顺序
-- 状态：`passing``
+- `F10`：v0.2 核心组件与页面视觉整理
+- 状态：`passing```
 
 ## 当前状态
 
-- 项目阶段：App v0.2 第二条主线第一步 F09 已完成，下一步进入 F10 核心组件与页面视觉整理
-- 当前工作边界：v0.1 功能清单已归档；v0.2 按“数据层整理 -> UI/导航整理 -> Deepseek/塔罗接口预留”顺序推进。F08/F09 已 passing，下一次任务应按依赖选择 F10
+- 项目阶段：App v0.2 第二条主线第二步 F10 已完成，下一步进入 F11 Deepseek 与塔罗扩展接口预留
+- 当前工作边界：v0.1 功能清单已归档；v0.2 按“数据层整理 -> UI/导航整理 -> Deepseek/塔罗接口预留”顺序推进。F08/F09/F10 已 passing，下一次任务应按依赖选择 F11
 - Harness 状态：项目地图与规则文件已集中到 `docs/harness/`
 - F01、F02、F03、F04、F05、F06、F07 已作为 v0.1 基线归档到 `docs/log/v0.1/feature_list_v0.1.json`
 
@@ -16,7 +16,7 @@
 
 - `F08` passing
 - `F09` passing
-- `F10` not_started
+- `F10` passing
 - `F11` not_started
 - 当前工作功能清单位置：`docs/harness/feature_list.json`
 - v0.2 版本化功能清单位置：`docs/harness/feature_list_v0.2.json`
@@ -112,6 +112,14 @@
 - `npm.cmd run verify:harness`：通过，F09 passing 状态下 4 个 feature，0 warning，0 error
 - F09 L3b：`tests/navigation-shell.test.ts` 自动化覆盖默认进入今日任务、底部 tab 顺序、tab 页面注册和 tab 页主路径 `switchTab`
 
+- `2026-05-24` F10 已完成核心组件与页面视觉整理：新增 `TaskCard`、`TodayFocusCard`、`EmptyState`、`EnergySelector`，并接入 today、plan-calendar、goal-create、review、profile
+- `npm.cmd run test -- ui-components today plan-calendar review`：通过，4 个测试文件、20 个测试通过
+- `npm.cmd run verify:static`：通过
+- `npm.cmd run verify:system`：通过，`build:mp-weixin` 构建成功
+- `npm.cmd run check`：通过，12 个测试文件、59 个测试通过，harness gate 0 warning / 0 error
+- `npm.cmd run verify:harness`：通过，F10 passing 状态下 4 个 feature，0 warning，0 error
+- F10 L3b：`tests/ui-components.test.ts` 自动化覆盖核心组件结构和主要页面接入；today/calendar/review 既有路径测试继续通过
+
 ## 阻塞项
 
 - F01 无剩余阻塞项，A05 最终页面手动冒烟已由用户确认通过
@@ -124,7 +132,7 @@
 
 ## 下一步
 
-- 按功能选择规则启动 F10 核心组件与页面视觉整理；F11 仍需等待依赖 passing
+- 按功能选择规则启动 F11 Deepseek 与塔罗扩展接口预留
 
 ## 交接说明
 

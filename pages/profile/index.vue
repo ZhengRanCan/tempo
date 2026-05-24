@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
 import AppPageHeader from '../../components/AppPageHeader.vue'
+import EmptyState from '../../components/EmptyState.vue'
 import type { Goal, UserProfile } from '../../models'
 import { getCurrentGoal, getUserProfile } from '../../services/storage'
 
@@ -73,13 +74,11 @@ function goCalendar(): void {
       hint="这里只保留和任务安排相关的偏好。"
     />
 
-    <view
+    <EmptyState
       v-if="isLoading"
-      class="empty-state"
-    >
-      <text class="empty-title">正在读取本地偏好</text>
-      <text class="empty-copy">稍等一下，马上就能看到当前目标和状态。</text>
-    </view>
+      title="正在读取本地偏好"
+      copy="稍等一下，马上就能看到当前目标和状态。"
+    />
 
     <template v-else>
       <view class="panel">

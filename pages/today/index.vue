@@ -2,8 +2,11 @@
 import { computed, ref } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
 import AppPageHeader from '../../components/AppPageHeader.vue'
+import EmptyState from '../../components/EmptyState.vue'
+import TaskCard from '../../components/TaskCard.vue'
+import TodayFocusCard from '../../components/TodayFocusCard.vue'
 import type { Goal, TodayView } from '../../models'
-import { buildTodayView, getTaskStatusLabel } from '../../models/plan'
+import { buildTodayView } from '../../models/plan'
 import { formatDate } from '../../services/date'
 import { getCurrentGoal, getDailyPlans, getUserProfile } from '../../services/storage'
 
@@ -59,9 +62,6 @@ function goReview(): void {
   })
 }
 
-function getStatusText(status: TodayView['tasks'][number]['status']): string {
-  return getTaskStatusLabel(status)
-}
 </script>
 
 <template>
@@ -72,29 +72,19 @@ function getStatusText(status: TodayView['tasks'][number]['status']): string {
       hint="只看今天最值得推进的一小步。"
     />
 
-    <view
+    <EmptyState
       v-if="isLoading"
-      class="empty-state"
-    >
-      <text class="empty-title">正在整理今日任务</text>
-      <text class="empty-copy">我在查看今天适合先做哪一步。</text>
-    </view>
+      title="正在整理今日任务"
+      copy="我在查看今天适合先做哪一步。"
+    />
 
-    <view
+    <EmptyState
       v-else-if="!hasTodayTask"
-      class="empty-state"
-    >
-      <text class="empty-title">今天还没有任务</text>
-      <text class="empty-copy">
-        先创建一个目标，我会帮你拆成每天能做的小步。
-      </text>
-      <button
-        class="primary-button"
-        @tap="goCreateGoal"
-      >
-        创建目标
-      </button>
-    </view>
+      title="今天还没有任务"
+      copy="先创建一个目标，我会帮你拆成每天能做的小步。"
+      action-label="创建目标"
+      @action="goCreateGoal"
+    />
 
     <template v-else-if="todayView">
       <view class="energy-row">
@@ -107,44 +97,19 @@ function getStatusText(status: TodayView['tasks'][number]['status']): string {
         <text class="energy-note">{{ todayView.pressureNote }}</text>
       </view>
 
-      <view class="focus-card">
-        <text class="keyword">今日关键词：{{ todayView.dailyKeyword }}</text>
-        <text class="focus-label">今天最重要的一件事</text>
-        <text class="focus-title">{{ todayView.focusTask.title }}</text>
-
-        <view class="minimum-box">
-          <text class="minimum-label">最低完成线</text>
-          <text class="minimum-text">{{ todayView.focusTask.minimumLine }}</text>
-        </view>
-
-        <view class="focus-meta">
-          <text>推荐时段：{{ todayView.recommendedFocusWindow }}</text>
-          <text>预计 {{ todayView.focusTask.estimatedMinutes }} 分钟</text>
-        </view>
-
-        <text
-          v-if="todayView.focusTask.caution"
-          class="caution"
-        >
-          {{ todayView.focusTask.caution }}
-        </text>
-      </view>
+      <TodayFocusCard
+        :daily-keyword="todayView.dailyKeyword"
+        :recommended-focus-window="todayView.recommendedFocusWindow"
+        :task="todayView.focusTask"
+      />
 
       <view class="task-section">
         <text class="section-title">今日任务</text>
-        <view
+        <TaskCard
           v-for="task in todayView.tasks"
           :key="task.id"
-          class="task-card"
-          :class="{ priority: task.priority === 'high' }"
-        >
-          <view class="task-meta">
-            <text class="status-label">{{ getStatusText(task.status) }}</text>
-            <text class="minutes">预计 {{ task.estimatedMinutes }} 分钟</text>
-          </view>
-          <text class="task-title">{{ task.title }}</text>
-          <text class="minimum-line">最低完成线：{{ task.minimumLine }}</text>
-        </view>
+          :task="task"
+        />
       </view>
 
       <button

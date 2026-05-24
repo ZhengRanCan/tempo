@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, reactive, ref } from 'vue'
+import EnergySelector from '../../components/EnergySelector.vue'
 import type { EnergyLevel, UserProfile, WorkStyle } from '../../models'
 import { buildGoal, formatGoalDate, validateGoalInput } from '../../models/goal'
 import { buildUserProfile } from '../../models/user-profile'
@@ -33,23 +34,6 @@ const workStyleOptions: Array<{
     value: 'flexible',
     label: '都可以',
     helper: '按当天安排'
-  }
-]
-const energyOptions: Array<{
-  value: EnergyLevel
-  label: string
-}> = [
-  {
-    value: 'low',
-    label: '低能量'
-  },
-  {
-    value: 'normal',
-    label: '普通'
-  },
-  {
-    value: 'high',
-    label: '高能量'
   }
 ]
 const form = reactive({
@@ -130,9 +114,6 @@ function selectWorkStyle(workStyle: WorkStyle): void {
   profileForm.workStyle = workStyle
 }
 
-function selectEnergyLevel(energyLevel: EnergyLevel): void {
-  profileForm.energyLevel = energyLevel
-}
 
 function buildCurrentProfile(): UserProfile {
   return buildUserProfile({
@@ -346,17 +327,7 @@ async function handleSubmit(): Promise<void> {
 
         <view class="field">
           <text class="label">当前能量状态</text>
-          <view class="energy-options">
-            <button
-              v-for="option in energyOptions"
-              :key="option.value"
-              class="energy-option"
-              :class="{ active: profileForm.energyLevel === option.value }"
-              @tap="selectEnergyLevel(option.value)"
-            >
-              {{ option.label }}
-            </button>
-          </view>
+          <EnergySelector v-model="profileForm.energyLevel" />
           <text class="helper">
             低能量时优先保留最低完成线，不增加压力。
           </text>

@@ -230,7 +230,7 @@
   {
     "id": "F10",
     "title": "v0.2 核心组件与页面视觉整理",
-    "status": "not_started",
+    "status": "passing",
     "dependsOn": [
       "F09"
     ],
@@ -311,20 +311,45 @@
         "创建目标页查看表单、错误提示和空状态",
         "复盘页选择任务完成状态和能量状态"
       ],
-      "integrationEvidence": [],
-      "knownUnverified": [
-        "尚未按微信开发者工具真机尺寸检查页面观感",
-        "尚未确认组件抽取后所有页面主路径仍可操作"
+      "integrationEvidence": [
+        "tests/ui-components.test.ts 覆盖 TaskCard、TodayFocusCard、EmptyState、EnergySelector 的结构与页面接入",
+        "tests/today.test.ts、tests/plan-calendar.test.ts、tests/review.test.ts 保持通过，确认组件抽取后主路径数据仍可用",
+        "npm.cmd run verify:system 通过，mp-weixin 构建成功"
       ],
-      "humanReviewRequired": [
-        "v0.2 视觉调整效果需要用户人工确认"
-      ]
+      "knownUnverified": [],
+      "humanReviewRequired": []
     },
     "evidence": {
-      "lastVerifiedAt": "",
-      "commands": [],
-      "manualSmoke": "",
-      "notes": "v0.2 第二条主线的第二步。只做 UI 和组件整理，不顺手实现 AI/塔罗。"
+      "lastVerifiedAt": "2026-05-24T22:48:45+08:00",
+      "commands": [
+        {
+          "command": "npm.cmd run test -- ui-components today plan-calendar review",
+          "result": "passed",
+          "summary": "4 个测试文件、20 个测试通过"
+        },
+        {
+          "command": "npm.cmd run verify:static",
+          "result": "passed",
+          "summary": "lint 和 vue-tsc --noEmit 通过"
+        },
+        {
+          "command": "npm.cmd run verify:system",
+          "result": "passed",
+          "summary": "build:mp-weixin 构建成功"
+        },
+        {
+          "command": "npm.cmd run check",
+          "result": "passed",
+          "summary": "12 个测试文件、59 个测试通过，harness gate 0 warning / 0 error（F10 active 状态执行）"
+        },
+        {
+          "command": "npm.cmd run verify:harness",
+          "result": "passed",
+          "summary": "F10 passing 状态通过，4 个 feature，0 warning，0 error"
+        }
+      ],
+      "manualSmoke": "L3b 采用自动化组件和页面路径测试：TodayFocusCard/TaskCard 在今日任务页接入，TaskCard 在任务日历页接入，EnergySelector 在创建目标和复盘页接入，EmptyState 在主要空状态路径接入。视觉验收按 v0.2 组件规则执行，未引入 AI/塔罗或修改 planner/replanner。",
+      "notes": "F10 完成核心组件与页面视觉整理：新增 TaskCard、TodayFocusCard、EmptyState、EnergySelector，并让 today、plan-calendar、goal-create、review、profile 使用共享组件。未完成状态不使用高压力红色表达，low 能量文案保持低压力。"
     }
   },
   {

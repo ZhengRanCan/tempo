@@ -2,6 +2,8 @@
 import { computed, reactive, ref } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
 import AppPageHeader from '../../components/AppPageHeader.vue'
+import EmptyState from '../../components/EmptyState.vue'
+import EnergySelector from '../../components/EnergySelector.vue'
 import type { DailyPlan, EnergyLevel, Goal, ReviewTaskStatus, Task } from '../../models'
 import { buildDailyReview } from '../../models/review'
 import { formatDate } from '../../services/date'
@@ -24,24 +26,6 @@ const statusOptions: Array<{
     label: '未完成'
   }
 ]
-const energyOptions: Array<{
-  value: EnergyLevel
-  label: string
-}> = [
-  {
-    value: 'low',
-    label: '低能量'
-  },
-  {
-    value: 'normal',
-    label: '普通'
-  },
-  {
-    value: 'high',
-    label: '高能量'
-  }
-]
-
 const goal = ref<Goal | null>(null)
 const todayPlan = ref<DailyPlan | null>(null)
 const isLoading = ref(true)
@@ -95,9 +79,6 @@ function selectTaskStatus(taskId: string, status: ReviewTaskStatus): void {
   reviewForm.taskStatusById[taskId] = status
 }
 
-function selectEnergy(energy: EnergyLevel): void {
-  reviewForm.energy = energy
-}
 
 function handleNoteInput(event: Event): void {
   const payload = event as Event & {
@@ -162,29 +143,19 @@ function goCreateGoal(): void {
       hint="只记录今天真实推进到哪里，明天再继续。"
     />
 
-    <view
+    <EmptyState
       v-if="isLoading"
-      class="empty-state"
-    >
-      <text class="empty-title">正在读取今日任务</text>
-      <text class="empty-copy">我在整理今天可以复盘的任务。</text>
-    </view>
+      title="正在读取今日任务"
+      copy="我在整理今天可以复盘的任务。"
+    />
 
-    <view
+    <EmptyState
       v-else-if="!goal"
-      class="empty-state"
-    >
-      <text class="empty-title">还没有目标</text>
-      <text class="empty-copy">
-        先创建一个目标，再记录每天的推进情况。
-      </text>
-      <button
-        class="primary-button"
-        @tap="goCreateGoal"
-      >
-        创建目标
-      </button>
-    </view>
+      title="还没有目标"
+      copy="先创建一个目标，再记录每天的推进情况。"
+      action-label="创建目标"
+      @action="goCreateGoal"
+    />
 
     <template v-else>
       <view class="panel">
@@ -222,17 +193,7 @@ function goCreateGoal(): void {
 
       <view class="panel">
         <text class="section-title">今日能量状态</text>
-        <view class="energy-options">
-          <button
-            v-for="option in energyOptions"
-            :key="option.value"
-            class="energy-option"
-            :class="{ active: reviewForm.energy === option.value }"
-            @tap="selectEnergy(option.value)"
-          >
-            {{ option.label }}
-          </button>
-        </view>
+        <EnergySelector v-model="reviewForm.energy" />
         <text class="helper">
           这里只用于明天安排更贴近你的节奏。
         </text>

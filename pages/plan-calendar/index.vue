@@ -2,6 +2,8 @@
 import { computed, ref } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
 import AppPageHeader from '../../components/AppPageHeader.vue'
+import EmptyState from '../../components/EmptyState.vue'
+import TaskCard from '../../components/TaskCard.vue'
 import type { Goal, PlanCalendarDay } from '../../models'
 import { buildPlanCalendarDays } from '../../models/plan'
 import { formatDate } from '../../services/date'
@@ -67,29 +69,19 @@ function goToday(): void {
       hint="先看最近 7 天，每天只保留能执行的小步骤。"
     />
 
-    <view
+    <EmptyState
       v-if="isLoading"
-      class="empty-state"
-    >
-      <text class="empty-title">正在整理计划</text>
-      <text class="empty-copy">我在读取已经生成的每日任务。</text>
-    </view>
+      title="正在整理计划"
+      copy="我在读取已经生成的每日任务。"
+    />
 
-    <view
+    <EmptyState
       v-else-if="!hasPlan"
-      class="empty-state"
-    >
-      <text class="empty-title">还没有任务计划</text>
-      <text class="empty-copy">
-        先创建一个目标，我会帮你拆成每天能做的小步。
-      </text>
-      <button
-        class="primary-button"
-        @tap="goCreateGoal"
-      >
-        创建目标
-      </button>
-    </view>
+      title="还没有任务计划"
+      copy="先创建一个目标，我会帮你拆成每天能做的小步。"
+      action-label="创建目标"
+      @action="goCreateGoal"
+    />
 
     <template v-else>
       <view class="summary">
@@ -134,19 +126,11 @@ function goToday(): void {
             </text>
           </view>
 
-          <view
+          <TaskCard
             v-for="task in day.tasks"
             :key="task.id"
-            class="task-card"
-            :class="[`status-${task.status}`, { priority: task.priority === 'high' }]"
-          >
-            <view class="task-meta">
-              <text class="status-label">{{ task.statusLabel }}</text>
-              <text class="minutes">预计 {{ task.estimatedMinutes }} 分钟</text>
-            </view>
-            <text class="task-title">{{ task.title }}</text>
-            <text class="minimum-line">最低完成线：{{ task.minimumLine }}</text>
-          </view>
+            :task="task"
+          />
         </view>
       </view>
     </template>
