@@ -1,6 +1,6 @@
-import type { DailyPlan, DailyReview, Goal, UserProfile } from '../models'
+import type { DailyPlan, DailyReview, Goal, PlanBundle, UserProfile } from '../models'
 import { normalizeGoal } from '../models/goal'
-import { normalizeDailyPlan } from '../models/plan'
+import { dailyPlansToPlanBundle, normalizeDailyPlan, normalizePlanBundle } from '../models/plan'
 import { normalizeDailyReview } from '../models/review'
 import { normalizeUserProfile } from '../models/user-profile'
 
@@ -31,6 +31,10 @@ function dailyPlansKey(goalId: string): string {
 
 function dailyReviewsKey(goalId: string): string {
   return `daily-reviews:${goalId}`
+}
+
+function planBundleKey(goalId: string): string {
+  return `plan-bundle:${goalId}`
 }
 
 export async function saveGoal(goal: Goal): Promise<void> {
@@ -86,6 +90,82 @@ export async function readDailyPlans(goalId: string): Promise<StorageReadResult<
   return readStorageCollection(key, (value) => normalizeDailyPlan(value, goalId))
 }
 
+export async function savePlanBundle(bundle: PlanBundle): Promise<void> {
+  writeStorage(planBundleKey(bundle.plan.goalId), bundle)
+}
+
+export async function getActivePlanBundle(goalId: string): Promise<PlanBundle | null> {
+  return (await readPlanBundle(goalId)).data
+}
+
+export async function readPlanBundle(
+  goalId: string
+): Promise<StorageReadResult<PlanBundle | null>> {
+  return readStorageValue(planBundleKey(goalId), null, normalizePlanBundle)
+}
+
+export async function migrateLegacyDailyPlans(
+  goalId: string
+): Promise<StorageReadResult<PlanBundle | null>> {
+  const existingBundle = await readPlanBundle(goalId)
+
+  if (existingBundle.status === 'found') {
+    return existingBundle
+  }
+
+  if (existingBundle.status === 'error' || existingBundle.status === 'invalid') {
+    return existingBundle
+  }
+
+  const legacyPlans = await readDailyPlans(goalId)
+
+  if (legacyPlans.status !== 'found') {
+    return {
+      status: legacyPlans.status,
+      data: null,
+      issues: legacyPlans.issues
+    }
+  }
+
+  const bundle = dailyPlansToPlanBundle(legacyPlans.data, {
+    goalId
+  })
+
+  if (!bundle) {
+    return {
+      status: 'invalid',
+      data: null,
+      issues: [
+        {
+          code: 'invalid_data',
+          message: 'Legacy daily plans could not be converted to a plan bundle.'
+        }
+      ]
+    }
+  }
+
+  try {
+    await savePlanBundle(bundle)
+  } catch {
+    return {
+      status: 'error',
+      data: null,
+      issues: [
+        {
+          code: 'write_failed',
+          message: 'PlanBundle migration write failed.'
+        }
+      ]
+    }
+  }
+
+  return {
+    status: 'found',
+    data: bundle,
+    issues: []
+  }
+}
+
 export async function saveDailyReview(review: DailyReview): Promise<void> {
   const reviews = await getDailyReviews(review.goalId)
   const nextReviews = reviews.filter((item) => item.id !== review.id)
@@ -106,6 +186,7 @@ export async function deleteGoal(goalId: string): Promise<void> {
   uni.removeStorageSync(goalKey(goalId))
   uni.removeStorageSync(dailyPlansKey(goalId))
   uni.removeStorageSync(dailyReviewsKey(goalId))
+  uni.removeStorageSync(planBundleKey(goalId))
 
   if ((await getCurrentGoalId()) === goalId) {
     uni.removeStorageSync(CURRENT_GOAL_ID_KEY)

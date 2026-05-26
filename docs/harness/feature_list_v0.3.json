@@ -118,7 +118,7 @@
   {
     "id": "F13",
     "title": "v0.3 storage PlanBundle 读写与旧数据迁移",
-    "status": "not_started",
+    "status": "passing",
     "dependsOn": [
       "F12"
     ],
@@ -190,20 +190,44 @@
         "无本地数据 -> 读取 PlanBundle 和旧 DailyPlan，确认页面可处理空结果"
       ],
       "integrationEvidence": [
-        "tests/storage.test.ts 覆盖 PlanBundle 读写、旧 key 兼容、重复迁移、坏数据和读写异常",
-        "tests/data-layer.test.ts 覆盖旧主路径仍可读取",
+        "tests/storage.test.ts 覆盖 PlanBundle 读写、旧 daily-plans:{goalId} 兼容、幂等迁移、坏 PlanBundle、读取异常和迁移写入异常",
+        "tests/data-layer.test.ts 保持通过，证明旧 DailyPlan[] 主路径仍可读取并支撑 today-suggestion",
         "npm.cmd run verify:system 通过，mp-weixin 构建产物生成成功"
       ],
-      "knownUnverified": [
-        "planner 仍可能输出 DailyPlan[]，将在 F14 处理"
-      ],
+      "knownUnverified": [],
       "humanReviewRequired": []
     },
     "evidence": {
-      "lastVerifiedAt": null,
-      "commands": [],
-      "manualSmoke": "",
-      "notes": ""
+      "lastVerifiedAt": "2026-05-26T16:00:00+08:00",
+      "commands": [
+        {
+          "command": "npm.cmd run test -- storage data-layer",
+          "result": "passed",
+          "summary": "2 个测试文件、15 个测试通过"
+        },
+        {
+          "command": "npm.cmd run verify:static",
+          "result": "passed",
+          "summary": "lint 和 vue-tsc --noEmit 通过"
+        },
+        {
+          "command": "npm.cmd run verify:system",
+          "result": "passed",
+          "summary": "build:mp-weixin 构建成功"
+        },
+        {
+          "command": "npm.cmd run check",
+          "result": "passed",
+          "summary": "15 个测试文件、80 个测试通过，F13 active 状态下 harness gate 0 warning / 0 error"
+        },
+        {
+          "command": "npm.cmd run verify:harness",
+          "result": "passed",
+          "summary": "F13 passing 状态通过，6 个 feature 中 2 个 passing、4 个 not_started，0 warning / 0 error"
+        }
+      ],
+      "manualSmoke": "L3b 采用自动化 storage 迁移路径测试：tests/storage.test.ts 模拟旧 daily-plans:{goalId} 本地数据 -> migrateLegacyDailyPlans() -> 写入 plan-bundle:{goalId} -> 再读回确认状态稳定；同时覆盖无 PlanBundle、坏 PlanBundle、读取异常和迁移写入异常。tests/data-layer.test.ts 证明旧 DailyPlan[] 页面主路径仍可读取。",
+      "notes": "F13 完成 storage PlanBundle 读写与旧数据迁移：新增 plan-bundle:{goalId} active bundle key，保留 daily-plans:{goalId} 旧 key；迁移函数可重复执行且不覆盖已有 PlanBundle 中的 done/partial/skipped 状态。planner 仍输出 DailyPlan[]，该迁移将在 F14 继续处理。"
     }
   },
   {

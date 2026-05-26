@@ -1,17 +1,86 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   getGoal,
+  getActivePlanBundle,
   getUserProfile,
+  migrateLegacyDailyPlans,
   readDailyPlans,
   readGoal,
+  readPlanBundle,
+  savePlanBundle,
   readUserProfile
 } from '../services/storage'
+import type { DailyPlan, PlanBundle } from '../models'
 
 interface StorageRecord {
   [key: string]: unknown
 }
 
 const storage: StorageRecord = {}
+
+function createPlanBundle(): PlanBundle {
+  return {
+    plan: {
+      id: 'plan-1',
+      goalId: 'goal-1',
+      status: 'active',
+      startDate: '2026-06-01',
+      deadline: '2026-06-07',
+      dailyAvailableMinutes: 45,
+      createdAt: '2026-05-26T00:00:00.000Z',
+      updatedAt: '2026-05-26T00:00:00.000Z'
+    },
+    stages: [],
+    tasks: [
+      {
+        id: 'task-1',
+        goalId: 'goal-1',
+        planId: 'plan-1',
+        title: 'draft outline',
+        date: '2026-06-01',
+        scheduledDate: '2026-06-01',
+        estimatedMinutes: 30,
+        priority: 'high',
+        type: 'focus',
+        status: 'done',
+        minimumLine: 'write three bullets',
+        createdAt: '2026-05-26T00:00:00.000Z',
+        updatedAt: '2026-05-26T00:00:00.000Z'
+      }
+    ]
+  }
+}
+
+function createLegacyDailyPlans(): DailyPlan[] {
+  return [
+    {
+      date: '2026-06-01',
+      goalId: 'goal-1',
+      tasks: [
+        {
+          id: 'task-1',
+          goalId: 'goal-1',
+          title: 'draft outline',
+          date: '2026-06-01',
+          estimatedMinutes: 30,
+          priority: 'high',
+          status: 'partial',
+          minimumLine: 'write three bullets'
+        },
+        {
+          id: 'task-2',
+          goalId: 'goal-1',
+          title: 'collect links',
+          date: '2026-06-01',
+          estimatedMinutes: 15,
+          priority: 'medium',
+          status: 'skipped',
+          minimumLine: 'save one link'
+        }
+      ]
+    }
+  ]
+}
 
 beforeEach(() => {
   for (const key of Object.keys(storage)) {
@@ -103,6 +172,126 @@ describe('storage compatibility boundary', () => {
       status: 'error',
       data: [],
       issues: [{ code: 'read_failed' }]
+    })
+  })
+
+  it('saves and reads PlanBundle with plan, stages, tasks and status', async () => {
+    const bundle = createPlanBundle()
+
+    await savePlanBundle(bundle)
+
+    expect(uni.setStorageSync).toHaveBeenCalledWith('plan-bundle:goal-1', bundle)
+    await expect(getActivePlanBundle('goal-1')).resolves.toMatchObject({
+      plan: {
+        id: 'plan-1',
+        status: 'active'
+      },
+      stages: [],
+      tasks: [
+        {
+          id: 'task-1',
+          status: 'done',
+          scheduledDate: '2026-06-01'
+        }
+      ]
+    })
+  })
+
+  it('keeps legacy daily plans readable and migrates them to PlanBundle', async () => {
+    storage['daily-plans:goal-1'] = createLegacyDailyPlans()
+
+    await expect(readDailyPlans('goal-1')).resolves.toMatchObject({
+      status: 'found',
+      data: [
+        {
+          date: '2026-06-01',
+          tasks: [
+            {
+              id: 'task-1',
+              status: 'partial'
+            },
+            {
+              id: 'task-2',
+              status: 'skipped'
+            }
+          ]
+        }
+      ]
+    })
+
+    const result = await migrateLegacyDailyPlans('goal-1')
+
+    expect(result.status).toBe('found')
+    expect(result.data?.tasks).toHaveLength(2)
+    expect(result.data?.tasks.map((task) => task.status)).toEqual(['partial', 'skipped'])
+    expect(storage['plan-bundle:goal-1']).toMatchObject({
+      plan: {
+        goalId: 'goal-1',
+        status: 'active'
+      },
+      tasks: [
+        {
+          id: 'task-1',
+          scheduledDate: '2026-06-01'
+        },
+        {
+          id: 'task-2',
+          scheduledDate: '2026-06-01'
+        }
+      ]
+    })
+  })
+
+  it('keeps legacy migration idempotent and does not overwrite existing task status', async () => {
+    const existingBundle = createPlanBundle()
+
+    storage['daily-plans:goal-1'] = createLegacyDailyPlans()
+    storage['plan-bundle:goal-1'] = existingBundle
+
+    const firstResult = await migrateLegacyDailyPlans('goal-1')
+    const secondResult = await migrateLegacyDailyPlans('goal-1')
+
+    expect(firstResult.data?.tasks).toHaveLength(1)
+    expect(secondResult.data?.tasks).toHaveLength(1)
+    expect(secondResult.data?.tasks[0]?.status).toBe('done')
+    expect(storage['plan-bundle:goal-1']).toEqual(existingBundle)
+  })
+
+  it('returns explicit PlanBundle empty and invalid states', async () => {
+    await expect(readPlanBundle('missing-goal')).resolves.toMatchObject({
+      status: 'empty',
+      data: null,
+      issues: [{ code: 'not_found' }]
+    })
+
+    storage['plan-bundle:goal-1'] = {
+      plan: {
+        id: 'plan-1'
+      },
+      tasks: []
+    }
+
+    await expect(readPlanBundle('goal-1')).resolves.toMatchObject({
+      status: 'invalid',
+      data: null,
+      issues: [{ code: 'invalid_data' }]
+    })
+  })
+
+  it('returns an explicit migration write failure without silent success', async () => {
+    storage['daily-plans:goal-1'] = createLegacyDailyPlans()
+    vi.stubGlobal('uni', {
+      setStorageSync: vi.fn(() => {
+        throw new Error('quota')
+      }),
+      getStorageSync: vi.fn((key: string) => storage[key] ?? ''),
+      removeStorageSync: vi.fn()
+    })
+
+    await expect(migrateLegacyDailyPlans('goal-1')).resolves.toMatchObject({
+      status: 'error',
+      data: null,
+      issues: [{ code: 'write_failed' }]
     })
   })
 })

@@ -1,7 +1,7 @@
 import type { Task } from './task'
 import { normalizeTask } from './task'
 import type { TaskStatus } from './common'
-import { isRecord, readOptionalString } from './common'
+import { isRecord, readOptionalString, readPositiveInteger } from './common'
 import type { UserProfile } from './user-profile'
 
 export interface DailyPlan {
@@ -100,6 +100,15 @@ export interface TodayView {
 
 const ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
 const LEGACY_PLAN_TIMESTAMP = '1970-01-01T00:00:00.000Z'
+const PLAN_STATUSES: readonly PlanStatus[] = [
+  'draft',
+  'active',
+  'needs_adjustment',
+  'infeasible',
+  'completed',
+  'archived'
+]
+const STAGE_STATUSES: readonly StageStatus[] = ['planned', 'active', 'completed', 'skipped']
 
 export function normalizeDailyPlan(value: unknown, fallbackGoalId?: string): DailyPlan | null {
   if (!isRecord(value)) {
@@ -131,6 +140,117 @@ export function normalizeDailyPlan(value: unknown, fallbackGoalId?: string): Dai
     tasks,
     dailyKeyword,
     recommendedFocusWindow
+  }
+}
+
+export function normalizePlanBundle(value: unknown): PlanBundle | null {
+  if (!isRecord(value)) {
+    return null
+  }
+
+  const plan = normalizePlan(value.plan)
+
+  if (!plan) {
+    return null
+  }
+
+  const stages = readArray(value.stages)
+    .map((stage) => normalizeStage(stage, plan))
+    .filter((stage): stage is Stage => stage !== null)
+  const tasks = readArray(value.tasks)
+    .map((task) =>
+      normalizeTask(task, {
+        goalId: plan.goalId,
+        planId: plan.id
+      })
+    )
+    .filter((task): task is Task => task !== null)
+    .map((task) => ({
+      ...task,
+      planId: task.planId ?? plan.id,
+      scheduledDate: task.scheduledDate ?? task.date
+    }))
+
+  return {
+    plan,
+    stages,
+    tasks
+  }
+}
+
+export function normalizePlan(value: unknown): Plan | null {
+  if (!isRecord(value)) {
+    return null
+  }
+
+  const id = readOptionalString(value.id)
+  const goalId = readOptionalString(value.goalId)
+  const startDate = readOptionalString(value.startDate)
+  const deadline = readOptionalString(value.deadline)
+  const dailyAvailableMinutes = readPositiveInteger(value.dailyAvailableMinutes)
+
+  if (
+    !id ||
+    !goalId ||
+    !startDate ||
+    !deadline ||
+    !ISO_DATE_PATTERN.test(startDate) ||
+    !ISO_DATE_PATTERN.test(deadline) ||
+    !dailyAvailableMinutes
+  ) {
+    return null
+  }
+
+  const createdAt = readOptionalString(value.createdAt) ?? LEGACY_PLAN_TIMESTAMP
+  const updatedAt = readOptionalString(value.updatedAt) ?? createdAt
+
+  return {
+    id,
+    goalId,
+    status: isPlanStatus(value.status) ? value.status : 'active',
+    startDate,
+    deadline,
+    dailyAvailableMinutes,
+    createdAt,
+    updatedAt
+  }
+}
+
+export function normalizeStage(value: unknown, plan: Pick<Plan, 'id' | 'goalId'>): Stage | null {
+  if (!isRecord(value)) {
+    return null
+  }
+
+  const id = readOptionalString(value.id)
+  const title = readOptionalString(value.title)
+  const startDate = readOptionalString(value.startDate)
+  const endDate = readOptionalString(value.endDate)
+
+  if (
+    !id ||
+    !title ||
+    !startDate ||
+    !endDate ||
+    !ISO_DATE_PATTERN.test(startDate) ||
+    !ISO_DATE_PATTERN.test(endDate)
+  ) {
+    return null
+  }
+
+  const createdAt = readOptionalString(value.createdAt) ?? LEGACY_PLAN_TIMESTAMP
+  const updatedAt = readOptionalString(value.updatedAt) ?? createdAt
+
+  return {
+    id,
+    goalId: readOptionalString(value.goalId) ?? plan.goalId,
+    planId: readOptionalString(value.planId) ?? plan.id,
+    title,
+    startDate,
+    endDate,
+    status: isStageStatus(value.status) ? value.status : 'planned',
+    order: readPositiveInteger(value.order) ?? 1,
+    createdAt,
+    updatedAt
   }
 }
 
@@ -327,6 +447,18 @@ function inferDailyAvailableMinutes(plans: DailyPlan[]): number {
 
     return Math.max(maxMinutes, totalMinutes)
   }, 0)
+}
+
+function readArray(value: unknown): unknown[] {
+  return Array.isArray(value) ? value : []
+}
+
+export function isPlanStatus(value: unknown): value is PlanStatus {
+  return PLAN_STATUSES.includes(value as PlanStatus)
+}
+
+export function isStageStatus(value: unknown): value is StageStatus {
+  return STAGE_STATUSES.includes(value as StageStatus)
 }
 
 function buildStatusSummary(tasks: PlanCalendarTask[]): string {

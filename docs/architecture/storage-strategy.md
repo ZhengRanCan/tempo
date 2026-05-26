@@ -4,6 +4,8 @@
 
 本文档定义 MVP 阶段的数据存储策略，以及后续从本地存储切换到云开发时的边界。
 
+目标数据模型见 `docs/architecture/goal-plan-task-state-model.md`。当前存储策略必须兼容旧 `DailyPlan[]`，但后续不应继续把 `DailyPlan[]` 作为唯一计划真相来源。
+
 ---
 
 ## MVP 默认策略
@@ -49,6 +51,17 @@ MVP 阶段存储以下对象：
 - DailyPlan[]
 - DailyReview[]
 
+目标模型阶段应存储：
+
+- Goal
+- Plan
+- Stage[]
+- Task[]
+- DailyReview[]
+- UserProfile
+
+`TodaySuggestion` 是计算视图，不作为核心持久化对象。AI/塔罗建议可以缓存，但不能替代 Plan 或 Task 的真相来源。
+
 建议 storage key：
 
 ```text
@@ -57,6 +70,17 @@ user-profile
 daily-plans:{goalId}
 daily-reviews:{goalId}
 ```
+
+后续建议新增 storage key：
+
+```text
+plans:{goalId}
+stages:{planId}
+tasks:{planId}
+storage-schema-version
+```
+
+是否使用拆分 key 或统一 `plan-bundle:{planId}`，需要在实现迁移前确认。无论选择哪种方式，都必须保留 `daily-plans:{goalId}` 的兼容读取。
 
 ---
 
@@ -79,6 +103,17 @@ deleteGoal(goalId: string): Promise<void>
 ```
 
 删除目标时，应同步处理该目标下的计划和复盘记录，除非用户明确选择保留。
+
+后续目标接口建议：
+
+```ts
+savePlanBundle(bundle: PlanBundle): Promise<void>
+getActivePlanBundle(goalId: string): Promise<PlanBundle | null>
+readLegacyDailyPlans(goalId: string): Promise<DailyPlan[]>
+migrateLegacyDailyPlans(goalId: string): Promise<PlanBundle | null>
+```
+
+迁移函数必须是可重复执行的，不得重复生成任务或覆盖用户已经完成的任务状态。
 
 ---
 
@@ -175,3 +210,13 @@ type StorageErrorCode =
 - 删除目标时处理相关数据
 - 读取不存在数据时返回 null 或空数组
 - 写入异常时返回明确错误
+- 旧 `DailyPlan[]` 可以迁移到新 Plan/Task 结构
+- 迁移不会覆盖已完成、部分完成或跳过的任务状态
+
+## 2026-05-26 F13 实现记录
+
+- `services/storage.ts` 已新增 `savePlanBundle()`、`readPlanBundle()`、`getActivePlanBundle()`、`migrateLegacyDailyPlans()`。
+- 当前采用 `plan-bundle:{goalId}` 作为 active PlanBundle 本地 key，并继续保留 `daily-plans:{goalId}` 旧 key 读取。
+- `migrateLegacyDailyPlans()` 优先返回已有 PlanBundle；仅在 bundle 缺失且旧 DailyPlan[] 有效时写入迁移结果，因此可重复执行且不会覆盖已有 done/partial/skipped 状态。
+- 读空数据、坏 PlanBundle、读取异常和迁移写入异常均返回明确 `StorageReadResult` 状态与 issue。
+- F13 不修改 planner、replanner 或页面 UI。
