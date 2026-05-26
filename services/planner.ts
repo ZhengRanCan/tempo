@@ -1,5 +1,13 @@
 import { DEFAULT_FOCUS_MINUTES } from '../config/defaults'
-import type { Goal, DailyPlan, InfeasiblePlanResult, UserProfile, WorkStyle } from '../models'
+import type {
+  DailyPlan,
+  Goal,
+  InfeasiblePlanResult,
+  PlanBundle,
+  UserProfile,
+  WorkStyle
+} from '../models'
+import { planBundleToDailyPlans } from '../models/plan'
 import { getDatesBetweenInclusive, isIsoDateString } from './date'
 
 export interface StarterPlanInput {
@@ -15,7 +23,15 @@ export type StarterPlanResult =
     }
   | InfeasiblePlanResult
 
+export type StarterPlanBundleResult =
+  | {
+      status: 'ok'
+      bundle: PlanBundle
+    }
+  | InfeasiblePlanResult
+
 const MINIMUM_TASK_MINUTES = 15
+const NEAR_TERM_TASK_DAYS = 7
 
 const PLAN_STEPS = [
   {
@@ -56,6 +72,19 @@ const PLAN_STEPS = [
 ] as const
 
 export function buildStarterPlan(input: StarterPlanInput): StarterPlanResult {
+  const result = buildStarterPlanBundle(input)
+
+  if (result.status === 'infeasible') {
+    return result
+  }
+
+  return {
+    status: 'ok',
+    plans: buildLegacyDailyPlansFromBundle(result.bundle, input.userProfile)
+  }
+}
+
+export function buildStarterPlanBundle(input: StarterPlanInput): StarterPlanBundleResult {
   const { goal, startDate, userProfile } = input
 
   if (goal.dailyAvailableMinutes <= 0) {
@@ -80,32 +109,76 @@ export function buildStarterPlan(input: StarterPlanInput): StarterPlanResult {
   }
 
   const estimatedMinutes = getTaskMinutes(goal.dailyAvailableMinutes, userProfile)
-  const plans = dates.map<DailyPlan>((date, index) => ({
-    date,
+  const now = new Date().toISOString()
+  const planId = `plan:${goal.id}:${startDate}`
+  const taskDates = dates.slice(0, NEAR_TERM_TASK_DAYS)
+  const laterDates = dates.slice(NEAR_TERM_TASK_DAYS)
+  const stages =
+    laterDates.length > 0
+      ? [
+          {
+            id: `${planId}:stage:later`,
+            goalId: goal.id,
+            planId,
+            title: '后续阶段',
+            startDate: laterDates[0]!,
+            endDate: laterDates.at(-1)!,
+            status: 'planned' as const,
+            order: 1,
+            createdAt: now,
+            updatedAt: now
+          }
+        ]
+      : []
+  const tasks = taskDates.map((date, index) => ({
+    id: `${goal.id}-${date}-step-${index + 1}`,
     goalId: goal.id,
-    dailyKeyword: getPlanStep(index).keyword,
-    recommendedFocusWindow: getRecommendedFocusWindow(userProfile?.workStyle),
-    tasks: [
-      {
-        id: `${goal.id}-${date}-step-${index + 1}`,
-        goalId: goal.id,
-        title: `${getPlanStep(index).action}：${goal.title}`,
-        description: goal.description ? '围绕目标说明推进当天最小可交付内容。' : undefined,
-        date,
-        estimatedMinutes,
-        priority: index === 0 ? 'high' : 'medium',
-        status: 'todo',
-        minimumLine: getMinimumLine(index, userProfile),
-        focusSuggestion: `先做一个 ${estimatedMinutes} 分钟的小块。`,
-        caution: getCaution(userProfile)
-      }
-    ]
+    planId,
+    title: `${getPlanStep(index).action}：${goal.title}`,
+    description: goal.description
+      ? '围绕目标说明推进当天最小可交付内容。'
+      : undefined,
+    date,
+    scheduledDate: date,
+    estimatedMinutes,
+    priority: index === 0 ? ('high' as const) : ('medium' as const),
+    type: index === 0 ? ('focus' as const) : ('support' as const),
+    status: 'todo' as const,
+    minimumLine: getMinimumLine(index, userProfile),
+    focusSuggestion: `先做一个 ${estimatedMinutes} 分钟的小块。`,
+    caution: getCaution(userProfile),
+    createdAt: now,
+    updatedAt: now
   }))
 
   return {
     status: 'ok',
-    plans
+    bundle: {
+      plan: {
+        id: planId,
+        goalId: goal.id,
+        status: 'active',
+        startDate,
+        deadline: goal.deadline,
+        dailyAvailableMinutes: goal.dailyAvailableMinutes,
+        createdAt: now,
+        updatedAt: now
+      },
+      stages,
+      tasks
+    }
   }
+}
+
+export function buildLegacyDailyPlansFromBundle(
+  bundle: PlanBundle,
+  userProfile?: UserProfile
+): DailyPlan[] {
+  return planBundleToDailyPlans(bundle).map((plan, index) => ({
+    ...plan,
+    dailyKeyword: getPlanStep(index).keyword,
+    recommendedFocusWindow: getRecommendedFocusWindow(userProfile?.workStyle)
+  }))
 }
 
 function getPlanStep(index: number): (typeof PLAN_STEPS)[number] {

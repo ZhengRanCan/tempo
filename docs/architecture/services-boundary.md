@@ -6,6 +6,8 @@
 
 services 层负责核心业务逻辑。页面层只能调用 services，不能直接承载复杂业务规则。
 
+数据模型目标边界见 `docs/architecture/goal-plan-task-state-model.md`。当前代码仍以 `DailyPlan[]` 为主，后续重构时应逐步迁移到 `Plan + Stage + Task`，并保留旧数据兼容。
+
 ---
 
 ## services 目录
@@ -38,6 +40,13 @@ services/
 
 - DailyPlan[]
 - 或不可行计划状态
+
+目标输出：
+
+- `PlanBundle`，包含 Plan、近 7 天 Task、远期 Stage
+- 或明确的 `infeasible` 计划状态
+
+迁移期间可以保留 `DailyPlan[]` 输出，并提供 `toLegacyDailyPlans()` 兼容旧页面和旧测试。
 
 ### 允许做
 
@@ -84,6 +93,14 @@ services/
 
 - 更新后的 DailyPlan[]
 - 或不可行计划状态
+
+目标输出：
+
+- 更新后的 Plan/Task 排布
+- 或新的 Plan 版本
+- 或明确的 `infeasible` 状态
+
+重排不是目标失败。`DailyReview` 是历史事实，replanner 不得静默改写复盘记录。
 
 ### 允许做
 
@@ -154,6 +171,7 @@ MVP 阶段默认使用本地存储。后续如切换为云开发，应通过 ada
 - 保存和读取 UserProfile
 - 保存和读取 DailyPlan[]
 - 保存和读取 DailyReview[]
+- 后续保存和读取 Plan、Stage、Task
 
 ### 禁止做
 
@@ -161,6 +179,7 @@ MVP 阶段默认使用本地存储。后续如切换为云开发，应通过 ada
 - 在 planner.ts 或 replanner.ts 中直接读写数据
 - 混用多个存储入口
 - 在没有迁移策略的情况下修改存储 key
+- 将 AI/塔罗建议直接写回 Task.status 或历史 Plan
 
 建议接口：
 
@@ -174,6 +193,8 @@ getDailyPlans(goalId: string): Promise<DailyPlan[]>
 saveDailyReview(review: DailyReview): Promise<void>
 getDailyReviews(goalId: string): Promise<DailyReview[]>
 ```
+
+后续目标接口应围绕 `PlanBundle` 或 adapter 设计，避免页面层直接拼装 `Plan + Stage + Task`。
 
 ---
 
@@ -205,3 +226,11 @@ getDailyReviews(goalId: string): Promise<DailyReview[]>
 - 默认复盘截止时间由 config/app-config.ts 的 reviewCutoffHour 定义
 - 如果当前时间晚于 reviewCutoffHour，新建计划从次日开始
 - 如果当前时间不晚于 reviewCutoffHour，新建计划可以从当天开始
+
+## 2026-05-26 F14 实现记录
+
+- `services/planner.ts` 已新增 `buildStarterPlanBundle()`，新 API 输出 `PlanBundle`。
+- 规划策略为近 7 天生成具体 `Task`，超过 7 天的远期内容进入 `Stage`；`PlanBundle.plan` 不写入 `dailyKeyword` 或 `recommendedFocusWindow`。
+- 旧 `buildStarterPlan()` 保留，并通过 `buildLegacyDailyPlansFromBundle()` 从 PlanBundle 降级为 `DailyPlan[]`。
+- 创建目标页面现在保存 `PlanBundle`，并在迁移期继续写入 legacy `DailyPlan[]` 供旧页面读取。
+- F14 不重构 replanner 或日历页面 UI。

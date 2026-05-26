@@ -2,21 +2,21 @@
 
 ## 当前 feature
 
-- `F13`：v0.3 storage PlanBundle 读写与旧数据迁移
+- `F14`：v0.3 planner 输出 PlanBundle
 - 状态：`passing`
 
 ## 当前状态
 
 - 项目阶段：App v0.2 F08-F11 全部完成并通过门禁。
 - 当前工作边界：已进入 App v0.3 规划阶段，v0.3 按“models -> storage -> planner -> view services -> replanner -> UI integration”顺序渐进迁移。
-- Harness 状态：F12、F13 已 passing；F14-F17 仍为 `not_started`。
+- Harness 状态：F12、F13、F14 已 passing；F15-F17 仍为 `not_started`。
 - F01、F02、F03、F04、F05、F06、F07 已作为 v0.1 基线归档到 `docs/log/v0.1/feature_list_v0.1.json`。
 
 ## 功能状态摘要
 
 - `F12` passing
 - `F13` passing
-- `F14` not_started
+- `F14` passing
 - `F15` not_started
 - `F16` not_started
 - `F17` not_started
@@ -159,6 +159,16 @@
 
 - `npm.cmd run verify:harness`：通过，F13 passing 状态下 6 个 feature 中 2 个 passing、4 个 not_started，0 warning / 0 error。
 
+- `2026-05-26` F14 已完成 planner 输出 PlanBundle：新增 `buildStarterPlanBundle()`，近 7 天生成具体 Task，远期内容进入 Stage；`PlanBundle.plan` 不写入 `dailyKeyword` 或 `recommendedFocusWindow`。
+- F14 兼容边界：旧 `buildStarterPlan()` 继续通过 `buildLegacyDailyPlansFromBundle()` 输出 `DailyPlan[]`；创建目标页面保存新 `PlanBundle`，并继续保存 legacy `DailyPlan[]` 供旧页面读取；未重构 replanner 或日历页面 UI。
+- `npm.cmd run test -- planner data-layer`：通过，4 个测试文件、23 个测试通过。
+- `npm.cmd run verify:static`：通过。
+- `npm.cmd run verify:system`：通过，`build:mp-weixin` 构建成功。
+- `npm.cmd run check`：通过，15 个测试文件、83 个测试通过，F14 active 状态下 harness gate 0 warning / 0 error。
+- F14 L3b：`tests/planner.test.ts` 覆盖 PlanBundle 输出、近 7 天 Task、远期 Stage、低能量最低完成线和 PlanBundle 存储；`tests/data-layer.test.ts` 覆盖保存 PlanBundle + legacy DailyPlan[] 后旧 today-suggestion 路径仍可用。
+
+- `npm.cmd run verify:harness`：通过，F14 passing 状态下 6 个 feature 中 3 个 passing、3 个 not_started，0 warning / 0 error。
+
 ## 阻塞项
 
 - F01 无剩余阻塞项，A05 最终页面手动冒烟已由用户确认通过
@@ -171,7 +181,7 @@
 
 ## 下一步
 
-- 提交 F13 后，按依赖继续 F14：planner 输出 PlanBundle，并保留 legacy DailyPlan adapter。
+- 提交 F14 后，按依赖继续 F15：今日与日历视图服务迁移到 PlanBundle / DailyTaskView。
 
 ## 交接说明
 

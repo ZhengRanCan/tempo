@@ -4,8 +4,8 @@ import EnergySelector from '../../components/EnergySelector.vue'
 import type { EnergyLevel, UserProfile, WorkStyle } from '../../models'
 import { buildGoal, formatGoalDate, validateGoalInput } from '../../models/goal'
 import { buildUserProfile } from '../../models/user-profile'
-import { buildStarterPlan } from '../../services/planner'
-import { saveDailyPlans, saveGoal, saveUserProfile } from '../../services/storage'
+import { buildLegacyDailyPlansFromBundle, buildStarterPlanBundle } from '../../services/planner'
+import { saveDailyPlans, saveGoal, savePlanBundle, saveUserProfile } from '../../services/storage'
 
 type GoalValidationField = 'title' | 'deadline' | 'dailyAvailableMinutes'
 
@@ -166,7 +166,7 @@ async function handleSubmit(): Promise<void> {
 
   try {
     const profile = buildCurrentProfile()
-    const planResult = buildStarterPlan({
+    const planResult = buildStarterPlanBundle({
       goal: result.goal,
       startDate: todayDate,
       userProfile: profile
@@ -182,7 +182,8 @@ async function handleSubmit(): Promise<void> {
 
     await saveGoal(result.goal)
     await saveUserProfile(profile)
-    await saveDailyPlans(result.goal.id, planResult.plans)
+    await savePlanBundle(planResult.bundle)
+    await saveDailyPlans(result.goal.id, buildLegacyDailyPlansFromBundle(planResult.bundle, profile))
     uni.showToast({
       title: '计划已生成',
       icon: 'success'

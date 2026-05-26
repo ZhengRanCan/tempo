@@ -1,13 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { DailyPlan, DailyReview, UserProfile } from '../models'
 import { normalizeDailyReview } from '../models/review'
+import { buildLegacyDailyPlansFromBundle, buildStarterPlanBundle } from '../services/planner'
 import { buildTodaySuggestion } from '../services/today-suggestion'
 import {
+  getActivePlanBundle,
   getCurrentGoal,
   getDailyPlans,
   readDailyPlans,
   saveDailyPlans,
-  saveGoal
+  saveGoal,
+  savePlanBundle
 } from '../services/storage'
 
 interface StorageRecord {
@@ -73,6 +76,40 @@ describe('data layer compatibility', () => {
     expect(currentGoal?.id).toBe('goal-1')
     expect(view?.focusTask.id).toBe('task-1')
     expect(view?.focusTask.minimumLine).toBe('write three outline bullets')
+  })
+
+  it('supports the goal to PlanBundle to legacy daily view path through storage', async () => {
+    const goal = {
+      id: 'goal-1',
+      title: 'finish proposal',
+      deadline: '2026-06-10',
+      dailyAvailableMinutes: 45,
+      createdAt: '2026-05-24T00:00:00.000Z',
+      updatedAt: '2026-05-24T00:00:00.000Z'
+    }
+    const planResult = buildStarterPlanBundle({
+      goal,
+      startDate: '2026-06-01'
+    })
+
+    expect(planResult.status).toBe('ok')
+
+    if (planResult.status !== 'ok') {
+      throw new Error(planResult.reason)
+    }
+
+    await saveGoal(goal)
+    await savePlanBundle(planResult.bundle)
+    await saveDailyPlans(goal.id, buildLegacyDailyPlansFromBundle(planResult.bundle))
+
+    const bundle = await getActivePlanBundle(goal.id)
+    const storedPlans = await getDailyPlans(goal.id)
+
+    expect(bundle?.plan.status).toBe('active')
+    expect(bundle?.tasks).toHaveLength(7)
+    expect(bundle?.stages).toHaveLength(1)
+    expect(storedPlans[0]?.tasks[0]?.scheduledDate).toBe('2026-06-01')
+    expect(storedPlans[0]?.dailyKeyword).toBe('启动')
   })
 
   it('keeps the no local data path explicit and page-safe', async () => {

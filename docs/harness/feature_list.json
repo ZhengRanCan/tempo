@@ -233,7 +233,7 @@
   {
     "id": "F14",
     "title": "v0.3 planner 输出 PlanBundle",
-    "status": "not_started",
+    "status": "passing",
     "dependsOn": [
       "F13"
     ],
@@ -310,20 +310,45 @@
         "DDL 超过 7 天 -> 近 7 天是 Task，远期是 Stage"
       ],
       "integrationEvidence": [
-        "tests/planner.test.ts 覆盖 PlanBundle 输出、近 7 天 Task、远期 Stage、不可行状态和低能量最低完成线",
-        "tests/data-layer.test.ts 覆盖创建目标到保存 PlanBundle 的集成路径",
+        "tests/planner.test.ts 覆盖 PlanBundle 输出、近 7 天 Task、远期 Stage、7 天内全 Task、每日时长、低能量最低完成线、infeasible 和 PlanBundle 存储",
+        "tests/data-layer.test.ts 覆盖创建目标 -> 生成 PlanBundle -> 保存 PlanBundle 和 legacy DailyPlan[] -> 读回 today-suggestion 兼容路径",
+        "tests/planner.smoke.test.ts 保持通过，证明 legacy planner 兼容出口仍可用",
         "npm.cmd run verify:system 通过，mp-weixin 构建产物生成成功"
       ],
-      "knownUnverified": [
-        "replanner 仍未迁移到 PlanBundle，将在 F16 处理"
-      ],
+      "knownUnverified": [],
       "humanReviewRequired": []
     },
     "evidence": {
-      "lastVerifiedAt": null,
-      "commands": [],
-      "manualSmoke": "",
-      "notes": ""
+      "lastVerifiedAt": "2026-05-26T16:10:00+08:00",
+      "commands": [
+        {
+          "command": "npm.cmd run test -- planner data-layer",
+          "result": "passed",
+          "summary": "4 个测试文件、23 个测试通过"
+        },
+        {
+          "command": "npm.cmd run verify:static",
+          "result": "passed",
+          "summary": "lint 和 vue-tsc --noEmit 通过"
+        },
+        {
+          "command": "npm.cmd run verify:system",
+          "result": "passed",
+          "summary": "build:mp-weixin 构建成功"
+        },
+        {
+          "command": "npm.cmd run check",
+          "result": "passed",
+          "summary": "15 个测试文件、83 个测试通过，F14 active 状态下 harness gate 0 warning / 0 error"
+        },
+        {
+          "command": "npm.cmd run verify:harness",
+          "result": "passed",
+          "summary": "F14 passing 状态通过，6 个 feature 中 3 个 passing、3 个 not_started，0 warning / 0 error"
+        }
+      ],
+      "manualSmoke": "L3b 采用自动化集成路径测试：tests/planner.test.ts 覆盖 DDL 超过 7 天时近 7 天 Task + 远期 Stage，DDL 7 天内全 Task，并验证 PlanBundle 可保存读回；tests/data-layer.test.ts 覆盖创建目标后保存 PlanBundle 与 legacy DailyPlan[]，旧 today-suggestion 路径仍可读。",
+      "notes": "F14 完成 planner 新 API 输出 PlanBundle；旧 buildStarterPlan() 继续通过 buildLegacyDailyPlansFromBundle() 输出 DailyPlan[]。创建目标页面保存 PlanBundle，同时继续保存 legacy DailyPlan[]。未重构 replanner 或日历页面 UI。"
     }
   },
   {
