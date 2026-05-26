@@ -39,6 +39,9 @@ function createPlanBundle(): PlanBundle {
         title: 'draft outline',
         date: '2026-06-01',
         scheduledDate: '2026-06-01',
+        rescheduledFromDate: '2026-05-31',
+        rescheduledFromStatus: 'partial',
+        rescheduleReason: 'partial_review',
         estimatedMinutes: 30,
         priority: 'high',
         type: 'focus',
@@ -191,7 +194,10 @@ describe('storage compatibility boundary', () => {
         {
           id: 'task-1',
           status: 'done',
-          scheduledDate: '2026-06-01'
+          scheduledDate: '2026-06-01',
+          rescheduledFromDate: '2026-05-31',
+          rescheduledFromStatus: 'partial',
+          rescheduleReason: 'partial_review'
         }
       ]
     })

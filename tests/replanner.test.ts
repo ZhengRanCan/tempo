@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import type { DailyPlan, DailyReview, Goal } from '../models'
-import { replanAfterReview } from '../services/replanner'
+import type { DailyPlan, DailyReview, Goal, PlanBundle, UserProfile } from '../models'
+import { replanAfterReview, replanPlanBundleAfterReview } from '../services/replanner'
 
 function createGoal(overrides: Partial<Goal> = {}): Goal {
   return {
@@ -76,6 +76,32 @@ function createPlans(): DailyPlan[] {
   ]
 }
 
+function createPlanBundle(overrides: Partial<PlanBundle['plan']> = {}): PlanBundle {
+  return {
+    plan: {
+      id: 'plan-1',
+      goalId: 'goal-1',
+      status: 'active',
+      startDate: '2026-06-01',
+      deadline: '2026-06-03',
+      dailyAvailableMinutes: 60,
+      createdAt: '2026-05-26T00:00:00.000Z',
+      updatedAt: '2026-05-26T00:00:00.000Z',
+      ...overrides
+    },
+    stages: [],
+    tasks: createPlans().flatMap((plan) =>
+      plan.tasks.map((task) => ({
+        ...task,
+        planId: 'plan-1',
+        scheduledDate: plan.date,
+        createdAt: '2026-05-26T00:00:00.000Z',
+        updatedAt: '2026-05-26T00:00:00.000Z'
+      }))
+    )
+  }
+}
+
 function createReview(): DailyReview {
   return {
     id: 'goal-1:2026-06-01',
@@ -85,6 +111,28 @@ function createReview(): DailyReview {
     completedTaskIds: ['task-done'],
     partialTaskIds: ['task-high'],
     skippedTaskIds: ['task-low'],
+    createdAt: '2026-06-01T21:00:00.000Z'
+  }
+}
+
+function createTaskResultsReview(): DailyReview {
+  return {
+    ...createReview(),
+    planId: 'plan-1',
+    taskResults: [
+      {
+        taskId: 'task-done',
+        status: 'done'
+      },
+      {
+        taskId: 'task-high',
+        status: 'partial'
+      },
+      {
+        taskId: 'task-low',
+        status: 'skipped'
+      }
+    ],
     createdAt: '2026-06-01T21:00:00.000Z'
   }
 }
@@ -99,7 +147,108 @@ function expectOk(result: ReturnType<typeof replanAfterReview>): DailyPlan[] {
   return result.plans
 }
 
+function expectBundleOk(result: ReturnType<typeof replanPlanBundleAfterReview>): PlanBundle {
+  expect(result.status).toBe('ok')
+
+  if (result.status !== 'ok') {
+    throw new Error(result.reason)
+  }
+
+  return result.bundle
+}
+
 describe('replanner', () => {
+  it('reschedules reviewed PlanBundle tasks by updating scheduledDate with trace metadata', () => {
+    const bundle = createPlanBundle()
+    const review = createTaskResultsReview()
+    const beforeBundle = JSON.stringify(bundle)
+    const beforeReview = JSON.stringify(review)
+    const replanned = expectBundleOk(
+      replanPlanBundleAfterReview({
+        bundle,
+        review
+      })
+    )
+
+    const doneTask = replanned.tasks.find((task) => task.id === 'task-done')
+    const partialTask = replanned.tasks.find((task) => task.id === 'task-high')
+    const skippedTask = replanned.tasks.find((task) => task.id === 'task-low')
+
+    expect(doneTask).toMatchObject({
+      status: 'done',
+      scheduledDate: '2026-06-01'
+    })
+    expect(partialTask).toMatchObject({
+      id: 'task-high',
+      status: 'todo',
+      scheduledDate: '2026-06-02',
+      rescheduledFromDate: '2026-06-01',
+      rescheduledFromStatus: 'partial',
+      rescheduleReason: 'partial_review'
+    })
+    expect(skippedTask).toMatchObject({
+      id: 'task-low',
+      status: 'todo',
+      scheduledDate: '2026-06-03',
+      rescheduledFromDate: '2026-06-01',
+      rescheduledFromStatus: 'skipped',
+      rescheduleReason: 'skipped_review'
+    })
+    expect(replanned.tasks.some((task) => task.id.includes('carryover'))).toBe(false)
+    expect(JSON.stringify(bundle)).toBe(beforeBundle)
+    expect(JSON.stringify(review)).toBe(beforeReview)
+  })
+
+  it('keeps PlanBundle replanning low pressure for low energy reviews', () => {
+    const userProfile: UserProfile = {
+      id: 'local-user',
+      energyLevel: 'low',
+      workStyle: 'morning',
+      preferredFocusMinutes: 20,
+      ritualPreference: 'simple',
+      updatedAt: '2026-05-26T00:00:00.000Z'
+    }
+    const review = {
+      ...createTaskResultsReview(),
+      energy: 'low' as const
+    }
+    const replanned = expectBundleOk(
+      replanPlanBundleAfterReview({
+        bundle: createPlanBundle(),
+        review,
+        userProfile
+      })
+    )
+
+    expect(replanned.tasks.find((task) => task.id === 'task-high')?.caution).toContain(
+      'minimum line'
+    )
+  })
+
+  it('returns PlanBundle infeasible without overwriting the source bundle or review', () => {
+    const bundle = createPlanBundle({
+      deadline: '2026-06-02',
+      dailyAvailableMinutes: 30
+    })
+    const review = createTaskResultsReview()
+    const beforeBundle = JSON.stringify(bundle)
+    const beforeReview = JSON.stringify(review)
+    const result = replanPlanBundleAfterReview({
+      bundle,
+      review
+    })
+
+    expect(result.status).toBe('infeasible')
+
+    if (result.status !== 'infeasible') {
+      throw new Error('Expected infeasible replanning result.')
+    }
+
+    expect(result.suggestions).toEqual(['extend_deadline', 'increase_daily_time', 'reduce_scope'])
+    expect(JSON.stringify(bundle)).toBe(beforeBundle)
+    expect(JSON.stringify(review)).toBe(beforeReview)
+  })
+
   it('moves unfinished tasks to following dates', () => {
     const plans = expectOk(
       replanAfterReview({

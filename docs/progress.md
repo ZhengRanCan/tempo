@@ -2,14 +2,14 @@
 
 ## 当前 feature
 
-- `F15`：v0.3 今日与日历视图服务迁移
+- `F16`：v0.3 replanner 基于 Plan/Task 重排
 - 状态：`passing`
 
 ## 当前状态
 
 - 项目阶段：App v0.2 F08-F11 全部完成并通过门禁。
 - 当前工作边界：已进入 App v0.3 规划阶段，v0.3 按“models -> storage -> planner -> view services -> replanner -> UI integration”顺序渐进迁移。
-- Harness 状态：F12、F13、F14、F15 已 passing；F16-F17 仍为 `not_started`。
+- Harness 状态：F12、F13、F14、F15、F16 已 passing；F17 仍为 `not_started`。
 - F01、F02、F03、F04、F05、F06、F07 已作为 v0.1 基线归档到 `docs/log/v0.1/feature_list_v0.1.json`。
 
 ## 功能状态摘要
@@ -18,7 +18,7 @@
 - `F13` passing
 - `F14` passing
 - `F15` passing
-- `F16` not_started
+- `F16` passing
 - `F17` not_started
 - 当前工作功能清单位置：`docs/harness/feature_list.json`
 - v0.3 版本化功能清单位置：`docs/harness/feature_list_v0.3.json`
@@ -180,6 +180,17 @@
 
 - `npm.cmd run verify:harness`：通过，F15 passing 状态下 6 个 feature 中 4 个 passing、2 个 not_started，0 warning / 0 error。
 
+- `2026-05-26` F16 已完成 replanner 基于 Plan/Task 重排：新增 `replanPlanBundleAfterReview()`，以 `PlanBundle + DailyReview + UserProfile` 生成更新后的 `PlanBundle` 或明确 `infeasible`。
+- F16 顺延策略：不生成补做 Task，保留原 Task id 并更新 `scheduledDate`；通过 `rescheduledFromDate`、`rescheduledFromStatus`、`rescheduleReason` 记录来源关系。
+- F16 历史边界：done 任务保留完成状态；partial/skipped 不静默丢失；`DailyReview` 作为历史事实保留，replanner 不改写 review；容量不足时返回 infeasible，不覆盖原 PlanBundle。
+- `npm.cmd run test -- replanner data-layer storage`：通过，3 个测试文件、25 个测试通过。
+- `npm.cmd run verify:static`：通过。
+- `npm.cmd run verify:system`：通过，`build:mp-weixin` 构建成功。
+- `npm.cmd run check`：通过，15 个测试文件、91 个测试通过，F16 active 状态下 harness gate 0 warning / 0 error。
+- F16 L3b：`tests/replanner.test.ts` 覆盖 PlanBundle 重排、任务历史、不可行状态和低能量压力控制；`tests/data-layer.test.ts` 覆盖保存 PlanBundle -> 保存 DailyReview -> 重排 -> 保存并读回 PlanBundle；`tests/storage.test.ts` 覆盖重排追踪字段读写。
+
+- `npm.cmd run verify:harness`：通过，F16 passing 状态下 6 个 feature 中 5 个 passing、1 个 not_started，0 warning / 0 error。
+
 ## 阻塞项
 
 - F01 无剩余阻塞项，A05 最终页面手动冒烟已由用户确认通过
@@ -192,7 +203,7 @@
 
 ## 下一步
 
-- 提交 F15 后，按依赖继续 F16：复盘与重排服务迁移到 PlanBundle / Task / DailyReview taskResults。
+- 提交 F16 后，按依赖继续 F17：页面读取全面接入 PlanBundle / DailyTaskView。
 
 ## 交接说明
 

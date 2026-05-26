@@ -241,3 +241,10 @@ getDailyReviews(goalId: string): Promise<DailyReview[]>
 - `models/plan.ts` 新增 `PlanBundleCalendarView` 与 `buildPlanBundleCalendarView()`，从 `Plan/Stage/Task` 汇总近 7 天任务、远期阶段、进度和计划状态。
 - `services/ai-client.ts` 新增 `requestTodayTaskSuggestion()`，新 AI 今日建议入口只接收受控的今日任务上下文；旧 `requestTodaySuggestion()` 会先提取当天任务再委托给新入口。
 - AI/塔罗边界仍限制为表达和排序，不写回 `Task.status`、`DailyReview` 或历史 `Plan`。
+
+## 2026-05-26 F16 实现记录
+
+- `services/replanner.ts` 新增 `replanPlanBundleAfterReview()`，输入为 `PlanBundle + DailyReview + UserProfile`，输出更新后的 `PlanBundle` 或明确 `infeasible`。
+- F16 顺延策略为更新原 `Task.scheduledDate`，不生成补做 Task；原 Task id 保持稳定，并通过 `rescheduledFromDate`、`rescheduledFromStatus`、`rescheduleReason` 追踪来源。
+- `DailyReview` 只作为历史事实输入，replanner 不写回或修改 review；容量不足时返回 `infeasible`，不覆盖原 PlanBundle。
+- 旧 `replanAfterReview(DailyPlan[])` 兼容入口保留，供迁移期旧页面和旧测试继续使用。

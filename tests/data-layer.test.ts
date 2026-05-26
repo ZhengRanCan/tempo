@@ -2,13 +2,16 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { DailyPlan, DailyReview, UserProfile } from '../models'
 import { normalizeDailyReview } from '../models/review'
 import { buildLegacyDailyPlansFromBundle, buildStarterPlanBundle } from '../services/planner'
+import { replanPlanBundleAfterReview } from '../services/replanner'
 import { buildTodaySuggestion } from '../services/today-suggestion'
 import {
   getActivePlanBundle,
   getCurrentGoal,
   getDailyPlans,
+  getDailyReviews,
   readDailyPlans,
   saveDailyPlans,
+  saveDailyReview,
   saveGoal,
   savePlanBundle
 } from '../services/storage'
@@ -110,6 +113,76 @@ describe('data layer compatibility', () => {
     expect(bundle?.stages).toHaveLength(1)
     expect(storedPlans[0]?.tasks[0]?.scheduledDate).toBe('2026-06-01')
     expect(storedPlans[0]?.dailyKeyword).toBe('启动')
+  })
+
+  it('supports saving PlanBundle, review, replanning, and reading the updated bundle', async () => {
+    const goal = {
+      id: 'goal-1',
+      title: 'finish proposal',
+      deadline: '2026-06-10',
+      dailyAvailableMinutes: 45,
+      createdAt: '2026-05-24T00:00:00.000Z',
+      updatedAt: '2026-05-24T00:00:00.000Z'
+    }
+    const planResult = buildStarterPlanBundle({
+      goal,
+      startDate: '2026-06-01'
+    })
+
+    expect(planResult.status).toBe('ok')
+
+    if (planResult.status !== 'ok') {
+      throw new Error(planResult.reason)
+    }
+
+    const reviewedTask = planResult.bundle.tasks[0]!
+    const review: DailyReview = {
+      id: 'goal-1:2026-06-01',
+      goalId: goal.id,
+      planId: planResult.bundle.plan.id,
+      date: '2026-06-01',
+      energy: 'normal',
+      taskResults: [
+        {
+          taskId: reviewedTask.id,
+          status: 'partial'
+        }
+      ],
+      completedTaskIds: [],
+      partialTaskIds: [reviewedTask.id],
+      skippedTaskIds: [],
+      createdAt: '2026-06-01T21:00:00.000Z'
+    }
+
+    await saveGoal(goal)
+    await savePlanBundle(planResult.bundle)
+    await saveDailyReview(review)
+
+    const replanned = replanPlanBundleAfterReview({
+      bundle: planResult.bundle,
+      review
+    })
+
+    expect(replanned.status).toBe('ok')
+
+    if (replanned.status !== 'ok') {
+      throw new Error(replanned.reason)
+    }
+
+    await savePlanBundle(replanned.bundle)
+
+    const storedBundle = await getActivePlanBundle(goal.id)
+    const storedReviews = await getDailyReviews(goal.id)
+    const storedTask = storedBundle?.tasks.find((task) => task.id === reviewedTask.id)
+
+    expect(storedTask).toMatchObject({
+      status: 'todo',
+      rescheduledFromDate: '2026-06-01',
+      rescheduledFromStatus: 'partial',
+      rescheduleReason: 'partial_review'
+    })
+    expect(storedTask?.scheduledDate?.localeCompare('2026-06-01')).toBeGreaterThan(0)
+    expect(storedReviews).toEqual([review])
   })
 
   it('keeps the no local data path explicit and page-safe', async () => {

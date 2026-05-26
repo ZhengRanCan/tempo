@@ -3,6 +3,8 @@ import type {
   DailyReview,
   Goal,
   InfeasiblePlanResult,
+  PlanBundle,
+  ReviewTaskStatus,
   Task,
   UserProfile
 } from '../models'
@@ -15,12 +17,87 @@ export interface ReplanInput {
   userProfile?: UserProfile
 }
 
+export interface ReplanPlanBundleInput {
+  bundle: PlanBundle
+  review: DailyReview
+  userProfile?: UserProfile
+}
+
 export type ReplanResult =
   | {
       status: 'ok'
       plans: DailyPlan[]
     }
   | InfeasiblePlanResult
+
+export type ReplanPlanBundleResult =
+  | {
+      status: 'ok'
+      bundle: PlanBundle
+    }
+  | InfeasiblePlanResult
+
+export function replanPlanBundleAfterReview(
+  input: ReplanPlanBundleInput
+): ReplanPlanBundleResult {
+  const { bundle, review, userProfile } = input
+
+  if (!isIsoDateString(review.date) || !isIsoDateString(bundle.plan.deadline)) {
+    return infeasible('Dates must use YYYY-MM-DD format.', ['extend_deadline'])
+  }
+
+  if (bundle.plan.dailyAvailableMinutes <= 0) {
+    return infeasible('Daily available minutes must be greater than 0.', ['increase_daily_time'])
+  }
+
+  const firstMoveDate = addDays(review.date, 1)
+
+  if (!firstMoveDate) {
+    return infeasible('Review date is invalid, so the plan cannot be rescheduled.', [
+      'extend_deadline'
+    ])
+  }
+
+  const availableDates = getDatesBetweenInclusive(firstMoveDate, bundle.plan.deadline)
+
+  if (availableDates.length === 0) {
+    return infeasible('No future date is available before the deadline.', [
+      'extend_deadline',
+      'reduce_scope'
+    ])
+  }
+
+  const reviewedBundle = applyReviewToBundle(bundle, review)
+  const carryoverTasks = getBundleCarryoverTasks(reviewedBundle, review, userProfile)
+  const scheduled = scheduleBundleCarryoverTasks(reviewedBundle, sortTasksForReplan(carryoverTasks), {
+    availableDates,
+    dailyAvailableMinutes: bundle.plan.dailyAvailableMinutes,
+    reviewedAt: review.createdAt
+  })
+
+  if (!scheduled.ok) {
+    return infeasible('Remaining tasks cannot fit before the deadline.', [
+      'extend_deadline',
+      'increase_daily_time',
+      'reduce_scope'
+    ])
+  }
+
+  return {
+    status: 'ok',
+    bundle: {
+      ...scheduled.bundle,
+      plan: {
+        ...scheduled.bundle.plan,
+        status: 'active',
+        updatedAt: review.createdAt
+      },
+      tasks: [...scheduled.bundle.tasks].sort((left, right) =>
+        getTaskScheduledDate(left).localeCompare(getTaskScheduledDate(right))
+      )
+    }
+  }
+}
 
 export function replanAfterReview(input: ReplanInput): ReplanResult {
   const { plans, review, goal, userProfile } = input
@@ -103,6 +180,28 @@ function applyReviewToPlans(plans: DailyPlan[], review: DailyReview): DailyPlan[
   })
 }
 
+function applyReviewToBundle(bundle: PlanBundle, review: DailyReview): PlanBundle {
+  const reviewStatusByTaskId = getReviewStatusByTaskId(review)
+
+  return {
+    plan: { ...bundle.plan },
+    stages: bundle.stages.map((stage) => ({ ...stage })),
+    tasks: bundle.tasks.map((task) => {
+      const reviewedStatus = reviewStatusByTaskId.get(task.id)
+
+      if (!reviewedStatus || getTaskScheduledDate(task) !== review.date) {
+        return { ...task }
+      }
+
+      return {
+        ...task,
+        status: reviewedStatus,
+        updatedAt: review.createdAt
+      }
+    })
+  }
+}
+
 function getCarryoverTasks(
   plans: DailyPlan[],
   review: DailyReview,
@@ -119,6 +218,44 @@ function getCarryoverTasks(
   return reviewPlan.tasks
     .filter((task) => carryoverTaskIds.has(task.id))
     .map((task) => buildCarryoverTask(task, review, userProfile))
+}
+
+function getBundleCarryoverTasks(
+  bundle: PlanBundle,
+  review: DailyReview,
+  userProfile?: UserProfile
+): Task[] {
+  const reviewStatusByTaskId = getReviewStatusByTaskId(review)
+
+  return bundle.tasks
+    .filter((task) => {
+      const reviewStatus = reviewStatusByTaskId.get(task.id)
+
+      return (
+        getTaskScheduledDate(task) === review.date &&
+        (reviewStatus === 'partial' || reviewStatus === 'skipped')
+      )
+    })
+    .map((task) => buildRescheduledTask(task, review, userProfile))
+}
+
+function buildRescheduledTask(task: Task, review: DailyReview, userProfile?: UserProfile): Task {
+  const reviewedStatus = getReviewStatusByTaskId(review).get(task.id)
+  const rescheduleReason = reviewedStatus === 'partial' ? 'partial_review' : 'skipped_review'
+  const lowPressureCaution =
+    review.energy === 'low' || userProfile?.energyLevel === 'low'
+      ? 'Resume with the minimum line only; keep the next step small.'
+      : task.caution
+
+  return {
+    ...task,
+    status: 'todo',
+    rescheduledFromDate: getTaskScheduledDate(task),
+    rescheduledFromStatus: reviewedStatus === 'partial' ? 'partial' : 'skipped',
+    rescheduleReason,
+    caution: lowPressureCaution,
+    updatedAt: review.createdAt
+  }
 }
 
 function buildCarryoverTask(task: Task, review: DailyReview, userProfile?: UserProfile): Task {
@@ -191,6 +328,52 @@ function scheduleCarryoverTasks(
   }
 }
 
+function scheduleBundleCarryoverTasks(
+  bundle: PlanBundle,
+  tasks: Task[],
+  options: {
+    availableDates: string[]
+    dailyAvailableMinutes: number
+    reviewedAt: string
+  }
+):
+  | {
+      ok: true
+      bundle: PlanBundle
+    }
+  | {
+      ok: false
+    } {
+  const nextBundle = cloneBundle(bundle)
+
+  for (const task of tasks) {
+    const date = findBundleDateWithCapacity(nextBundle, task, options)
+
+    if (!date) {
+      return {
+        ok: false
+      }
+    }
+
+    nextBundle.tasks = nextBundle.tasks.map((existingTask) => {
+      if (existingTask.id !== task.id) {
+        return existingTask
+      }
+
+      return {
+        ...task,
+        scheduledDate: date,
+        updatedAt: options.reviewedAt
+      }
+    })
+  }
+
+  return {
+    ok: true,
+    bundle: nextBundle
+  }
+}
+
 function findDateWithCapacity(
   plans: DailyPlan[],
   task: Task,
@@ -202,6 +385,29 @@ function findDateWithCapacity(
   for (const date of options.availableDates) {
     const plan = plans.find((item) => item.date === date)
     const totalMinutes = plan?.tasks.reduce((total, item) => total + item.estimatedMinutes, 0) ?? 0
+
+    if (totalMinutes + task.estimatedMinutes <= options.dailyAvailableMinutes) {
+      return date
+    }
+  }
+
+  return null
+}
+
+function findBundleDateWithCapacity(
+  bundle: PlanBundle,
+  task: Task,
+  options: {
+    availableDates: string[]
+    dailyAvailableMinutes: number
+  }
+): string | null {
+  for (const date of options.availableDates) {
+    const totalMinutes = bundle.tasks
+      .filter((item) => item.id !== task.id)
+      .filter((item) => item.status !== 'done')
+      .filter((item) => getTaskScheduledDate(item) === date)
+      .reduce((total, item) => total + item.estimatedMinutes, 0)
 
     if (totalMinutes + task.estimatedMinutes <= options.dailyAvailableMinutes) {
       return date
@@ -238,6 +444,32 @@ function clonePlan(plan: DailyPlan): DailyPlan {
       ...task
     }))
   }
+}
+
+function cloneBundle(bundle: PlanBundle): PlanBundle {
+  return {
+    plan: { ...bundle.plan },
+    stages: bundle.stages.map((stage) => ({ ...stage })),
+    tasks: bundle.tasks.map((task) => ({ ...task }))
+  }
+}
+
+function getReviewStatusByTaskId(review: DailyReview): Map<string, ReviewTaskStatus> {
+  if (review.taskResults && review.taskResults.length > 0) {
+    return new Map(review.taskResults.map((result) => [result.taskId, result.status]))
+  }
+
+  const entries: Array<[string, ReviewTaskStatus]> = [
+    ...review.completedTaskIds.map<[string, ReviewTaskStatus]>((taskId) => [taskId, 'done']),
+    ...review.partialTaskIds.map<[string, ReviewTaskStatus]>((taskId) => [taskId, 'partial']),
+    ...review.skippedTaskIds.map<[string, ReviewTaskStatus]>((taskId) => [taskId, 'skipped'])
+  ]
+
+  return new Map(entries)
+}
+
+function getTaskScheduledDate(task: Task): string {
+  return task.scheduledDate ?? task.date
 }
 
 function infeasible(

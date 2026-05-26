@@ -313,3 +313,9 @@ MVP 必须：
 - Plan 版本历史。
 - 云端同步。
 - 更细的进度统计和风险评分。
+
+## 2026-05-26 F16 状态模型记录
+
+- Task 新增可选重排追踪字段：`rescheduledFromDate`、`rescheduledFromStatus`、`rescheduleReason`。
+- F16 不创建补做 Task；partial/skipped 后续安排通过同一 Task 更新 `scheduledDate` 表示，历史事实由 `DailyReview.taskResults` 保留。
+- `rescheduleReason` 当前取值为 `partial_review`、`skipped_review`、`capacity_shift`，用于区分复盘顺延与后续容量调整。
