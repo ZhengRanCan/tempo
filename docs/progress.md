@@ -2,14 +2,14 @@
 
 ## 当前 feature
 
-- `F14`：v0.3 planner 输出 PlanBundle
+- `F15`：v0.3 今日与日历视图服务迁移
 - 状态：`passing`
 
 ## 当前状态
 
 - 项目阶段：App v0.2 F08-F11 全部完成并通过门禁。
 - 当前工作边界：已进入 App v0.3 规划阶段，v0.3 按“models -> storage -> planner -> view services -> replanner -> UI integration”顺序渐进迁移。
-- Harness 状态：F12、F13、F14 已 passing；F15-F17 仍为 `not_started`。
+- Harness 状态：F12、F13、F14、F15 已 passing；F16-F17 仍为 `not_started`。
 - F01、F02、F03、F04、F05、F06、F07 已作为 v0.1 基线归档到 `docs/log/v0.1/feature_list_v0.1.json`。
 
 ## 功能状态摘要
@@ -17,7 +17,7 @@
 - `F12` passing
 - `F13` passing
 - `F14` passing
-- `F15` not_started
+- `F15` passing
 - `F16` not_started
 - `F17` not_started
 - 当前工作功能清单位置：`docs/harness/feature_list.json`
@@ -169,6 +169,17 @@
 
 - `npm.cmd run verify:harness`：通过，F14 passing 状态下 6 个 feature 中 3 个 passing、3 个 not_started，0 warning / 0 error。
 
+- `2026-05-26` F15 已完成今日与日历视图服务迁移：`services/today-suggestion.ts` 新增 `buildTodaySuggestionFromPlanBundle()` 和 `buildTodaySuggestionFromDailyTaskViews()`，`models/plan.ts` 新增 `buildPlanBundleCalendarView()` 汇总近 7 天任务、远期 Stage、进度和 plan status。
+- F15 AI 边界：`services/ai-client.ts` 新增 `requestTodayTaskSuggestion()`，新入口只接收受控的今日任务上下文；旧 `requestTodaySuggestion()` 继续兼容 `DailyPlan[]`，但会先提取当天任务再委托给新入口。
+- F15 表达/排序边界：AI/塔罗仍只影响 task 排序、dailyKeyword、minimumLine/caution 表达，不写回 `Task.status`、`DailyReview` 或历史 `Plan`。
+- `npm.cmd run test -- today-suggestion ai-tarot-contract plan-calendar today`：通过，4 个测试文件、25 个测试通过。
+- `npm.cmd run verify:static`：通过。
+- `npm.cmd run verify:system`：通过，`build:mp-weixin` 构建成功。
+- `npm.cmd run check`：通过，15 个测试文件、87 个测试通过，F15 active 状态下 harness gate 0 warning / 0 error。
+- F15 L3b：`tests/today-suggestion.test.ts` 覆盖 PlanBundle/DailyTaskView -> TodaySuggestionView；`tests/plan-calendar.test.ts` 覆盖 PlanBundle -> 近 7 天任务 + 远期 Stage + progress + plan status；页面全面接入保留到 F17。
+
+- `npm.cmd run verify:harness`：通过，F15 passing 状态下 6 个 feature 中 4 个 passing、2 个 not_started，0 warning / 0 error。
+
 ## 阻塞项
 
 - F01 无剩余阻塞项，A05 最终页面手动冒烟已由用户确认通过
@@ -181,7 +192,7 @@
 
 ## 下一步
 
-- 提交 F14 后，按依赖继续 F15：今日与日历视图服务迁移到 PlanBundle / DailyTaskView。
+- 提交 F15 后，按依赖继续 F16：复盘与重排服务迁移到 PlanBundle / Task / DailyReview taskResults。
 
 ## 交接说明
 

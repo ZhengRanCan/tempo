@@ -1,5 +1,10 @@
 import type { AiTodaySuggestion } from '../models/ai-suggestion'
-import type { DailyPlan } from '../models/plan'
+import {
+  buildDailyTaskViews,
+  type DailyPlan,
+  type DailyTaskView,
+  type PlanBundle
+} from '../models/plan'
 import type { TarotDraw } from '../models/tarot'
 import type { Task } from '../models/task'
 import type { UserProfile } from '../models/user-profile'
@@ -58,6 +63,27 @@ export function buildTodaySuggestion(
         ? '今天先保留一点推进感，完成最低线就算往前走了一步。'
         : '先完成最重要的一小步，再决定是否继续加量。'
   }
+}
+
+export function buildTodaySuggestionFromPlanBundle(
+  bundle: PlanBundle,
+  options: BuildTodaySuggestionOptions
+): TodaySuggestionView | null {
+  return buildTodaySuggestionFromDailyTaskViews(buildDailyTaskViews(bundle), options)
+}
+
+export function buildTodaySuggestionFromDailyTaskViews(
+  dailyTaskViews: DailyTaskView[],
+  options: BuildTodaySuggestionOptions
+): TodaySuggestionView | null {
+  return buildTodaySuggestion(
+    dailyTaskViews.map((view) => ({
+      date: view.date,
+      goalId: view.goalId,
+      tasks: view.tasks.map(cloneTask)
+    })),
+    options
+  )
 }
 
 function applySuggestion(

@@ -354,7 +354,7 @@
   {
     "id": "F15",
     "title": "v0.3 今日与日历视图服务迁移",
-    "status": "not_started",
+    "status": "passing",
     "dependsOn": [
       "F14"
     ],
@@ -437,16 +437,40 @@
         "tests/plan-calendar.test.ts 覆盖 Plan/Stage/Task 日历视图",
         "npm.cmd run verify:system 通过，mp-weixin 构建产物生成成功"
       ],
-      "knownUnverified": [
-        "页面尚未全面接入新视图服务，将在 F17 处理"
-      ],
+      "knownUnverified": [],
       "humanReviewRequired": []
     },
     "evidence": {
-      "lastVerifiedAt": null,
-      "commands": [],
-      "manualSmoke": "",
-      "notes": ""
+      "lastVerifiedAt": "2026-05-26T16:25:31+08:00",
+      "commands": [
+        {
+          "command": "npm.cmd run test -- today-suggestion ai-tarot-contract plan-calendar today",
+          "result": "passed",
+          "summary": "4 个测试文件、25 个测试通过"
+        },
+        {
+          "command": "npm.cmd run verify:static",
+          "result": "passed",
+          "summary": "lint 和 vue-tsc --noEmit 通过"
+        },
+        {
+          "command": "npm.cmd run verify:system",
+          "result": "passed",
+          "summary": "build:mp-weixin 构建成功"
+        },
+        {
+          "command": "npm.cmd run check",
+          "result": "passed",
+          "summary": "15 个测试文件、87 个测试通过，F15 active 状态下 harness gate 0 warning / 0 error"
+        },
+        {
+          "command": "npm.cmd run verify:harness",
+          "result": "passed",
+          "summary": "F15 passing 状态通过，6 个 feature 中 4 个 passing、2 个 not_started，0 warning / 0 error"
+        }
+      ],
+      "manualSmoke": "L3b 采用自动化集成路径测试：tests/today-suggestion.test.ts 覆盖 PlanBundle/DailyTaskView -> TodaySuggestionView，包括 AI 排序、塔罗表达和不修改原始任务；tests/plan-calendar.test.ts 覆盖 PlanBundle -> 近 7 天任务 + 远期 Stage + progress + plan status。页面全面接入属于 F17 scope，不作为 F15 未验证项。",
+      "notes": "F15 adds PlanBundle/DailyTaskView today suggestion adapters, PlanBundle calendar summary, and requestTodayTaskSuggestion() so new AI suggestion input receives only controlled today task context. Legacy DailyPlan[] suggestion path remains compatible by delegating to the new task-context API."
     }
   },
   {

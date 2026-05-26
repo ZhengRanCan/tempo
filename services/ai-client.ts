@@ -1,4 +1,4 @@
-import type { AiTodaySuggestion, DailyPlan, UserProfile } from '../models'
+import type { AiTodaySuggestion, DailyPlan, Task, UserProfile } from '../models'
 import { validateAiTodaySuggestion } from '../schemas/ai-suggestion'
 
 export interface AiClientResult<T> {
@@ -14,6 +14,14 @@ export interface RequestTodaySuggestionInput {
   rawSuggestion?: unknown
 }
 
+export interface RequestTodayTaskSuggestionInput {
+  today: string
+  todayTasks: Task[]
+  userProfile?: UserProfile | null
+  rawSuggestion?: unknown
+  dailyKeyword?: string
+}
+
 export async function requestAiPlan<T>(): Promise<AiClientResult<T>> {
   return {
     ok: false,
@@ -25,13 +33,38 @@ export async function requestTodaySuggestion(
   input: RequestTodaySuggestionInput
 ): Promise<AiClientResult<AiTodaySuggestion>> {
   const todayPlan = input.plans.find((plan) => plan.date === input.today)
-  const taskIds = todayPlan?.tasks.map((task) => task.id) ?? []
 
-  if (!todayPlan || taskIds.length === 0) {
+  if (!todayPlan) {
     return {
       ok: false,
       error: 'No today plan is available for AI suggestion fallback.'
     }
+  }
+
+  return requestTodayTaskSuggestion({
+    today: input.today,
+    todayTasks: todayPlan.tasks,
+    userProfile: input.userProfile,
+    rawSuggestion: input.rawSuggestion,
+    dailyKeyword: todayPlan.dailyKeyword
+  })
+}
+
+export async function requestTodayTaskSuggestion(
+  input: RequestTodayTaskSuggestionInput
+): Promise<AiClientResult<AiTodaySuggestion>> {
+  const taskIds = input.todayTasks.map((task) => task.id)
+
+  if (taskIds.length === 0) {
+    return {
+      ok: false,
+      error: 'No today task context is available for AI suggestion fallback.'
+    }
+  }
+
+  const todayPlan = {
+    tasks: input.todayTasks,
+    dailyKeyword: input.dailyKeyword
   }
 
   if (input.rawSuggestion !== undefined) {

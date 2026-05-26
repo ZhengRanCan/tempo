@@ -16,7 +16,7 @@ export interface AiSuggestionBoundary {
 export function getAiSuggestionBoundary(): AiSuggestionBoundary {
   return {
     allowedEffects: ['expression', 'ordering'],
-    forbiddenMutations: ['Task.status', 'DailyReview', 'DailyPlan.history'],
+    forbiddenMutations: ['Task.status', 'DailyReview', 'Plan.history'],
     forbiddenClaims: ['fate_prediction', 'psychological_diagnosis', 'health_judgment']
   }
 }

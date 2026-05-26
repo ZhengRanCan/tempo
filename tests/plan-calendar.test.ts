@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { DailyPlan, Goal } from '../models'
-import { buildPlanCalendarDays, getTaskStatusLabel } from '../models/plan'
+import type { DailyPlan, Goal, PlanBundle } from '../models'
+import { buildPlanBundleCalendarView, buildPlanCalendarDays, getTaskStatusLabel } from '../models/plan'
 import {
   getCurrentGoal,
   getDailyPlans,
@@ -88,6 +88,42 @@ function createPlans(): DailyPlan[] {
   ]
 }
 
+function createPlanBundle(): PlanBundle {
+  return {
+    plan: {
+      id: 'plan-1',
+      goalId: 'goal-1',
+      status: 'active',
+      startDate: '2026-06-01',
+      deadline: '2026-06-21',
+      dailyAvailableMinutes: 60,
+      createdAt: '2026-05-23T00:00:00.000Z',
+      updatedAt: '2026-05-23T00:00:00.000Z'
+    },
+    stages: [
+      {
+        id: 'stage-1',
+        goalId: 'goal-1',
+        planId: 'plan-1',
+        title: 'later research stage',
+        startDate: '2026-06-08',
+        endDate: '2026-06-21',
+        status: 'planned',
+        order: 1,
+        createdAt: '2026-05-23T00:00:00.000Z',
+        updatedAt: '2026-05-23T00:00:00.000Z'
+      }
+    ],
+    tasks: createPlans().flatMap((plan) =>
+      plan.tasks.map((task) => ({
+        ...task,
+        planId: 'plan-1',
+        scheduledDate: plan.date
+      }))
+    )
+  }
+}
+
 describe('plan calendar', () => {
   it('loads the current goal and its stored daily plans through storage', async () => {
     const goal = createGoal()
@@ -134,5 +170,23 @@ describe('plan calendar', () => {
     })
 
     expect(days).toEqual([])
+  })
+
+  it('summarizes PlanBundle calendar data with near tasks, far stages, progress, and plan status', () => {
+    const view = buildPlanBundleCalendarView(createPlanBundle(), {
+      today: '2026-06-01',
+      limit: 7
+    })
+
+    expect(view.plan.status).toBe('active')
+    expect(view.days.map((day) => day.date)).toEqual(['2026-06-01', '2026-06-02'])
+    expect(view.days[0]?.tasks.map((task) => task.id)).toEqual(['task-1', 'task-1b'])
+    expect(view.stages.map((stage) => stage.id)).toEqual(['stage-1'])
+    expect(view.progress).toMatchObject({
+      planId: 'plan-1',
+      completedTaskCount: 1,
+      totalTaskCount: 3,
+      progressPercent: 33
+    })
   })
 })

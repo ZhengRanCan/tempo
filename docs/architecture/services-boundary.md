@@ -234,3 +234,10 @@ getDailyReviews(goalId: string): Promise<DailyReview[]>
 - 旧 `buildStarterPlan()` 保留，并通过 `buildLegacyDailyPlansFromBundle()` 从 PlanBundle 降级为 `DailyPlan[]`。
 - 创建目标页面现在保存 `PlanBundle`，并在迁移期继续写入 legacy `DailyPlan[]` 供旧页面读取。
 - F14 不重构 replanner 或日历页面 UI。
+
+## 2026-05-26 F15 实现记录
+
+- `services/today-suggestion.ts` 新增 `buildTodaySuggestionFromPlanBundle()` 与 `buildTodaySuggestionFromDailyTaskViews()`，页面服务可从 `PlanBundle`/`DailyTaskView` 生成 `TodaySuggestionView`，旧 `DailyPlan[]` 入口继续作为兼容 adapter。
+- `models/plan.ts` 新增 `PlanBundleCalendarView` 与 `buildPlanBundleCalendarView()`，从 `Plan/Stage/Task` 汇总近 7 天任务、远期阶段、进度和计划状态。
+- `services/ai-client.ts` 新增 `requestTodayTaskSuggestion()`，新 AI 今日建议入口只接收受控的今日任务上下文；旧 `requestTodaySuggestion()` 会先提取当天任务再委托给新入口。
+- AI/塔罗边界仍限制为表达和排序，不写回 `Task.status`、`DailyReview` 或历史 `Plan`。

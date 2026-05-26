@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import type { AiTodaySuggestion, DailyPlan, TarotDraw, UserProfile } from '../models'
-import { buildTodaySuggestion } from '../services/today-suggestion'
+import type { AiTodaySuggestion, DailyPlan, DailyTaskView, PlanBundle, TarotDraw, UserProfile } from '../models'
+import {
+  buildTodaySuggestion,
+  buildTodaySuggestionFromDailyTaskViews,
+  buildTodaySuggestionFromPlanBundle
+} from '../services/today-suggestion'
 
 const today = '2026-06-01'
 
@@ -92,6 +96,44 @@ function createTarotDraw(): TarotDraw {
   }
 }
 
+function createPlanBundle(): PlanBundle {
+  const plans = createPlans()
+
+  return {
+    plan: {
+      id: 'plan-1',
+      goalId: 'goal-1',
+      status: 'active',
+      startDate: today,
+      deadline: '2026-06-08',
+      dailyAvailableMinutes: 60,
+      createdAt: '2026-05-24T00:00:00.000Z',
+      updatedAt: '2026-05-24T00:00:00.000Z'
+    },
+    stages: [],
+    tasks: plans.flatMap((plan) =>
+      plan.tasks.map((task) => ({
+        ...task,
+        planId: 'plan-1',
+        scheduledDate: plan.date
+      }))
+    )
+  }
+}
+
+function createDailyTaskViews(): DailyTaskView[] {
+  return [
+    {
+      date: today,
+      goalId: 'goal-1',
+      planId: 'plan-1',
+      tasks: createPlans()[0]!.tasks,
+      totalEstimatedMinutes: 50,
+      statusSummary: '2 tasks'
+    }
+  ]
+}
+
 describe('today suggestion service', () => {
   it('builds deterministic suggestions from stored daily plans without AI', () => {
     const view = buildTodaySuggestion(createPlans(), {
@@ -138,6 +180,30 @@ describe('today suggestion service', () => {
     expect(view?.tasks[0]?.caution).toBe('Start with the smallest concrete step.')
     expect(view?.tasks.map((task) => task.status)).toEqual(['todo', 'todo'])
     expect(JSON.stringify(plans)).toBe(before)
+  })
+
+  it('builds suggestions from a PlanBundle without requiring callers to pass DailyPlan arrays', () => {
+    const bundle = createPlanBundle()
+    const before = JSON.stringify(bundle)
+    const view = buildTodaySuggestionFromPlanBundle(bundle, {
+      today,
+      aiSuggestion: createAiSuggestion()
+    })
+
+    expect(view?.source).toBe('ai_suggestion')
+    expect(view?.focusTask.id).toBe('task-low')
+    expect(view?.tasks.map((task) => task.id)).toEqual(['task-low', 'task-high'])
+    expect(JSON.stringify(bundle)).toBe(before)
+  })
+
+  it('builds suggestions from precomputed DailyTaskView rows as an explicit adapter', () => {
+    const view = buildTodaySuggestionFromDailyTaskViews(createDailyTaskViews(), {
+      today
+    })
+
+    expect(view?.source).toBe('stored_plan')
+    expect(view?.date).toBe(today)
+    expect(view?.focusTask.id).toBe('task-high')
   })
 
   it('returns null when there is no daily plan for today', () => {

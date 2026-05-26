@@ -69,6 +69,13 @@ export interface PlanProgress {
   remainingEstimatedMinutes: number
 }
 
+export interface PlanBundleCalendarView {
+  plan: Plan
+  days: PlanCalendarDay[]
+  stages: Stage[]
+  progress: PlanProgress
+}
+
 export interface InfeasiblePlanResult {
   status: 'infeasible'
   reason: string
@@ -362,6 +369,21 @@ export function buildPlanProgress(bundle: PlanBundle): PlanProgress {
     progressPercent:
       totalTaskCount === 0 ? 0 : Math.round((completedTaskCount / totalTaskCount) * 100),
     remainingEstimatedMinutes
+  }
+}
+
+export function buildPlanBundleCalendarView(
+  bundle: PlanBundle,
+  options: {
+    today: string
+    limit?: number
+  }
+): PlanBundleCalendarView {
+  return {
+    plan: bundle.plan,
+    days: buildPlanCalendarDays(planBundleToDailyPlans(bundle), options),
+    stages: [...bundle.stages].sort((left, right) => left.startDate.localeCompare(right.startDate)),
+    progress: buildPlanProgress(bundle)
   }
 }
 

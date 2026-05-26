@@ -1,10 +1,10 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
-import type { DailyPlan, UserProfile } from '../models'
+import type { DailyPlan, Task, UserProfile } from '../models'
 import { getAiSuggestionBoundary } from '../models/ai-suggestion'
 import { buildTarotDraw, getTarotBoundary } from '../models/tarot'
 import { validateAiTodaySuggestion } from '../schemas/ai-suggestion'
-import { requestTodaySuggestion } from '../services/ai-client'
+import { requestTodaySuggestion, requestTodayTaskSuggestion } from '../services/ai-client'
 import { createDeterministicTarotDraw, getTarotActionPrompt } from '../services/tarot'
 
 const today = '2026-06-01'
@@ -51,6 +51,10 @@ function createLowEnergyProfile(): UserProfile {
     ritualPreference: 'simple',
     updatedAt: '2026-05-24T00:00:00.000Z'
   }
+}
+
+function createTodayTasks(): Task[] {
+  return createPlans()[0]!.tasks
 }
 
 describe('AI and tarot contracts', () => {
@@ -174,8 +178,24 @@ describe('AI and tarot contracts', () => {
     expect(getAiSuggestionBoundary().forbiddenMutations).toEqual([
       'Task.status',
       'DailyReview',
-      'DailyPlan.history'
+      'Plan.history'
     ])
+  })
+
+  it('builds today suggestions from controlled task context without exposing full Plan history', async () => {
+    const tasks = createTodayTasks()
+    const before = JSON.stringify(tasks)
+    const result = await requestTodayTaskSuggestion({
+      today,
+      todayTasks: tasks,
+      userProfile: createLowEnergyProfile(),
+      dailyKeyword: 'steady'
+    })
+
+    expect(result.ok).toBe(true)
+    expect(result.data?.dailyKeyword).toBe('steady')
+    expect(result.data?.taskOrder).toEqual(['task-high', 'task-low'])
+    expect(JSON.stringify(tasks)).toBe(before)
   })
 
   it('keeps ai-client free of frontend API keys and real network calls', () => {
