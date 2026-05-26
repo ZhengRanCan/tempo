@@ -12,6 +12,63 @@ export interface DailyPlan {
   recommendedFocusWindow?: string
 }
 
+export type PlanStatus =
+  | 'draft'
+  | 'active'
+  | 'needs_adjustment'
+  | 'infeasible'
+  | 'completed'
+  | 'archived'
+
+export type StageStatus = 'planned' | 'active' | 'completed' | 'skipped'
+
+export interface Plan {
+  id: string
+  goalId: string
+  status: PlanStatus
+  startDate: string
+  deadline: string
+  dailyAvailableMinutes: number
+  createdAt: string
+  updatedAt: string
+}
+
+export interface Stage {
+  id: string
+  goalId: string
+  planId: string
+  title: string
+  startDate: string
+  endDate: string
+  status: StageStatus
+  order: number
+  createdAt: string
+  updatedAt: string
+}
+
+export interface PlanBundle {
+  plan: Plan
+  stages: Stage[]
+  tasks: Task[]
+}
+
+export interface DailyTaskView {
+  date: string
+  goalId: string
+  planId: string
+  tasks: Task[]
+  totalEstimatedMinutes: number
+  statusSummary: string
+}
+
+export interface PlanProgress {
+  planId: string
+  completedTaskCount: number
+  totalTaskCount: number
+  progressPercent: number
+  remainingEstimatedMinutes: number
+}
+
 export interface InfeasiblePlanResult {
   status: 'infeasible'
   reason: string
@@ -42,6 +99,7 @@ export interface TodayView {
 }
 
 const ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
+const LEGACY_PLAN_TIMESTAMP = '1970-01-01T00:00:00.000Z'
 
 export function normalizeDailyPlan(value: unknown, fallbackGoalId?: string): DailyPlan | null {
   if (!isRecord(value)) {
@@ -73,6 +131,117 @@ export function normalizeDailyPlan(value: unknown, fallbackGoalId?: string): Dai
     tasks,
     dailyKeyword,
     recommendedFocusWindow
+  }
+}
+
+export function dailyPlansToPlanBundle(
+  plans: DailyPlan[],
+  options: {
+    goalId?: string
+    planId?: string
+    status?: PlanStatus
+    deadline?: string
+    dailyAvailableMinutes?: number
+    now?: Date
+  } = {}
+): PlanBundle | null {
+  const normalizedPlans = plans
+    .map((plan) => normalizeDailyPlan(plan, options.goalId))
+    .filter((plan): plan is DailyPlan => plan !== null)
+
+  if (normalizedPlans.length === 0) {
+    return null
+  }
+
+  const sortedPlans = [...normalizedPlans].sort((left, right) => left.date.localeCompare(right.date))
+  const firstPlan = sortedPlans[0]!
+  const lastPlan = sortedPlans[sortedPlans.length - 1]!
+  const goalId = options.goalId ?? firstPlan.goalId
+  const planId = options.planId ?? `plan:${goalId}:${firstPlan.date}`
+  const timestamp = options.now?.toISOString() ?? LEGACY_PLAN_TIMESTAMP
+  const tasks = sortedPlans.flatMap((plan) =>
+    plan.tasks.map((task) => ({
+      ...task,
+      goalId,
+      planId,
+      date: task.date,
+      scheduledDate: task.scheduledDate ?? task.date,
+      type: task.type ?? 'support',
+      createdAt: task.createdAt ?? timestamp,
+      updatedAt: task.updatedAt ?? timestamp
+    }))
+  )
+
+  return {
+    plan: {
+      id: planId,
+      goalId,
+      status: options.status ?? 'active',
+      startDate: firstPlan.date,
+      deadline: options.deadline ?? lastPlan.date,
+      dailyAvailableMinutes:
+        options.dailyAvailableMinutes ?? inferDailyAvailableMinutes(sortedPlans),
+      createdAt: timestamp,
+      updatedAt: timestamp
+    },
+    stages: [],
+    tasks
+  }
+}
+
+export function planBundleToDailyPlans(bundle: PlanBundle): DailyPlan[] {
+  const tasksByDate = bundle.tasks.reduce<Map<string, Task[]>>((result, task) => {
+    const date = task.scheduledDate ?? task.date
+    const tasks = result.get(date) ?? []
+
+    tasks.push({
+      ...task,
+      date
+    })
+    result.set(date, tasks)
+
+    return result
+  }, new Map())
+
+  return [...tasksByDate.entries()]
+    .sort(([leftDate], [rightDate]) => leftDate.localeCompare(rightDate))
+    .map(([date, tasks]) => ({
+      date,
+      goalId: bundle.plan.goalId,
+      tasks
+    }))
+}
+
+export function buildDailyTaskViews(bundle: PlanBundle): DailyTaskView[] {
+  return planBundleToDailyPlans(bundle).map((plan) => {
+    const tasks = plan.tasks.map((task) => ({ ...task }))
+    const totalEstimatedMinutes = tasks.reduce((total, task) => total + task.estimatedMinutes, 0)
+
+    return {
+      date: plan.date,
+      goalId: plan.goalId,
+      planId: bundle.plan.id,
+      tasks,
+      totalEstimatedMinutes,
+      statusSummary: buildStatusSummary(tasks.map((task) => ({ ...task, statusLabel: '' })))
+    }
+  })
+}
+
+export function buildPlanProgress(bundle: PlanBundle): PlanProgress {
+  const totalTaskCount = bundle.tasks.length
+  const completedTaskCount = bundle.tasks.filter((task) => task.status === 'done').length
+  const remainingEstimatedMinutes = bundle.tasks
+    .filter((task) => task.status !== 'done')
+    .reduce((total, task) => total + task.estimatedMinutes, 0)
+
+  return {
+    planId: bundle.plan.id,
+    completedTaskCount,
+    totalTaskCount,
+    progressPercent:
+      totalTaskCount === 0 ? 0 : Math.round((completedTaskCount / totalTaskCount) * 100),
+    remainingEstimatedMinutes
   }
 }
 
@@ -150,6 +319,14 @@ export function buildTodayView(
         ? '今天先保留一点推进感，完成最低线就算往前走了一步。'
         : '先完成最重要的一小步，再决定是否继续加量。'
   }
+}
+
+function inferDailyAvailableMinutes(plans: DailyPlan[]): number {
+  return plans.reduce((maxMinutes, plan) => {
+    const totalMinutes = plan.tasks.reduce((total, task) => total + task.estimatedMinutes, 0)
+
+    return Math.max(maxMinutes, totalMinutes)
+  }, 0)
 }
 
 function buildStatusSummary(tasks: PlanCalendarTask[]): string {

@@ -2,25 +2,28 @@
 
 ## 当前 feature
 
-- `F11`：v0.2 Deepseek 与塔罗扩展接口预留
+- `F12`：v0.3 目标数据模型与 legacy adapter
 - 状态：`passing`
 
 ## 当前状态
 
 - 项目阶段：App v0.2 F08-F11 全部完成并通过门禁。
-- 当前工作边界：v0.2 已按“数据层整理 -> 导航壳 -> 核心组件 -> Deepseek/塔罗接口预留”顺序推进完成。
-- Harness 状态：F08、F09、F10、F11 均为 `passing`，最终 harness gate 通过后交接。
+- 当前工作边界：已进入 App v0.3 规划阶段，v0.3 按“models -> storage -> planner -> view services -> replanner -> UI integration”顺序渐进迁移。
+- Harness 状态：F12 已完成并切换为 `passing`；F13-F17 仍为 `not_started`。
 - F01、F02、F03、F04、F05、F06、F07 已作为 v0.1 基线归档到 `docs/log/v0.1/feature_list_v0.1.json`。
 
 ## 功能状态摘要
 
-- `F08` passing
-- `F09` passing
-- `F10` passing
-- `F11` passing
+- `F12` passing
+- `F13` not_started
+- `F14` not_started
+- `F15` not_started
+- `F16` not_started
+- `F17` not_started
 - 当前工作功能清单位置：`docs/harness/feature_list.json`
-- v0.2 版本化功能清单位置：`docs/harness/feature_list_v0.2.json`
-- v0.1 归档功能清单位置：`docs/log/v0.1/feature_list_v0.1.json`
+- v0.3 版本化功能清单位置：`docs/harness/feature_list_v0.3.json`
+- v0.2 版本化功能清单位置：`docs/log/v0.2/feature_list_v0.2.json`
+- v0.1 归档功能清单位置：`docs/log/v0.1/feature_list.json`
 
 ## 最近完成
 
@@ -128,6 +131,23 @@
 - F11 L3b：`tests/today-suggestion.test.ts` 自动化覆盖无 AI 凭据 fallback、可选 TarotDraw 影响表达、AI 排序/表达影响和不修改原始 DailyPlan/Task.status；`tests/ai-tarot-contract.test.ts` 自动化覆盖塔罗文案边界、AI schema 边界和 typed fallback。
 
 - `npm.cmd run verify:harness`：通过，F11 passing 状态下 4 个 feature 全部 passing，0 warning / 0 error。
+- `2026-05-26` 已开始下一阶段数据模型整理，先补架构文档，不修改业务代码：新增 `docs/architecture/goal-plan-task-state-model.md` 作为 Goal / Plan / Stage / Task 目标模型合同。
+- `2026-05-26` 已更新 `docs/architecture/data-models.md`、`docs/architecture/services-boundary.md`、`docs/architecture/storage-strategy.md`，明确当前代码仍以 `DailyPlan[]` 为兼容结构，后续应迁移到 `Plan + Stage + Task`，并保留旧数据读取。
+- `2026-05-26` 已更新 `docs/harness/ARCHITECTURE.md` 和 `AGENTS.md`：`ARCHITECTURE.md` 作为架构 README，`AGENTS.md` 增加数据模型、storage、services 的按需读取和迁移约束。
+- `2026-05-26` 已完成 `models/` 与 `services/` 初步审计：当前主要风险是 `models/plan.ts` 混合领域模型和页面视图、`planner/replanner/storage/today-suggestion/ai-client` 仍强依赖 `DailyPlan[]`，后续应先新增目标类型和 legacy adapter，再逐步迁移服务输出。
+- `2026-05-26` 已生成 App v0.3 工作计划：`docs/log/v0.3/work-plan.md`。
+- `2026-05-26` 已生成 App v0.3 功能清单：`docs/harness/feature_list_v0.3.json`，并同步为当前工作入口 `docs/harness/feature_list.json`；F12 为 `active`，F13-F17 按依赖顺序 `not_started`。
+- `2026-05-26` `scripts/harness-gate.mjs` 已从固定要求 `completionGate.version: "v0.2"` 调整为接受 `v0.x` 版本格式，`docs/harness/verification-policy.md` 已同步说明。
+
+- `2026-05-26` F12 已完成目标数据模型与 legacy adapter：新增 `GoalStatus`、`PlanStatus`、`StageStatus`、`TaskType`、`Plan`、`Stage`、`PlanBundle`、`DailyTaskView`、`PlanProgress`，并提供 `dailyPlansToPlanBundle()` / `planBundleToDailyPlans()` 双向 adapter。
+- F12 兼容边界：旧 `DailyPlan` 未删除；旧 `Task.date` 通过 adapter 映射为 `scheduledDate`；`DailyReview` 支持可选 `taskResults`，旧三组 task id 继续可读；未修改 storage、planner、replanner、today-suggestion 或页面运行主路。
+- `npm.cmd run test -- data-models-v0.3 data-layer`：通过，2 个测试文件、11 个测试通过。
+- `npm.cmd run verify:static`：通过。
+- `npm.cmd run verify:system`：通过，`build:mp-weixin` 构建成功。
+- `npm.cmd run check`：通过，15 个测试文件、75 个测试通过，F12 active 状态下 harness gate 0 warning / 0 error。
+- F12 L3b：`tests/data-models-v0.3.test.ts` 覆盖旧 DailyPlan[] -> PlanBundle -> DailyPlan[]、旧 Task.date 映射、DailyReview taskResults 兼容和 PlanProgress；`tests/data-layer.test.ts` 证明旧主路径仍可运行。
+
+- `npm.cmd run verify:harness`：通过，F12 passing 状态下 6 个 feature 中 1 个 passing、5 个 not_started，0 warning / 0 error。
 
 ## 阻塞项
 
@@ -141,7 +161,7 @@
 
 ## 下一步
 
-- v0.2 F08-F11 已全部 passing；后续进入下一个版本或按新的 feature_list 继续。
+- 提交 F12 后，按依赖继续 F13：storage PlanBundle 读写与旧数据迁移。
 
 ## 交接说明
 

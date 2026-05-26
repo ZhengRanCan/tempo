@@ -5,12 +5,15 @@ import {
   readPositiveInteger
 } from './common'
 
+export type GoalStatus = 'draft' | 'active' | 'completed' | 'archived' | 'cancelled'
+
 export interface Goal {
   id: string
   title: string
   description?: string
   deadline: string
   dailyAvailableMinutes: number
+  status?: GoalStatus
   createdAt: string
   updatedAt: string
 }
@@ -40,6 +43,13 @@ export type BuildGoalResult =
     }
 
 const ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
+const GOAL_STATUSES: readonly GoalStatus[] = [
+  'draft',
+  'active',
+  'completed',
+  'archived',
+  'cancelled'
+]
 
 export function normalizeGoal(value: unknown): Goal | null {
   if (!isRecord(value)) {
@@ -58,6 +68,7 @@ export function normalizeGoal(value: unknown): Goal | null {
   const createdAt = readOptionalString(value.createdAt) ?? LEGACY_FALLBACK_TIMESTAMP
   const updatedAt = readOptionalString(value.updatedAt) ?? createdAt
   const description = readOptionalString(value.description)
+  const status = isGoalStatus(value.status) ? value.status : undefined
 
   return {
     id,
@@ -65,6 +76,7 @@ export function normalizeGoal(value: unknown): Goal | null {
     description,
     deadline,
     dailyAvailableMinutes,
+    ...(status ? { status } : {}),
     createdAt,
     updatedAt
   }
@@ -172,4 +184,8 @@ function parseDailyAvailableMinutes(value: string | number): number | null {
   }
 
   return Math.floor(minutes)
+}
+
+export function isGoalStatus(value: unknown): value is GoalStatus {
+  return GOAL_STATUSES.includes(value as GoalStatus)
 }

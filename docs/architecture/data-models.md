@@ -2,10 +2,11 @@
 
 ## 目的
 
-本文档定义 MVP 阶段的核心数据类型。
+本文档记录当前代码已经实现的数据模型快照。
 
-实际类型定义以 models/ 中的源码为准。  
-如果修改 models 源码，必须同步检查本文档是否需要更新。
+后续数据层重构的目标模型以 `docs/architecture/goal-plan-task-state-model.md` 为准。本文档中的 `DailyPlan` 仍代表当前代码和旧数据兼容结构，不再作为长期目标模型的唯一依据。
+
+实际类型定义以 `models/` 中的源码为准。如果修改 `models/` 源码，必须同步检查本文档和 `goal-plan-task-state-model.md` 是否需要更新。
 
 ---
 
@@ -175,6 +176,12 @@ export interface DailyPlan {
 
 表示某一天的任务计划。
 
+当前说明：
+
+- 当前代码仍将 `DailyPlan[]` 作为持久化计划结构。
+- 后续目标模型中，DailyPlan 应降级为从 `Plan + Task[]` 计算得到的每日视图，或作为旧数据兼容 adapter 输出。
+- 新页面设计需要独立 `Plan` 和 `Stage` 概念，详见 `docs/architecture/goal-plan-task-state-model.md`。
+
 约束：
 
 - date 必须使用 YYYY-MM-DD
@@ -225,3 +232,25 @@ export interface InfeasiblePlanResult {
 ```
 
 不可行状态不能被伪装成正常 DailyPlan。
+
+---
+
+## 与目标模型的差距
+
+| 当前模型 | 当前问题 | 后续目标 |
+|---|---|---|
+| Goal | 缺少 `status`，无法区分 active/completed/archived/cancelled | 增加 `GoalStatus`，旧数据默认 active |
+| DailyPlan | 同时承担持久化计划、日历视图和今日视图来源 | 降级为 DailyTaskView 或 legacy adapter |
+| Task | 使用 `date`，缺少 `planId`、`stageId`、`type`、时间戳 | 迁移为 `scheduledDate`，并关联 Plan/Stage |
+| DailyReview | 使用三个 task id 数组，缺少 `planId` | 迁移为 `taskResults`，并关联 Plan |
+| UserProfile | 安排偏好和表达偏好未明确分层 | 区分 scheduling preferences 与 expression preferences |
+
+后续实现时不要一次性删除旧字段，应先新增目标类型和迁移逻辑，再逐步切换服务和页面读取层。
+
+## 2026-05-26 F12 实现记录
+
+- `models/goal.ts` 已新增 `GoalStatus`，旧 Goal 数据仍可在缺少 `status` 时读取。
+- `models/task.ts` 已新增 `TaskType`、可选 `planId`、`stageId`、`scheduledDate`、时间戳字段；旧 `Task.date` 保留，legacy adapter 会映射为 `scheduledDate`。
+- `models/plan.ts` 已新增 `PlanStatus`、`StageStatus`、`Plan`、`Stage`、`PlanBundle`、`DailyTaskView`、`PlanProgress`，并提供 `dailyPlansToPlanBundle()` / `planBundleToDailyPlans()` 双向 adapter。
+- `models/review.ts` 已新增可选 `planId` 与 `taskResults`，旧 `completedTaskIds`、`partialTaskIds`、`skippedTaskIds` 继续可读。
+- F12 不修改 storage key、planner、replanner、today-suggestion 或页面运行主路。
