@@ -4,17 +4,21 @@ import { onShow } from '@dcloudio/uni-app'
 import AppPageHeader from '../../components/AppPageHeader.vue'
 import EmptyState from '../../components/EmptyState.vue'
 import TaskCard from '../../components/TaskCard.vue'
-import type { Goal, PlanCalendarDay } from '../../models'
-import { buildPlanCalendarDays } from '../../models/plan'
+import type { Goal } from '../../models'
+import { buildPlanBundleCalendarView, type PlanBundleCalendarView } from '../../models/plan'
 import { formatDate } from '../../services/date'
-import { getCurrentGoal, getDailyPlans } from '../../services/storage'
+import { getCurrentGoal, migrateLegacyDailyPlans } from '../../services/storage'
 
 const goal = ref<Goal | null>(null)
-const days = ref<PlanCalendarDay[]>([])
+const calendarView = ref<PlanBundleCalendarView | null>(null)
 const isLoading = ref(true)
 const today = formatDate(new Date())
 
-const hasPlan = computed(() => days.value.length > 0)
+const days = computed(() => calendarView.value?.days ?? [])
+const stages = computed(() => calendarView.value?.stages ?? [])
+const progress = computed(() => calendarView.value?.progress ?? null)
+const planStatus = computed(() => calendarView.value?.plan.status ?? 'active')
+const hasPlan = computed(() => calendarView.value !== null)
 const totalTasks = computed(() =>
   days.value.reduce((total, day) => total + day.taskCount, 0)
 )
@@ -34,15 +38,17 @@ async function loadCalendar(): Promise<void> {
     goal.value = currentGoal
 
     if (!currentGoal) {
-      days.value = []
+      calendarView.value = null
       return
     }
 
-    const plans = await getDailyPlans(currentGoal.id)
-    days.value = buildPlanCalendarDays(plans, {
-      today,
-      limit: 7
-    })
+    const bundleResult = await migrateLegacyDailyPlans(currentGoal.id)
+    calendarView.value = bundleResult.data
+      ? buildPlanBundleCalendarView(bundleResult.data, {
+          today,
+          limit: 7
+        })
+      : null
   } finally {
     isLoading.value = false
   }
@@ -99,6 +105,19 @@ function goToday(): void {
         </view>
       </view>
 
+      <view
+        v-if="progress"
+        class="plan-panel"
+      >
+        <text class="plan-title">计划状态：{{ planStatus }}</text>
+        <text class="plan-copy">
+          已完成 {{ progress.completedTaskCount }} / {{ progress.totalTaskCount }} 个任务，进度 {{ progress.progressPercent }}%
+        </text>
+        <text class="plan-copy">
+          剩余预计 {{ progress.remainingEstimatedMinutes }} 分钟
+        </text>
+      </view>
+
       <button
         class="primary-button"
         @tap="goToday"
@@ -131,6 +150,21 @@ function goToday(): void {
             :key="task.id"
             :task="task"
           />
+        </view>
+      </view>
+
+      <view
+        v-if="stages.length > 0"
+        class="stage-list"
+      >
+        <text class="section-title">远期阶段</text>
+        <view
+          v-for="stage in stages"
+          :key="stage.id"
+          class="stage-card"
+        >
+          <text class="stage-title">{{ stage.title }}</text>
+          <text class="stage-meta">{{ stage.startDate }} - {{ stage.endDate }} · {{ stage.status }}</text>
         </view>
       </view>
     </template>
@@ -227,10 +261,54 @@ function goToday(): void {
   line-height: 88rpx;
 }
 
+.plan-panel,
+.stage-card {
+  padding: 24rpx;
+  border: 2rpx solid #e5ded2;
+  border-radius: 24rpx;
+  background: #ffffff;
+}
+
+.plan-panel {
+  margin-bottom: 24rpx;
+}
+
+.plan-title,
+.plan-copy,
+.section-title,
+.stage-title,
+.stage-meta {
+  display: block;
+}
+
+.plan-title,
+.section-title,
+.stage-title {
+  color: #24211c;
+  font-size: 28rpx;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.plan-copy,
+.stage-meta {
+  margin-top: 8rpx;
+  color: #7c7568;
+  font-size: 24rpx;
+  line-height: 1.5;
+}
+
 .day-list {
   display: flex;
   flex-direction: column;
   gap: 24rpx;
+}
+
+.stage-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+  margin-top: 28rpx;
 }
 
 .day-block {

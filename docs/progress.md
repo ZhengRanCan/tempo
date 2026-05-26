@@ -2,14 +2,14 @@
 
 ## 当前 feature
 
-- `F16`：v0.3 replanner 基于 Plan/Task 重排
+- `F17`：v0.3 页面 UI 与新数据视图接入
 - 状态：`passing`
 
 ## 当前状态
 
 - 项目阶段：App v0.2 F08-F11 全部完成并通过门禁。
 - 当前工作边界：已进入 App v0.3 规划阶段，v0.3 按“models -> storage -> planner -> view services -> replanner -> UI integration”顺序渐进迁移。
-- Harness 状态：F12、F13、F14、F15、F16 已 passing；F17 仍为 `not_started`。
+- Harness 状态：F12、F13、F14、F15、F16、F17 已 passing；v0.3 feature 全部完成。
 - F01、F02、F03、F04、F05、F06、F07 已作为 v0.1 基线归档到 `docs/log/v0.1/feature_list_v0.1.json`。
 
 ## 功能状态摘要
@@ -19,7 +19,7 @@
 - `F14` passing
 - `F15` passing
 - `F16` passing
-- `F17` not_started
+- `F17` passing
 - 当前工作功能清单位置：`docs/harness/feature_list.json`
 - v0.3 版本化功能清单位置：`docs/harness/feature_list_v0.3.json`
 - v0.2 版本化功能清单位置：`docs/log/v0.2/feature_list_v0.2.json`
@@ -191,6 +191,16 @@
 
 - `npm.cmd run verify:harness`：通过，F16 passing 状态下 6 个 feature 中 5 个 passing、1 个 not_started，0 warning / 0 error。
 
+- `2026-05-26` F17 已完成页面 UI 与新数据视图接入：创建目标页保存 PlanBundle；今日页使用 `buildTodaySuggestionFromPlanBundle()`；日历页使用 `buildPlanBundleCalendarView()`；复盘页保存 `DailyReview.taskResults` 后调用 `replanPlanBundleAfterReview()`；我的页使用 `buildPlanProgress()`。
+- F17 兼容边界：today/calendar/review/profile 均通过 `migrateLegacyDailyPlans()` 兼容旧 `DailyPlan[]` 本地数据；review 重排成功后同时回写 PlanBundle 和 legacy DailyPlan[]，旧页面路径仍可控。
+- `npm.cmd run test -- today plan-calendar goal-create review ui-components navigation-shell`：通过，7 个测试文件、39 个测试通过。
+- `npm.cmd run verify:static`：通过。
+- `npm.cmd run verify:system`：通过，`build:mp-weixin` 构建成功，today/calendar/goal-create/review/profile 页面 wxml 产物均存在。
+- `npm.cmd run check`：通过，15 个测试文件、92 个测试通过，F17 active 状态下 harness gate 0 warning / 0 error。
+- F17 L3b/manual smoke：构建产物检查确认五个页面产物存在；源码路径检查确认新 PlanBundle、legacy migration、replanner 和 progress 入口均接入；无数据路径由 EmptyState 覆盖；页面没有把塔罗、MBTI、每日关键词作为任务决策依据。
+
+- `npm.cmd run verify:harness`：通过，F17 passing 状态下 6 个 feature 全部 passing，0 warning / 0 error。
+
 ## 阻塞项
 
 - F01 无剩余阻塞项，A05 最终页面手动冒烟已由用户确认通过
@@ -203,7 +213,7 @@
 
 ## 下一步
 
-- 提交 F16 后，按依赖继续 F17：页面读取全面接入 PlanBundle / DailyTaskView。
+- v0.3 F12-F17 已全部完成并通过门禁。
 
 ## 交接说明
 

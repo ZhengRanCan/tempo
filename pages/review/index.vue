@@ -4,10 +4,18 @@ import { onShow } from '@dcloudio/uni-app'
 import AppPageHeader from '../../components/AppPageHeader.vue'
 import EmptyState from '../../components/EmptyState.vue'
 import EnergySelector from '../../components/EnergySelector.vue'
-import type { DailyPlan, EnergyLevel, Goal, ReviewTaskStatus, Task } from '../../models'
+import type { EnergyLevel, Goal, PlanBundle, ReviewTaskStatus, Task } from '../../models'
+import { buildDailyTaskViews, planBundleToDailyPlans } from '../../models/plan'
 import { buildDailyReview } from '../../models/review'
 import { formatDate } from '../../services/date'
-import { getCurrentGoal, getDailyPlans, saveDailyReview } from '../../services/storage'
+import { replanPlanBundleAfterReview } from '../../services/replanner'
+import {
+  getCurrentGoal,
+  migrateLegacyDailyPlans,
+  saveDailyPlans,
+  saveDailyReview,
+  savePlanBundle
+} from '../../services/storage'
 
 const statusOptions: Array<{
   value: ReviewTaskStatus
@@ -27,7 +35,8 @@ const statusOptions: Array<{
   }
 ]
 const goal = ref<Goal | null>(null)
-const todayPlan = ref<DailyPlan | null>(null)
+const activeBundle = ref<PlanBundle | null>(null)
+const todayTasks = ref<Task[]>([])
 const isLoading = ref(true)
 const isSaving = ref(false)
 const reviewForm = reactive({
@@ -37,7 +46,7 @@ const reviewForm = reactive({
 })
 const today = formatDate(new Date())
 
-const tasks = computed<Task[]>(() => todayPlan.value?.tasks ?? [])
+const tasks = computed<Task[]>(() => todayTasks.value)
 const hasTasks = computed(() => tasks.value.length > 0)
 
 onShow(() => {
@@ -52,14 +61,18 @@ async function loadReview(): Promise<void> {
     goal.value = currentGoal
 
     if (!currentGoal) {
-      todayPlan.value = null
+      activeBundle.value = null
+      todayTasks.value = []
       resetTaskStatuses([])
       return
     }
 
-    const plans = await getDailyPlans(currentGoal.id)
-    todayPlan.value = plans.find((plan) => plan.date === today) ?? null
-    resetTaskStatuses(todayPlan.value?.tasks ?? [])
+    const bundleResult = await migrateLegacyDailyPlans(currentGoal.id)
+    activeBundle.value = bundleResult.data
+    todayTasks.value = bundleResult.data
+      ? (buildDailyTaskViews(bundleResult.data).find((view) => view.date === today)?.tasks ?? [])
+      : []
+    resetTaskStatuses(todayTasks.value)
   } finally {
     isLoading.value = false
   }
@@ -108,12 +121,36 @@ async function handleSaveReview(): Promise<void> {
     const review = buildDailyReview({
       date: today,
       goalId: goal.value.id,
+      planId: activeBundle.value?.plan.id,
       energy: reviewForm.energy,
       taskStatusById: reviewForm.taskStatusById,
       note: reviewForm.note
     })
+    review.taskResults = Object.entries(reviewForm.taskStatusById).map(([taskId, status]) => ({
+      taskId,
+      status
+    }))
 
     await saveDailyReview(review)
+
+    if (activeBundle.value) {
+      const replanned = replanPlanBundleAfterReview({
+        bundle: activeBundle.value,
+        review
+      })
+
+      if (replanned.status === 'ok') {
+        await savePlanBundle(replanned.bundle)
+        await saveDailyPlans(goal.value.id, planBundleToDailyPlans(replanned.bundle))
+      } else {
+        uni.showToast({
+          title: replanned.reason,
+          icon: 'none'
+        })
+        return
+      }
+    }
+
     uni.showToast({
       title: '复盘已保存',
       icon: 'success'

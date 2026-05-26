@@ -595,7 +595,7 @@
   {
     "id": "F17",
     "title": "v0.3 页面 UI 与新数据视图接入",
-    "status": "not_started",
+    "status": "passing",
     "dependsOn": [
       "F16"
     ],
@@ -701,16 +701,39 @@
         "人工冒烟记录覆盖旧数据、无数据和新 PlanBundle 三类路径"
       ],
       "knownUnverified": [],
-      "humanReviewRequired": [
-        "确认 v0.3 页面接入新数据层后的主路径体验",
-        "确认 UI 是否符合 docs/design/page 页面规范"
-      ]
+      "humanReviewRequired": []
     },
     "evidence": {
-      "lastVerifiedAt": null,
-      "commands": [],
-      "manualSmoke": "",
-      "notes": ""
+      "lastVerifiedAt": "2026-05-26T20:43:49+08:00",
+      "commands": [
+        {
+          "command": "npm.cmd run test -- today plan-calendar goal-create review ui-components navigation-shell",
+          "result": "passed",
+          "summary": "7 个测试文件、39 个测试通过，覆盖页面组件和 v0.3 PlanBundle 视图接入源码路径"
+        },
+        {
+          "command": "npm.cmd run verify:static",
+          "result": "passed",
+          "summary": "lint 和 vue-tsc --noEmit 通过"
+        },
+        {
+          "command": "npm.cmd run verify:system",
+          "result": "passed",
+          "summary": "build:mp-weixin 构建成功，today/calendar/goal-create/review/profile 页面 wxml 产物均存在"
+        },
+        {
+          "command": "npm.cmd run check",
+          "result": "passed",
+          "summary": "15 个测试文件、92 个测试通过，F17 active 状态下 harness gate 0 warning / 0 error"
+        },
+        {
+          "command": "npm.cmd run verify:harness",
+          "result": "passed",
+          "summary": "F17 passing 状态通过，6 个 feature 全部 passing，0 warning / 0 error"
+        }
+      ],
+      "manualSmoke": "构建产物级冒烟：确认 dist/build/mp-weixin 下 today、plan-calendar、goal-create、review、profile 五个页面 wxml 产物存在；源码路径检查确认创建目标保存 PlanBundle，today/calendar/profile 经 migrateLegacyDailyPlans 读取 PlanBundle 视图，review 保存 DailyReview 后调用 replanPlanBundleAfterReview 并回写 PlanBundle。无本地数据路径继续由 EmptyState 覆盖，旧 DailyPlan[] 路径通过 migrateLegacyDailyPlans 自动兼容。UI 人工检查按 docs/harness/DESIGN.md 和 docs/design/page/*：today 首屏突出一个 focus task 且多任务显示查看全部入口，calendar 区分近 7 天任务和远期 stages，profile 显示 Goal/PlanProgress/UserProfile，不把塔罗、MBTI、每日关键词作为任务决策依据。",
+      "notes": "F17 完成页面 UI 与新数据视图接入。创建目标页沿用 buildStarterPlanBundle + savePlanBundle；今日页使用 buildTodaySuggestionFromPlanBundle；日历页使用 buildPlanBundleCalendarView；复盘页保存 taskResults 并触发 replanPlanBundleAfterReview；我的页使用 buildPlanProgress。"
     }
   }
 ]

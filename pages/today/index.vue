@@ -5,17 +5,32 @@ import AppPageHeader from '../../components/AppPageHeader.vue'
 import EmptyState from '../../components/EmptyState.vue'
 import TaskCard from '../../components/TaskCard.vue'
 import TodayFocusCard from '../../components/TodayFocusCard.vue'
-import type { Goal, TodayView } from '../../models'
-import { buildTodayView } from '../../models/plan'
+import type { Goal } from '../../models'
 import { formatDate } from '../../services/date'
-import { getCurrentGoal, getDailyPlans, getUserProfile } from '../../services/storage'
+import {
+  getCurrentGoal,
+  getUserProfile,
+  migrateLegacyDailyPlans
+} from '../../services/storage'
+import {
+  buildTodaySuggestionFromPlanBundle,
+  type TodaySuggestionView
+} from '../../services/today-suggestion'
 
 const goal = ref<Goal | null>(null)
-const todayView = ref<TodayView | null>(null)
+const todayView = ref<TodaySuggestionView | null>(null)
 const isLoading = ref(true)
 const today = formatDate(new Date())
 
 const hasTodayTask = computed(() => todayView.value !== null)
+const taskCount = computed(() => todayView.value?.tasks.length ?? 0)
+const extraTaskPreview = computed(() =>
+  todayView.value?.tasks
+    .filter((task) => task.id !== todayView.value?.focusTask.id)
+    .map((task) => task.title)
+    .slice(0, 2)
+    .join(', ')
+)
 
 onShow(() => {
   void loadToday()
@@ -34,11 +49,14 @@ async function loadToday(): Promise<void> {
       return
     }
 
-    const plans = await getDailyPlans(currentGoal.id)
-    todayView.value = buildTodayView(plans, {
-      today,
-      userProfile
-    })
+    const bundleResult = await migrateLegacyDailyPlans(currentGoal.id)
+
+    todayView.value = bundleResult.data
+      ? buildTodaySuggestionFromPlanBundle(bundleResult.data, {
+          today,
+          userProfile
+        })
+      : null
   } finally {
     isLoading.value = false
   }
@@ -102,6 +120,19 @@ function goReview(): void {
         :recommended-focus-window="todayView.recommendedFocusWindow"
         :task="todayView.focusTask"
       />
+
+      <view
+        v-if="taskCount > 1"
+        class="today-entry"
+      >
+        <text class="today-entry-title">今日共 {{ taskCount }} 个任务 · 查看全部</text>
+        <text
+          v-if="extraTaskPreview"
+          class="today-entry-copy"
+        >
+          其余任务：{{ extraTaskPreview }}
+        </text>
+      </view>
 
       <view class="task-section">
         <text class="section-title">今日任务</text>
@@ -282,6 +313,33 @@ function goReview(): void {
 
 .task-section {
   margin-top: 32rpx;
+}
+
+.today-entry {
+  margin-top: 24rpx;
+  padding: 24rpx;
+  border: 2rpx solid #e5ded2;
+  border-radius: 24rpx;
+  background: #ffffff;
+}
+
+.today-entry-title,
+.today-entry-copy {
+  display: block;
+}
+
+.today-entry-title {
+  color: #24211c;
+  font-size: 28rpx;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.today-entry-copy {
+  margin-top: 8rpx;
+  color: #7c7568;
+  font-size: 24rpx;
+  line-height: 1.5;
 }
 
 .section-title {

@@ -3,11 +3,13 @@ import { computed, ref } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
 import AppPageHeader from '../../components/AppPageHeader.vue'
 import EmptyState from '../../components/EmptyState.vue'
-import type { Goal, UserProfile } from '../../models'
-import { getCurrentGoal, getUserProfile } from '../../services/storage'
+import type { Goal, PlanProgress, UserProfile } from '../../models'
+import { buildPlanProgress } from '../../models/plan'
+import { getCurrentGoal, getUserProfile, migrateLegacyDailyPlans } from '../../services/storage'
 
 const goal = ref<Goal | null>(null)
 const profile = ref<UserProfile | null>(null)
+const progress = ref<PlanProgress | null>(null)
 const isLoading = ref(true)
 
 const workStyleText = computed(() => {
@@ -42,6 +44,13 @@ async function loadProfile(): Promise<void> {
     const [currentGoal, userProfile] = await Promise.all([getCurrentGoal(), getUserProfile()])
     goal.value = currentGoal
     profile.value = userProfile
+    if (!currentGoal) {
+      progress.value = null
+      return
+    }
+
+    const bundleResult = await migrateLegacyDailyPlans(currentGoal.id)
+    progress.value = bundleResult.data ? buildPlanProgress(bundleResult.data) : null
   } finally {
     isLoading.value = false
   }
@@ -87,6 +96,15 @@ function goCalendar(): void {
         <text class="helper">
           {{ goal ? `截止日期 ${goal.deadline}` : '先创建一个目标，再生成每日任务计划。' }}
         </text>
+        <view
+          v-if="progress"
+          class="progress-box"
+        >
+          <text class="progress-value">{{ progress.progressPercent }}%</text>
+          <text class="helper">
+            已完成 {{ progress.completedTaskCount }} / {{ progress.totalTaskCount }} 个任务，剩余 {{ progress.remainingEstimatedMinutes }} 分钟
+          </text>
+        </view>
         <button
           class="primary-button"
           @tap="goCreateGoal"
@@ -196,6 +214,21 @@ function goCalendar(): void {
   grid-template-columns: repeat(2, 1fr);
   gap: 16rpx;
   margin-top: 20rpx;
+}
+
+.progress-box {
+  margin-top: 18rpx;
+  padding: 22rpx;
+  border-radius: 20rpx;
+  background: #ececff;
+}
+
+.progress-value {
+  display: block;
+  color: #555ac0;
+  font-size: 36rpx;
+  font-weight: 600;
+  line-height: 1.3;
 }
 
 .profile-item {
