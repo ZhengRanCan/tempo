@@ -5,8 +5,8 @@ import AppPageHeader from '../../components/AppPageHeader.vue'
 import EmptyState from '../../components/EmptyState.vue'
 import TaskCard from '../../components/TaskCard.vue'
 import type { Goal } from '../../models'
-import { buildPlanBundleCalendarView, type PlanBundleCalendarView } from '../../models/plan'
 import { formatDate } from '../../services/date'
+import { buildPlanBundleCalendarView, type PlanBundleCalendarView } from '../../services/plan-view'
 import { getCurrentGoal, migrateLegacyDailyPlans } from '../../services/storage'
 
 const goal = ref<Goal | null>(null)

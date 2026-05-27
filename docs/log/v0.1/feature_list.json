@@ -1,0 +1,597 @@
+[
+  {
+    "id": "F12",
+    "title": "v0.3 目标数据模型与 legacy adapter",
+    "status": "active",
+    "dependsOn": [],
+    "behavior": "在不改变运行时主路径的前提下，新增 Goal/Plan/Stage/Task 目标模型、状态枚举、PlanBundle 和旧 DailyPlan 兼容 adapter，为后续 services 迁移提供稳定类型合同。",
+    "scope": {
+      "pages": [],
+      "components": [],
+      "services": [],
+      "models": [
+        "models/common.ts",
+        "models/goal.ts",
+        "models/plan.ts",
+        "models/task.ts",
+        "models/review.ts",
+        "models/index.ts"
+      ],
+      "schemas": [],
+      "tests": [
+        "tests/data-models-v0.3.test.ts",
+        "tests/data-layer.test.ts"
+      ],
+      "docs": [
+        "docs/architecture/goal-plan-task-state-model.md",
+        "docs/architecture/data-models.md",
+        "docs/progress.md"
+      ]
+    },
+    "acceptance": [
+      {
+        "id": "A01",
+        "text": "新增 GoalStatus、PlanStatus、StageStatus、TaskType、Plan、Stage、PlanBundle、DailyTaskView、PlanProgress 类型，且不删除现有 DailyPlan 类型",
+        "method": "automated"
+      },
+      {
+        "id": "A02",
+        "text": "Task 目标模型支持 scheduledDate，旧 Task.date 可以通过 normalize 或 adapter 兼容映射",
+        "method": "automated"
+      },
+      {
+        "id": "A03",
+        "text": "DailyReview 支持目标 taskResults 结构，同时旧 completedTaskIds、partialTaskIds、skippedTaskIds 继续可读",
+        "method": "automated"
+      },
+      {
+        "id": "A04",
+        "text": "提供 DailyPlan[] 与 PlanBundle 之间的 legacy adapter，迁移不丢失 task status、minimumLine、estimatedMinutes、priority 和日期信息",
+        "method": "automated"
+      },
+      {
+        "id": "A05",
+        "text": "本 feature 不修改 storage、planner、replanner、today-suggestion 或页面运行时主路径",
+        "method": "automated"
+      }
+    ],
+    "verify": {
+      "static": "npm run verify:static",
+      "feature": "npm run test -- data-models-v0.3 data-layer",
+      "system": "npm run verify:system"
+    },
+    "outOfScope": [
+      "不修改 storage key",
+      "不让 planner 输出 PlanBundle",
+      "不修改页面 UI",
+      "不删除 DailyPlan",
+      "不接入真实 Deepseek 或塔罗 UI"
+    ],
+    "completionGate": {
+      "version": "v0.3",
+      "l3": "required",
+      "userPath": [
+        "读取旧 DailyPlan[] 测试数据 -> 转换为 PlanBundle -> 再转换回 DailyPlan[]，确认关键字段和状态不丢失",
+        "读取旧 Task.date 和旧 DailyReview 三组 task id 数据，确认 normalize 结果可供新模型使用"
+      ],
+      "integrationEvidence": [
+        "tests/data-models-v0.3.test.ts 覆盖新类型构建、旧 Task.date 映射、DailyReview taskResults 兼容和 DailyPlan/PlanBundle 双向 adapter",
+        "tests/data-layer.test.ts 保持通过，证明现有主路径未被模型扩展破坏",
+        "npm.cmd run verify:system 通过，mp-weixin 构建产物生成成功"
+      ],
+      "knownUnverified": [
+        "services 仍未切换到 PlanBundle，本 feature 只建立模型合同"
+      ],
+      "humanReviewRequired": [
+        "确认 DailyPlan 降级为 legacy adapter / 每日视图的方向可以接受"
+      ]
+    },
+    "evidence": {
+      "lastVerifiedAt": null,
+      "commands": [],
+      "manualSmoke": "",
+      "notes": ""
+    }
+  },
+  {
+    "id": "F13",
+    "title": "v0.3 storage PlanBundle 读写与旧数据迁移",
+    "status": "not_started",
+    "dependsOn": [
+      "F12"
+    ],
+    "behavior": "在 storage 层新增 PlanBundle 读写、schema version 或等价迁移标识，并保留旧 daily-plans:{goalId} 读取能力，使旧数据可以安全迁移到新模型。",
+    "scope": {
+      "pages": [],
+      "components": [],
+      "services": [
+        "services/storage.ts"
+      ],
+      "models": [
+        "models/plan.ts",
+        "models/task.ts",
+        "models/review.ts"
+      ],
+      "schemas": [],
+      "tests": [
+        "tests/storage.test.ts",
+        "tests/data-layer.test.ts"
+      ],
+      "docs": [
+        "docs/architecture/storage-strategy.md",
+        "docs/progress.md"
+      ]
+    },
+    "acceptance": [
+      {
+        "id": "A01",
+        "text": "storage 可以保存和读取 PlanBundle，且读取结果包含 Plan、Stage[]、Task[] 和必要状态",
+        "method": "automated"
+      },
+      {
+        "id": "A02",
+        "text": "旧 daily-plans:{goalId} 数据仍可通过旧接口读取，也可通过迁移接口转换为 PlanBundle",
+        "method": "automated"
+      },
+      {
+        "id": "A03",
+        "text": "迁移函数可重复执行，不重复生成任务，不覆盖 done、partial、skipped 状态",
+        "method": "automated"
+      },
+      {
+        "id": "A04",
+        "text": "storage 读取空数据、坏数据、读写异常时仍返回明确状态和 issue，不出现 silent failure",
+        "method": "automated"
+      },
+      {
+        "id": "A05",
+        "text": "本 feature 不修改 planner、replanner 和页面 UI",
+        "method": "automated"
+      }
+    ],
+    "verify": {
+      "static": "npm run verify:static",
+      "feature": "npm run test -- storage data-layer",
+      "system": "npm run verify:system"
+    },
+    "outOfScope": [
+      "不删除 daily-plans:{goalId}",
+      "不迁移到云端存储",
+      "不修改页面 UI",
+      "不改变 planner 输出"
+    ],
+    "completionGate": {
+      "version": "v0.3",
+      "l3": "required",
+      "userPath": [
+        "模拟旧 daily-plans:{goalId} 本地数据 -> 读取当前目标计划 -> 迁移为 PlanBundle -> 再读取确认状态稳定",
+        "无本地数据 -> 读取 PlanBundle 和旧 DailyPlan，确认页面可处理空结果"
+      ],
+      "integrationEvidence": [
+        "tests/storage.test.ts 覆盖 PlanBundle 读写、旧 key 兼容、重复迁移、坏数据和读写异常",
+        "tests/data-layer.test.ts 覆盖旧主路径仍可读取",
+        "npm.cmd run verify:system 通过，mp-weixin 构建产物生成成功"
+      ],
+      "knownUnverified": [
+        "planner 仍可能输出 DailyPlan[]，将在 F14 处理"
+      ],
+      "humanReviewRequired": []
+    },
+    "evidence": {
+      "lastVerifiedAt": null,
+      "commands": [],
+      "manualSmoke": "",
+      "notes": ""
+    }
+  },
+  {
+    "id": "F14",
+    "title": "v0.3 planner 输出 PlanBundle",
+    "status": "not_started",
+    "dependsOn": [
+      "F13"
+    ],
+    "behavior": "将初始计划生成从 DailyPlan[] 迁移为 PlanBundle，近 7 天生成具体 Task，远期生成 Stage，并通过 legacy adapter 保持旧调用方可用。",
+    "scope": {
+      "pages": [
+        "pages/goal-create/index.vue"
+      ],
+      "components": [],
+      "services": [
+        "services/planner.ts",
+        "services/storage.ts"
+      ],
+      "models": [
+        "models/goal.ts",
+        "models/plan.ts",
+        "models/task.ts",
+        "models/user-profile.ts"
+      ],
+      "schemas": [],
+      "tests": [
+        "tests/planner.test.ts",
+        "tests/planner.smoke.test.ts",
+        "tests/data-layer.test.ts"
+      ],
+      "docs": [
+        "docs/architecture/services-boundary.md",
+        "docs/progress.md"
+      ]
+    },
+    "acceptance": [
+      {
+        "id": "A01",
+        "text": "planner 新 API 输出 PlanBundle，包含 Plan、近 7 天 Task 和远期 Stage",
+        "method": "automated"
+      },
+      {
+        "id": "A02",
+        "text": "DDL 在 7 天以内时生成具体 Task；DDL 超过 7 天时远期内容进入 Stage，不一次性生成大量远期 Task",
+        "method": "automated"
+      },
+      {
+        "id": "A03",
+        "text": "每日 Task 总预计用时不超过 goal.dailyAvailableMinutes，low 状态仍优先生成最低完成线",
+        "method": "automated"
+      },
+      {
+        "id": "A04",
+        "text": "planner 不再把 dailyKeyword、recommendedFocusWindow 作为核心计划真相来源写入 PlanBundle",
+        "method": "automated"
+      },
+      {
+        "id": "A05",
+        "text": "创建目标主路径可保存新 PlanBundle，同时 legacy DailyPlan adapter 在迁移期间仍可供旧页面测试使用",
+        "method": "mixed"
+      }
+    ],
+    "verify": {
+      "static": "npm run verify:static",
+      "feature": "npm run test -- planner data-layer",
+      "system": "npm run verify:system"
+    },
+    "outOfScope": [
+      "不重构 replanner",
+      "不修改日历页 UI",
+      "不接入真实 AI",
+      "不删除旧 planner 兼容出口"
+    ],
+    "completionGate": {
+      "version": "v0.3",
+      "l3": "required",
+      "userPath": [
+        "创建目标 -> 生成 PlanBundle -> 保存 -> 通过 storage 读回 active PlanBundle",
+        "DDL 超过 7 天 -> 近 7 天是 Task，远期是 Stage"
+      ],
+      "integrationEvidence": [
+        "tests/planner.test.ts 覆盖 PlanBundle 输出、近 7 天 Task、远期 Stage、不可行状态和低能量最低完成线",
+        "tests/data-layer.test.ts 覆盖创建目标到保存 PlanBundle 的集成路径",
+        "npm.cmd run verify:system 通过，mp-weixin 构建产物生成成功"
+      ],
+      "knownUnverified": [
+        "replanner 仍未迁移到 PlanBundle，将在 F16 处理"
+      ],
+      "humanReviewRequired": []
+    },
+    "evidence": {
+      "lastVerifiedAt": null,
+      "commands": [],
+      "manualSmoke": "",
+      "notes": ""
+    }
+  },
+  {
+    "id": "F15",
+    "title": "v0.3 今日与日历视图服务迁移",
+    "status": "not_started",
+    "dependsOn": [
+      "F14"
+    ],
+    "behavior": "新增或整理页面视图服务，让 today、calendar 和 AI suggestion 基于 PlanBundle/Task/DailyTaskView 工作，不再直接依赖 DailyPlan[] 作为计划真相来源。",
+    "scope": {
+      "pages": [],
+      "components": [],
+      "services": [
+        "services/today-suggestion.ts",
+        "services/ai-client.ts",
+        "services/storage.ts"
+      ],
+      "models": [
+        "models/ai-suggestion.ts",
+        "models/plan.ts",
+        "models/task.ts",
+        "models/user-profile.ts"
+      ],
+      "schemas": [
+        "schemas/ai-suggestion.ts"
+      ],
+      "tests": [
+        "tests/today-suggestion.test.ts",
+        "tests/ai-tarot-contract.test.ts",
+        "tests/plan-calendar.test.ts",
+        "tests/today.test.ts"
+      ],
+      "docs": [
+        "docs/architecture/services-boundary.md",
+        "docs/progress.md"
+      ]
+    },
+    "acceptance": [
+      {
+        "id": "A01",
+        "text": "today-suggestion 可以基于 PlanBundle 或 DailyTaskView 生成 TodaySuggestionView，不要求调用方传入 DailyPlan[]",
+        "method": "automated"
+      },
+      {
+        "id": "A02",
+        "text": "calendar 视图可以从 Goal/Plan/Stage/Task 汇总生成近 7 天任务、远期阶段、进度和计划状态",
+        "method": "automated"
+      },
+      {
+        "id": "A03",
+        "text": "ai-client 的今日建议输入不暴露完整历史 Plan，只接收受控的今日任务上下文",
+        "method": "automated"
+      },
+      {
+        "id": "A04",
+        "text": "AI/塔罗建议仍只影响表达和排序，不修改 Task.status、DailyReview 或历史 Plan",
+        "method": "automated"
+      },
+      {
+        "id": "A05",
+        "text": "旧 DailyPlan[] 今日建议路径在迁移期间仍可兼容或有明确 adapter",
+        "method": "automated"
+      }
+    ],
+    "verify": {
+      "static": "npm run verify:static",
+      "feature": "npm run test -- today-suggestion ai-tarot-contract plan-calendar today",
+      "system": "npm run verify:system"
+    },
+    "outOfScope": [
+      "不修改 replanner",
+      "不重做页面视觉",
+      "不接入真实 Deepseek",
+      "不删除旧兼容 adapter"
+    ],
+    "completionGate": {
+      "version": "v0.3",
+      "l3": "required",
+      "userPath": [
+        "读取 active PlanBundle -> 生成今日建议 -> focusTask 和 tasks 稳定展示",
+        "读取 active PlanBundle -> 生成日历视图 -> 近 7 天任务和远期 Stage 可区分"
+      ],
+      "integrationEvidence": [
+        "tests/today-suggestion.test.ts 覆盖 PlanBundle/DailyTaskView 输入、AI 排序、塔罗表达和不修改原始任务",
+        "tests/plan-calendar.test.ts 覆盖 Plan/Stage/Task 日历视图",
+        "npm.cmd run verify:system 通过，mp-weixin 构建产物生成成功"
+      ],
+      "knownUnverified": [
+        "页面尚未全面接入新视图服务，将在 F17 处理"
+      ],
+      "humanReviewRequired": []
+    },
+    "evidence": {
+      "lastVerifiedAt": null,
+      "commands": [],
+      "manualSmoke": "",
+      "notes": ""
+    }
+  },
+  {
+    "id": "F16",
+    "title": "v0.3 replanner 基于 Plan/Task 重排",
+    "status": "not_started",
+    "dependsOn": [
+      "F15"
+    ],
+    "behavior": "将重排逻辑从 DailyPlan[] 迁移到 Plan/Task/DailyReview，明确任务顺延策略、历史保留和不可行状态，完成 services 层对新模型的核心迁移。",
+    "scope": {
+      "pages": [],
+      "components": [],
+      "services": [
+        "services/replanner.ts",
+        "services/storage.ts"
+      ],
+      "models": [
+        "models/plan.ts",
+        "models/task.ts",
+        "models/review.ts",
+        "models/goal.ts",
+        "models/user-profile.ts"
+      ],
+      "schemas": [],
+      "tests": [
+        "tests/replanner.test.ts",
+        "tests/data-layer.test.ts",
+        "tests/storage.test.ts"
+      ],
+      "docs": [
+        "docs/architecture/goal-plan-task-state-model.md",
+        "docs/architecture/services-boundary.md",
+        "docs/progress.md"
+      ]
+    },
+    "acceptance": [
+      {
+        "id": "A01",
+        "text": "replanner 新 API 基于 PlanBundle、DailyReview 和 UserProfile 生成更新后的 PlanBundle 或明确 infeasible 状态",
+        "method": "automated"
+      },
+      {
+        "id": "A02",
+        "text": "done 任务不被重排，partial 和 skipped 不会静默丢失",
+        "method": "automated"
+      },
+      {
+        "id": "A03",
+        "text": "任务顺延策略可追踪来源关系，并明确是更新 scheduledDate 还是生成补做 Task",
+        "method": "mixed"
+      },
+      {
+        "id": "A04",
+        "text": "重排不超过 DDL 和每日可用时间；无法安排时返回 infeasible 和调整建议",
+        "method": "automated"
+      },
+      {
+        "id": "A05",
+        "text": "DailyReview 作为历史事实保留，replanner 不静默改写复盘记录",
+        "method": "automated"
+      }
+    ],
+    "verify": {
+      "static": "npm run verify:static",
+      "feature": "npm run test -- replanner data-layer storage",
+      "system": "npm run verify:system"
+    },
+    "outOfScope": [
+      "不修改页面 UI",
+      "不引入云端同步",
+      "不删除旧重排兼容测试，除非已有新路径覆盖"
+    ],
+    "completionGate": {
+      "version": "v0.3",
+      "l3": "required",
+      "userPath": [
+        "PlanBundle + 当日 Review -> 重排后续任务 -> done 保留，partial/skipped 进入后续安排",
+        "后续日期容量不足 -> 返回 infeasible，不覆盖原 Plan 和 Review"
+      ],
+      "integrationEvidence": [
+        "tests/replanner.test.ts 覆盖 PlanBundle 重排、任务历史、不可行状态和低能量压力控制",
+        "tests/data-layer.test.ts 覆盖保存 PlanBundle -> 复盘 -> 重排 -> 再读取的集成路径",
+        "npm.cmd run verify:system 通过，mp-weixin 构建产物生成成功"
+      ],
+      "knownUnverified": [],
+      "humanReviewRequired": [
+        "确认任务顺延策略：修改原 Task scheduledDate，还是生成补做 Task"
+      ]
+    },
+    "evidence": {
+      "lastVerifiedAt": null,
+      "commands": [],
+      "manualSmoke": "",
+      "notes": ""
+    }
+  },
+  {
+    "id": "F17",
+    "title": "v0.3 页面 UI 与新数据视图接入",
+    "status": "not_started",
+    "dependsOn": [
+      "F16"
+    ],
+    "behavior": "在 models 和 services 完成迁移后，让今日任务、任务日历、创建目标、复盘和我的页改用新数据视图，并按现有设计规范做必要 UI 适配。",
+    "scope": {
+      "pages": [
+        "pages/today/index.vue",
+        "pages/plan-calendar/index.vue",
+        "pages/goal-create/index.vue",
+        "pages/review/index.vue",
+        "pages/profile/index.vue"
+      ],
+      "components": [
+        "components/TaskCard.vue",
+        "components/TodayFocusCard.vue",
+        "components/EmptyState.vue",
+        "components/EnergySelector.vue"
+      ],
+      "services": [
+        "services/storage.ts",
+        "services/today-suggestion.ts",
+        "services/planner.ts",
+        "services/replanner.ts"
+      ],
+      "models": [
+        "models/plan.ts",
+        "models/task.ts",
+        "models/review.ts"
+      ],
+      "schemas": [],
+      "tests": [
+        "tests/today.test.ts",
+        "tests/plan-calendar.test.ts",
+        "tests/goal-create.test.ts",
+        "tests/review.test.ts",
+        "tests/ui-components.test.ts",
+        "tests/navigation-shell.test.ts"
+      ],
+      "docs": [
+        "docs/design/page/README.md",
+        "docs/design/page/pages/today-page.md",
+        "docs/design/page/pages/calendar-page.md",
+        "docs/design/page/pages/create-goal-page.md",
+        "docs/design/page/pages/profile-page.md",
+        "docs/progress.md"
+      ]
+    },
+    "acceptance": [
+      {
+        "id": "A01",
+        "text": "创建目标页触发新 PlanBundle 生成和保存流程，失败时不清空表单，旧数据兼容路径仍可控",
+        "method": "mixed"
+      },
+      {
+        "id": "A02",
+        "text": "今日任务页读取 Task/DailyTaskView/TodaySuggestion，首屏突出一个主任务，多个任务显示查看全部入口",
+        "method": "mixed"
+      },
+      {
+        "id": "A03",
+        "text": "任务日历页读取 Goal/Plan/Stage/Task 视图，能区分近 7 天任务和远期阶段",
+        "method": "mixed"
+      },
+      {
+        "id": "A04",
+        "text": "复盘页保存 DailyReview 后可以触发新 replanner 路径，复盘历史不被静默覆盖",
+        "method": "mixed"
+      },
+      {
+        "id": "A05",
+        "text": "我的页读取 Goal、PlanProgress、UserProfile，页面不直接拼装底层 storage 结构",
+        "method": "mixed"
+      },
+      {
+        "id": "A06",
+        "text": "页面视觉遵守 docs/harness/DESIGN.md、docs/design/README.md 和 docs/design/page/ 页面规范；不把塔罗、MBTI、每日关键词写成任务决策依据",
+        "method": "manual_smoke"
+      }
+    ],
+    "verify": {
+      "static": "npm run verify:static",
+      "feature": "npm run test -- today plan-calendar goal-create review ui-components navigation-shell",
+      "system": "npm run verify:system"
+    },
+    "outOfScope": [
+      "不做完整塔罗抽牌 UI",
+      "不接入真实 Deepseek",
+      "不新增云端同步",
+      "不新增多目标完整管理",
+      "不重写与新数据视图无关的视觉系统"
+    ],
+    "completionGate": {
+      "version": "v0.3",
+      "l3": "required",
+      "userPath": [
+        "创建目标 -> 生成计划 -> 打开今日任务 -> 查看日历 -> 保存复盘 -> 重排后续计划",
+        "旧 DailyPlan[] 本地数据 -> 打开今日任务和日历，确认自动兼容或迁移后页面可用",
+        "无本地数据 -> 今日任务、日历、我的页显示明确空状态"
+      ],
+      "integrationEvidence": [
+        "页面路径测试覆盖创建目标、今日任务、日历、复盘和我的页读取新视图",
+        "npm.cmd run verify:system 通过，mp-weixin 构建产物生成成功",
+        "人工冒烟记录覆盖旧数据、无数据和新 PlanBundle 三类路径"
+      ],
+      "knownUnverified": [],
+      "humanReviewRequired": [
+        "确认 v0.3 页面接入新数据层后的主路径体验",
+        "确认 UI 是否符合 docs/design/page 页面规范"
+      ]
+    },
+    "evidence": {
+      "lastVerifiedAt": null,
+      "commands": [],
+      "manualSmoke": "",
+      "notes": ""
+    }
+  }
+]

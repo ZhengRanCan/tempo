@@ -860,7 +860,7 @@
   {
     "id": "F19",
     "title": "v0.3 审计修复：Plan 视图模型边界整理",
-    "status": "not_started",
+    "status": "active",
     "dependsOn": [
       "F18"
     ],

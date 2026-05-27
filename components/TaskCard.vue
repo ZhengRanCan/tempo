@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Task } from '../models'
-import { getTaskStatusLabel } from '../models/plan'
+import { getTaskStatusLabel } from '../services/plan-view'
 
 const props = defineProps<{
   task: Task

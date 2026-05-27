@@ -3,7 +3,7 @@
 ## 目标
 
 - 判断当前 feature 是否可以从 `active` 改为 `passing`。
-- 所有 feature 状态以 `docs/harness/feature_list.json` 为准。
+- 所有 feature 状态以 `docs/harness/feature_list_v0.3.json` 为准。
 - 本文件只定义验证闸门，不定义产品需求。
 
 ## 文档分工
@@ -15,7 +15,7 @@
 
 ## 验证入口
 
-- 先读取 `docs/harness/feature_list.json`。
+- 先读取 `docs/harness/feature_list_v0.3.json`。
 - 找到当前 `status: "active"` 的 feature。
 - 读取该 feature 的 `acceptance`、`verify`、`evidence`。
 - 按 L1、L2、L3 顺序执行。
@@ -53,7 +53,7 @@ npm run typecheck
 
 规则：
 
-- 执行当前 feature 在 `docs/harness/feature_list.json` 中的 `verify.feature`。
+- 执行当前 feature 在 `docs/harness/feature_list_v0.3.json` 中的 `verify.feature`。
 - L2 必须覆盖当前 feature 的 `acceptance`。
 - `method: "automated"` 必须有自动化测试或命令证据。
 - `method: "mixed"` 必须有自动化证据和手动说明。
@@ -107,17 +107,17 @@ npm run verify:harness
 
 作用：
 
-- 检查 `docs/harness/feature_list.json` 是否为合法 feature list。
+- 检查 `docs/harness/feature_list_v0.3.json` 是否为合法 feature list。
 - 检查任意时刻最多只有一个 `active` feature。
 - 检查 `passing` feature 是否有基础 evidence。
-- 对带有 `completionGate.version: "v0.2"` 的 feature 执行硬门禁。
+- 对带有 `completionGate.version` 的 feature 执行硬门禁，版本值应使用 `v0.2`、`v0.3` 这类版本号格式。
 
 新 feature 或重新打开的 feature 应使用 `completionGate`：
 
 ```json
 {
   "completionGate": {
-    "version": "v0.2",
+    "version": "v0.3",
     "l3": "required",
     "userPath": [],
     "integrationEvidence": [],
@@ -162,7 +162,7 @@ npm run verify:harness
 
 如果结论不是 `Accept`，必须把缺失证据、未验证路径或人工决策点写入：
 
-- `docs/harness/feature_list.json` 的 `completionGate.knownUnverified`
+- `docs/harness/feature_list_v0.3.json` 的 `completionGate.knownUnverified`
 - 或 `docs/progress.md` 的阻塞项 / 下一步
 
 ## 状态转移规则
@@ -174,7 +174,7 @@ npm run verify:harness
 - L2 通过。
 - 如果触发 L3 条件，L3a 系统确认和 L3b 用户路径证据均已记录。
 - `npm run verify:harness` 通过。
-- `docs/harness/feature_list.json` 的 `evidence` 已更新。
+- `docs/harness/feature_list_v0.3.json` 的 `evidence` 已更新。
 - `docs/progress.md` 已更新。
 - 没有未解释的临时文件、`console.log`、`debugger`、无关改动。
 
@@ -229,3 +229,4 @@ npm run verify:harness
 下一步：
 是否阻塞当前 feature：
 ```
+

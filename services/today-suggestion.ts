@@ -1,13 +1,9 @@
 import type { AiTodaySuggestion } from '../models/ai-suggestion'
-import {
-  buildDailyTaskViews,
-  type DailyPlan,
-  type DailyTaskView,
-  type PlanBundle
-} from '../models/plan'
+import type { DailyPlan, PlanBundle } from '../models/plan'
 import type { TarotDraw } from '../models/tarot'
 import type { Task } from '../models/task'
 import type { UserProfile } from '../models/user-profile'
+import { buildDailyTaskViews, type DailyTaskView } from './plan-view'
 import { getTarotActionPrompt } from './tarot'
 
 export interface TodaySuggestionView {

@@ -5,9 +5,10 @@ import AppPageHeader from '../../components/AppPageHeader.vue'
 import EmptyState from '../../components/EmptyState.vue'
 import EnergySelector from '../../components/EnergySelector.vue'
 import type { EnergyLevel, Goal, PlanBundle, ReviewTaskStatus, Task } from '../../models'
-import { buildDailyTaskViews, planBundleToDailyPlans } from '../../models/plan'
+import { planBundleToDailyPlans } from '../../models/plan'
 import { buildDailyReview } from '../../models/review'
 import { formatDate } from '../../services/date'
+import { buildDailyTaskViews } from '../../services/plan-view'
 import { replanPlanBundleAfterReview } from '../../services/replanner'
 import {
   getCurrentGoal,

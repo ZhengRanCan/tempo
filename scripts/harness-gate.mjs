@@ -3,9 +3,10 @@ import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const rootDir = resolve(dirname(fileURLToPath(import.meta.url)), '..')
-const featureListPath = resolve(rootDir, 'docs/harness/feature_list.json')
+const featureListPath = resolve(rootDir, 'docs/harness/feature_list_v0.3.json')
 
 const ALLOWED_STATUSES = new Set(['not_started', 'active', 'blocked', 'passing'])
+const COMPLETION_GATE_VERSION_PATTERN = /^v\d+\.\d+$/
 const L3_SERVICE_FILES = new Set([
   'services/storage.ts',
   'services/planner.ts',
@@ -24,13 +25,13 @@ function readFeatureList() {
     const parsed = JSON.parse(raw)
 
     if (!Array.isArray(parsed)) {
-      errors.push('docs/harness/feature_list.json must be a JSON array.')
+      errors.push('docs/harness/feature_list_v0.3.json must be a JSON array.')
       return []
     }
 
     return parsed
   } catch (error) {
-    errors.push(`Unable to read or parse feature_list.json: ${error.message}`)
+    errors.push(`Unable to read or parse feature_list_v0.3.json: ${error.message}`)
     return []
   }
 }
@@ -183,8 +184,11 @@ function validateCompletionGate(feature) {
     return
   }
 
-  if (gate.version !== 'v0.2') {
-    errors.push(`${feature.id}: completionGate.version must be "v0.2".`)
+  if (
+    typeof gate.version !== 'string' ||
+    !COMPLETION_GATE_VERSION_PATTERN.test(gate.version)
+  ) {
+    errors.push(`${feature.id}: completionGate.version must use a version like "v0.3".`)
   }
 
   if (!Array.isArray(gate.userPath)) {

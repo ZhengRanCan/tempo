@@ -3,8 +3,8 @@ import { computed, ref } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
 import AppPageHeader from '../../components/AppPageHeader.vue'
 import EmptyState from '../../components/EmptyState.vue'
-import type { Goal, PlanProgress, UserProfile } from '../../models'
-import { buildPlanProgress } from '../../models/plan'
+import type { Goal, UserProfile } from '../../models'
+import { buildPlanProgress, type PlanProgress } from '../../services/plan-view'
 import { getCurrentGoal, getUserProfile, migrateLegacyDailyPlans } from '../../services/storage'
 
 const goal = ref<Goal | null>(null)
