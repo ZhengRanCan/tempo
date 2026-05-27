@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { DailyPlan, UserProfile } from '../models'
-import { buildTodayView } from '../models/plan'
+import { buildTodayView } from '../services/plan-view'
 
 function createPlans(): DailyPlan[] {
   return [

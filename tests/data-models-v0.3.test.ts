@@ -1,14 +1,13 @@
 import { describe, expect, it } from 'vitest'
-import type { DailyPlan, GoalStatus, PlanProgress, PlanStatus, StageStatus, TaskType } from '../models'
+import type { DailyPlan, GoalStatus, PlanStatus, StageStatus, TaskType } from '../models'
 import { normalizeGoal } from '../models/goal'
 import {
-  buildDailyTaskViews,
-  buildPlanProgress,
   dailyPlansToPlanBundle,
   planBundleToDailyPlans
 } from '../models/plan'
 import { buildDailyReview, normalizeDailyReview } from '../models/review'
 import { normalizeTask } from '../models/task'
+import { buildDailyTaskViews, buildPlanProgress, type PlanProgress } from '../services/plan-view'
 
 function createLegacyDailyPlans(): DailyPlan[] {
   return [

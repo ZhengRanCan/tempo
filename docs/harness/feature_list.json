@@ -860,7 +860,7 @@
   {
     "id": "F19",
     "title": "v0.3 审计修复：Plan 视图模型边界整理",
-    "status": "active",
+    "status": "passing",
     "dependsOn": [
       "F18"
     ],
@@ -952,16 +952,40 @@
         "tests/data-layer.test.ts 保持旧数据迁移与新 PlanBundle 主路径通过",
         "npm.cmd run verify:system 通过，mp-weixin 构建产物生成成功"
       ],
-      "knownUnverified": [
-        "当前审计发现 models/plan.ts 同时包含领域模型、legacy adapter、PlanCalendarDay、TodayView 和页面视图构建函数；这不是当前运行时 bug，但会提高后续维护成本。"
-      ],
+      "knownUnverified": [],
       "humanReviewRequired": []
     },
     "evidence": {
-      "lastVerifiedAt": null,
-      "commands": [],
-      "manualSmoke": "",
-      "notes": "由 2026-05-27 数据模型审计补充。该 feature 是维护性整理，必须在 F18 模型合同收紧后再做。"
+      "lastVerifiedAt": "2026-05-27T15:19:32+08:00",
+      "commands": [
+        {
+          "command": "npm.cmd run test -- plan-calendar today-suggestion today review ui-components data-layer",
+          "result": "passed",
+          "summary": "6 ??????37 ???????? plan-view selector??????today/review/data-layer ?????"
+        },
+        {
+          "command": "npm.cmd run verify:static",
+          "result": "passed",
+          "summary": "lint ? vue-tsc --noEmit ???"
+        },
+        {
+          "command": "npm.cmd run verify:system",
+          "result": "passed",
+          "summary": "build:mp-weixin ?????"
+        },
+        {
+          "command": "npm.cmd run check",
+          "result": "passed",
+          "summary": "15 ??????93 ??????F19 active ??? harness gate 0 warning / 0 error?"
+        },
+        {
+          "command": "npm.cmd run verify:harness",
+          "result": "passed",
+          "summary": "F19 passing ??? 8 ? feature ?? passing?0 warning / 0 error?"
+        }
+      ],
+      "manualSmoke": "L3b ??????????tests/plan-calendar.test.ts ? tests/today-suggestion.test.ts ?????? services/plan-view selector API?tests/today.test.ts?tests/review.test.ts?tests/ui-components.test.ts ?? today/calendar/profile/review ????? service/selector ???tests/data-layer.test.ts ???????? PlanBundle ?????????????? mp-weixin ??????",
+      "notes": "F19 ????????????????? services/plan-view.ts?models/plan.ts ?????????normalize ? DailyPlan/PlanBundle legacy adapter????????? services/plan-view ???? selector?PlanBundle ??????storage key?DailyPlan adapter ? replanner ??????"
     }
   }
 ]

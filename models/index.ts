@@ -2,18 +2,21 @@ export type { EnergyLevel, TaskPriority, TaskStatus, WorkStyle } from './common'
 export type { Goal, GoalStatus } from './goal'
 export type {
   DailyPlan,
-  DailyTaskView,
   InfeasiblePlanResult,
   Plan,
   PlanBundle,
+  PlanStatus,
+  Stage,
+  StageStatus
+} from './plan'
+export type {
+  DailyTaskView,
+  PlanBundleCalendarView,
   PlanCalendarDay,
   PlanCalendarTask,
   PlanProgress,
-  PlanStatus,
-  Stage,
-  StageStatus,
   TodayView
-} from './plan'
+} from '../services/plan-view'
 export type { DailyReview, DailyReviewTaskResult, ReviewTaskStatus } from './review'
 export type { Task, TaskRescheduleReason, TaskType } from './task'
 export type { UserProfile } from './user-profile'

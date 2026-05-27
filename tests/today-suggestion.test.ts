@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import type { AiTodaySuggestion, DailyPlan, DailyTaskView, PlanBundle, TarotDraw, UserProfile } from '../models'
+import type { AiTodaySuggestion, DailyPlan, PlanBundle, TarotDraw, UserProfile } from '../models'
+import type { DailyTaskView } from '../services/plan-view'
 import {
   buildTodaySuggestion,
   buildTodaySuggestionFromDailyTaskViews,

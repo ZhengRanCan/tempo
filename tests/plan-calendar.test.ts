@@ -1,6 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { DailyPlan, Goal, PlanBundle } from '../models'
-import { buildPlanBundleCalendarView, buildPlanCalendarDays, getTaskStatusLabel } from '../models/plan'
+import {
+  buildPlanBundleCalendarView,
+  buildPlanCalendarDays,
+  getTaskStatusLabel
+} from '../services/plan-view'
 import {
   getCurrentGoal,
   getDailyPlans,
