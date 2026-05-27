@@ -150,6 +150,7 @@ describe('goal create', () => {
       deadline: '2026-06-01',
       dailyAvailableMinutes: 60,
       description: '写出第一版结构',
+      status: 'active',
       createdAt: '2026-05-21T08:00:00.000Z',
       updatedAt: '2026-05-21T08:00:00.000Z'
     })

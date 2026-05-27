@@ -126,10 +126,6 @@ async function handleSaveReview(): Promise<void> {
       taskStatusById: reviewForm.taskStatusById,
       note: reviewForm.note
     })
-    review.taskResults = Object.entries(reviewForm.taskStatusById).map(([taskId, status]) => ({
-      taskId,
-      status
-    }))
 
     await saveDailyReview(review)
 

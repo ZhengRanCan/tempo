@@ -45,6 +45,7 @@ describe('data layer compatibility', () => {
       title: 'finish proposal',
       deadline: '2026-06-01',
       dailyAvailableMinutes: 45,
+      status: 'active' as const,
       createdAt: '2026-05-24T00:00:00.000Z',
       updatedAt: '2026-05-24T00:00:00.000Z'
     }
@@ -58,6 +59,7 @@ describe('data layer compatibility', () => {
             goalId: 'goal-1',
             title: 'draft proposal outline',
             date: '2026-06-01',
+            scheduledDate: '2026-06-01',
             estimatedMinutes: 30,
             priority: 'high',
             status: 'todo',
@@ -87,6 +89,7 @@ describe('data layer compatibility', () => {
       title: 'finish proposal',
       deadline: '2026-06-10',
       dailyAvailableMinutes: 45,
+      status: 'active' as const,
       createdAt: '2026-05-24T00:00:00.000Z',
       updatedAt: '2026-05-24T00:00:00.000Z'
     }
@@ -121,6 +124,7 @@ describe('data layer compatibility', () => {
       title: 'finish proposal',
       deadline: '2026-06-10',
       dailyAvailableMinutes: 45,
+      status: 'active' as const,
       createdAt: '2026-05-24T00:00:00.000Z',
       updatedAt: '2026-05-24T00:00:00.000Z'
     }
@@ -215,6 +219,7 @@ describe('data layer compatibility', () => {
       id: 'task-1',
       goalId: 'goal-1',
       title: 'legacy task',
+      scheduledDate: '2026-06-01',
       estimatedMinutes: 15,
       priority: 'medium',
       status: 'todo'
@@ -257,6 +262,11 @@ describe('data layer compatibility', () => {
     }) as DailyReview
 
     expect(review.energy).toBe('normal')
+    expect(review.taskResults).toEqual([
+      { taskId: 'task-1', status: 'done' },
+      { taskId: 'task-2', status: 'partial' },
+      { taskId: 'task-3', status: 'skipped' }
+    ])
     expect(review.completedTaskIds).toEqual(['task-1'])
     expect(review.partialTaskIds).toEqual(['task-2'])
     expect(review.skippedTaskIds).toEqual(['task-3'])
@@ -274,6 +284,7 @@ describe('data layer compatibility', () => {
             goalId: 'goal-1',
             title: 'finish outline',
             date: '2026-06-01',
+            scheduledDate: '2026-06-01',
             estimatedMinutes: 30,
             priority: 'high',
             status: 'todo',

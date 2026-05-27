@@ -36,6 +36,7 @@ function createGoal(): Goal {
     title: '完成开题报告初稿',
     deadline: '2026-06-10',
     dailyAvailableMinutes: 60,
+    status: 'active',
     createdAt: '2026-05-23T00:00:00.000Z',
     updatedAt: '2026-05-23T00:00:00.000Z'
   }
@@ -52,6 +53,7 @@ function createPlans(): DailyPlan[] {
           goalId: 'goal-1',
           title: '整理已有材料：完成开题报告初稿',
           date: '2026-06-02',
+          scheduledDate: '2026-06-02',
           estimatedMinutes: 30,
           priority: 'medium',
           status: 'partial',
@@ -68,6 +70,7 @@ function createPlans(): DailyPlan[] {
           goalId: 'goal-1',
           title: '明确目标范围：完成开题报告初稿',
           date: '2026-06-01',
+          scheduledDate: '2026-06-01',
           estimatedMinutes: 30,
           priority: 'high',
           status: 'todo',
@@ -78,6 +81,7 @@ function createPlans(): DailyPlan[] {
           goalId: 'goal-1',
           title: '检查任务入口',
           date: '2026-06-01',
+          scheduledDate: '2026-06-01',
           estimatedMinutes: 15,
           priority: 'low',
           status: 'done',

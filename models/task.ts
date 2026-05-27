@@ -18,7 +18,7 @@ export interface Task {
   title: string
   description?: string
   date: string
-  scheduledDate?: string
+  scheduledDate: string
   rescheduledFromDate?: string
   rescheduledFromStatus?: Extract<TaskStatus, 'partial' | 'skipped'>
   rescheduleReason?: TaskRescheduleReason
@@ -56,14 +56,17 @@ export function normalizeTask(value: unknown, context: NormalizeTaskContext = {}
 
   const title = readOptionalString(value.title)
   const goalId = readOptionalString(value.goalId) ?? context.goalId
-  const scheduledDate = readOptionalString(value.scheduledDate)
-  const date = readOptionalString(value.date) ?? scheduledDate ?? context.date
+  const rawScheduledDate = readOptionalString(value.scheduledDate)
+  const rawDate = readOptionalString(value.date)
+  const date = rawDate ?? rawScheduledDate ?? context.date
   const rescheduledFromDate = readOptionalString(value.rescheduledFromDate)
 
   if (!title || !goalId || !date || !ISO_DATE_PATTERN.test(date)) {
     return null
   }
 
+  const scheduledDate =
+    rawScheduledDate && ISO_DATE_PATTERN.test(rawScheduledDate) ? rawScheduledDate : date
   const planId = readOptionalString(value.planId) ?? context.planId
   const stageId = readOptionalString(value.stageId) ?? context.stageId
   const id =
@@ -95,7 +98,7 @@ export function normalizeTask(value: unknown, context: NormalizeTaskContext = {}
     title,
     description,
     date,
-    ...(scheduledDate ? { scheduledDate } : {}),
+    scheduledDate,
     ...(rescheduledFromDate && ISO_DATE_PATTERN.test(rescheduledFromDate)
       ? { rescheduledFromDate }
       : {}),

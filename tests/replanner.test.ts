@@ -8,6 +8,7 @@ function createGoal(overrides: Partial<Goal> = {}): Goal {
     title: '完成开题报告初稿',
     deadline: '2026-06-03',
     dailyAvailableMinutes: 60,
+    status: 'active',
     createdAt: '2026-05-23T00:00:00.000Z',
     updatedAt: '2026-05-23T00:00:00.000Z',
     ...overrides
@@ -25,6 +26,7 @@ function createPlans(): DailyPlan[] {
           goalId: 'goal-1',
           title: '已经完成的资料整理',
           date: '2026-06-01',
+          scheduledDate: '2026-06-01',
           estimatedMinutes: 15,
           priority: 'medium',
           status: 'todo',
@@ -35,6 +37,7 @@ function createPlans(): DailyPlan[] {
           goalId: 'goal-1',
           title: '高优先级研究问题草稿',
           date: '2026-06-01',
+          scheduledDate: '2026-06-01',
           estimatedMinutes: 30,
           priority: 'high',
           status: 'todo',
@@ -45,6 +48,7 @@ function createPlans(): DailyPlan[] {
           goalId: 'goal-1',
           title: '低优先级格式整理',
           date: '2026-06-01',
+          scheduledDate: '2026-06-01',
           estimatedMinutes: 15,
           priority: 'low',
           status: 'todo',
@@ -61,6 +65,7 @@ function createPlans(): DailyPlan[] {
           goalId: 'goal-1',
           title: '次日已有任务',
           date: '2026-06-02',
+          scheduledDate: '2026-06-02',
           estimatedMinutes: 30,
           priority: 'medium',
           status: 'todo',
@@ -108,6 +113,20 @@ function createReview(): DailyReview {
     date: '2026-06-01',
     goalId: 'goal-1',
     energy: 'normal',
+    taskResults: [
+      {
+        taskId: 'task-done',
+        status: 'done'
+      },
+      {
+        taskId: 'task-high',
+        status: 'partial'
+      },
+      {
+        taskId: 'task-low',
+        status: 'skipped'
+      }
+    ],
     completedTaskIds: ['task-done'],
     partialTaskIds: ['task-high'],
     skippedTaskIds: ['task-low'],

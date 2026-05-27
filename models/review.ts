@@ -12,7 +12,7 @@ export interface DailyReview {
   goalId: string
   planId?: string
   energy: EnergyLevel
-  taskResults?: DailyReviewTaskResult[]
+  taskResults: DailyReviewTaskResult[]
   completedTaskIds: string[]
   partialTaskIds: string[]
   skippedTaskIds: string[]
@@ -75,6 +75,23 @@ export function normalizeDailyReview(value: unknown): DailyReview | null {
   )
   const note = readOptionalString(value.note)
   const planId = readOptionalString(value.planId)
+  const normalizedTaskResults =
+    taskResults.length > 0
+      ? taskResults
+      : [
+          ...completedTaskIds.map((taskId) => ({
+            taskId,
+            status: 'done' as const
+          })),
+          ...partialTaskIds.map((taskId) => ({
+            taskId,
+            status: 'partial' as const
+          })),
+          ...skippedTaskIds.map((taskId) => ({
+            taskId,
+            status: 'skipped' as const
+          }))
+        ]
 
   return {
     id: readOptionalString(value.id) ?? `${goalId}:${date}`,
@@ -82,7 +99,7 @@ export function normalizeDailyReview(value: unknown): DailyReview | null {
     goalId,
     ...(planId ? { planId } : {}),
     energy: isEnergyLevel(value.energy) ? value.energy : 'normal',
-    ...(taskResults.length > 0 ? { taskResults } : {}),
+    taskResults: normalizedTaskResults,
     completedTaskIds,
     partialTaskIds,
     skippedTaskIds,
@@ -101,6 +118,10 @@ export function buildDailyReview(
   const completedTaskIds = collectTaskIds(input.taskStatusById, 'done')
   const partialTaskIds = collectTaskIds(input.taskStatusById, 'partial')
   const skippedTaskIds = collectTaskIds(input.taskStatusById, 'skipped')
+  const taskResults = Object.entries(input.taskStatusById).map(([taskId, status]) => ({
+    taskId,
+    status
+  }))
   const note = input.note?.trim()
   const now = options.now ?? new Date()
 
@@ -110,6 +131,7 @@ export function buildDailyReview(
     goalId: input.goalId,
     ...(input.planId ? { planId: input.planId } : {}),
     energy: input.energy ?? 'normal',
+    taskResults,
     completedTaskIds,
     partialTaskIds,
     skippedTaskIds,

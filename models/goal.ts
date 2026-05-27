@@ -13,7 +13,7 @@ export interface Goal {
   description?: string
   deadline: string
   dailyAvailableMinutes: number
-  status?: GoalStatus
+  status: GoalStatus
   createdAt: string
   updatedAt: string
 }
@@ -68,7 +68,7 @@ export function normalizeGoal(value: unknown): Goal | null {
   const createdAt = readOptionalString(value.createdAt) ?? LEGACY_FALLBACK_TIMESTAMP
   const updatedAt = readOptionalString(value.updatedAt) ?? createdAt
   const description = readOptionalString(value.description)
-  const status = isGoalStatus(value.status) ? value.status : undefined
+  const status = isGoalStatus(value.status) ? value.status : 'active'
 
   return {
     id,
@@ -76,7 +76,7 @@ export function normalizeGoal(value: unknown): Goal | null {
     description,
     deadline,
     dailyAvailableMinutes,
-    ...(status ? { status } : {}),
+    status,
     createdAt,
     updatedAt
   }
@@ -162,6 +162,7 @@ export function buildGoal(
       description: description || undefined,
       deadline: input.deadline.trim(),
       dailyAvailableMinutes: parseDailyAvailableMinutes(input.dailyAvailableMinutes) ?? 0,
+      status: 'active',
       createdAt: timestamp,
       updatedAt: timestamp
     }

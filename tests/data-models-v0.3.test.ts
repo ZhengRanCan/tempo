@@ -7,7 +7,7 @@ import {
   dailyPlansToPlanBundle,
   planBundleToDailyPlans
 } from '../models/plan'
-import { normalizeDailyReview } from '../models/review'
+import { buildDailyReview, normalizeDailyReview } from '../models/review'
 import { normalizeTask } from '../models/task'
 
 function createLegacyDailyPlans(): DailyPlan[] {
@@ -23,6 +23,7 @@ function createLegacyDailyPlans(): DailyPlan[] {
           goalId: 'goal-1',
           title: 'draft proposal outline',
           date: '2026-06-01',
+          scheduledDate: '2026-06-01',
           estimatedMinutes: 30,
           priority: 'high',
           status: 'partial',
@@ -40,6 +41,7 @@ function createLegacyDailyPlans(): DailyPlan[] {
           goalId: 'goal-1',
           title: 'collect references',
           date: '2026-06-02',
+          scheduledDate: '2026-06-02',
           estimatedMinutes: 20,
           priority: 'medium',
           status: 'done',
@@ -75,9 +77,9 @@ describe('v0.3 data models', () => {
 
     expect(legacyGoal).toMatchObject({
       id: 'goal-1',
+      status: 'active',
       updatedAt: '1970-01-01T00:00:00.000Z'
     })
-    expect(legacyGoal).not.toHaveProperty('status')
 
     expect(
       normalizeGoal({
@@ -93,6 +95,18 @@ describe('v0.3 data models', () => {
   })
 
   it('supports scheduledDate and maps legacy DailyPlan task dates through the adapter', () => {
+    const legacyTask = normalizeTask({
+      id: 'task-legacy',
+      goalId: 'goal-1',
+      title: 'legacy standalone task',
+      date: '2026-06-04'
+    })
+
+    expect(legacyTask).toMatchObject({
+      date: '2026-06-04',
+      scheduledDate: '2026-06-04'
+    })
+
     const normalizedTask = normalizeTask({
       id: 'task-new',
       goalId: 'goal-1',
@@ -168,10 +182,31 @@ describe('v0.3 data models', () => {
     })
 
     expect(legacyReview).toMatchObject({
+      taskResults: [
+        { taskId: 'task-1', status: 'done' },
+        { taskId: 'task-2', status: 'partial' },
+        { taskId: 'task-3', status: 'skipped' }
+      ],
       completedTaskIds: ['task-1'],
       partialTaskIds: ['task-2'],
       skippedTaskIds: ['task-3']
     })
+
+    const builtReview = buildDailyReview({
+      date: '2026-06-01',
+      goalId: 'goal-1',
+      taskStatusById: {
+        'task-1': 'done',
+        'task-2': 'partial',
+        'task-3': 'skipped'
+      }
+    })
+
+    expect(builtReview.taskResults).toEqual([
+      { taskId: 'task-1', status: 'done' },
+      { taskId: 'task-2', status: 'partial' },
+      { taskId: 'task-3', status: 'skipped' }
+    ])
   })
 
   it('converts DailyPlan arrays to PlanBundle and back without losing task facts', () => {

@@ -15,7 +15,7 @@ export type {
   TodayView
 } from './plan'
 export type { DailyReview, DailyReviewTaskResult, ReviewTaskStatus } from './review'
-export type { Task, TaskType } from './task'
+export type { Task, TaskRescheduleReason, TaskType } from './task'
 export type { UserProfile } from './user-profile'
 export type { AiTodaySuggestion, AiSuggestionBoundary } from './ai-suggestion'
 export type { TarotDraw, TarotOrientation } from './tarot'

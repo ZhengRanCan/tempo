@@ -45,6 +45,11 @@ describe('daily review', () => {
     expect(review.completedTaskIds).toEqual(['task-1'])
     expect(review.partialTaskIds).toEqual(['task-2'])
     expect(review.skippedTaskIds).toEqual(['task-3'])
+    expect(review.taskResults).toEqual([
+      { taskId: 'task-1', status: 'done' },
+      { taskId: 'task-2', status: 'partial' },
+      { taskId: 'task-3', status: 'skipped' }
+    ])
   })
 
   it('records the selected energy state', () => {
@@ -97,6 +102,7 @@ describe('daily review', () => {
         date: '2026-06-01',
         goalId: 'goal-1',
         energy: 'normal',
+        taskResults: [{ taskId: 'task-1', status: 'done' }],
         completedTaskIds: ['task-1'],
         partialTaskIds: [],
         skippedTaskIds: [],
@@ -127,5 +133,13 @@ describe('daily review', () => {
     await saveDailyReview(nextReview)
 
     await expect(getDailyReviews('goal-1')).resolves.toEqual([nextReview])
+  })
+
+  it('keeps the review page on buildDailyReview taskResults instead of manual mutation', async () => {
+    const fs = await import('node:fs')
+    const source = fs.readFileSync('pages/review/index.vue', 'utf8')
+
+    expect(source).toContain('replanPlanBundleAfterReview')
+    expect(source).not.toContain('review.taskResults =')
   })
 })

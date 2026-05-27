@@ -9,6 +9,7 @@ describe('planner initialization smoke test', () => {
       title: '完成开题报告初稿',
       deadline: '2026-06-01',
       dailyAvailableMinutes: 60,
+      status: 'active',
       createdAt: '2026-05-20T00:00:00.000Z',
       updatedAt: '2026-05-20T00:00:00.000Z'
     }

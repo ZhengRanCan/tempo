@@ -1,31 +1,44 @@
 # progress.md
 
-## 当前 feature
+## ?? feature
 
-- `F17`：v0.3 页面 UI 与新数据视图接入
-- 状态：`passing`
+- ??? `active` feature
+- ?????`F19`?v0.3 ?????Plan ????????
+- ???`not_started`
 
-## 当前状态
+## ????
+- ?????App v0.3 ???????F12-F18 ?????????
+- ???????F18 ??? Goal?Task?DailyReview ??????????????? F19??? Plan ???????
+- Harness ???F12?F13?F14?F15?F16?F17?F18 ? `passing`?F19 ? `not_started`?
 
-- 项目阶段：App v0.2 F08-F11 全部完成并通过门禁。
-- 当前工作边界：已进入 App v0.3 规划阶段，v0.3 按“models -> storage -> planner -> view services -> replanner -> UI integration”顺序渐进迁移。
-- Harness 状态：F12、F13、F14、F15、F16、F17 已 passing；v0.3 feature 全部完成。
-- F01、F02、F03、F04、F05、F06、F07 已作为 v0.1 基线归档到 `docs/log/v0.1/feature_list_v0.1.json`。
-
-## 功能状态摘要
-
+## ??????
 - `F12` passing
 - `F13` passing
 - `F14` passing
 - `F15` passing
 - `F16` passing
 - `F17` passing
-- 当前工作功能清单位置：`docs/harness/feature_list.json`
-- v0.3 版本化功能清单位置：`docs/harness/feature_list_v0.3.json`
-- v0.2 版本化功能清单位置：`docs/log/v0.2/feature_list_v0.2.json`
-- v0.1 归档功能清单位置：`docs/log/v0.1/feature_list.json`
+- `F18` passing
+- `F19` not_started
+- ???????????`docs/harness/feature_list_v0.3.json`
+- v0.3 ??????????`docs/harness/feature_list_v0.3.json`
+- v0.2 ??????????`docs/log/v0.2/feature_list_v0.2.json`
+- v0.1 ?????????`docs/log/v0.1/feature_list.json`
 
-## 最近完成
+## ??????
+- `npm.cmd run test -- data-models-v0.3 goal-create review data-layer`????4 ??????25 ??????
+- `npm.cmd run verify:static`????lint ? vue-tsc --noEmit ???
+- `npm.cmd run verify:system`????`build:mp-weixin` ?????
+- `npm.cmd run check`????15 ??????93 ??????F18 active ??? harness gate 0 warning / 0 error?
+- `npm.cmd run verify:harness`????F18 passing ??? 8 ? feature ? 7 ? passing?1 ? not_started?0 warning / 0 error?
+
+## ????
+- `2026-05-27` F18 ??? v0.3 ??????????????
+- F18 ?????`Goal.status` ?????`buildGoal()` ???????? `active`?`normalizeGoal()` ?????? status ??? `active`?
+- F18 Task ?????`normalizeTask()` ?? `scheduledDate` ?? `date` ????? `scheduledDate`???? `date` ???
+- F18 DailyReview ???`buildDailyReview()` ???? `taskResults`?`normalizeDailyReview()` ???? task id ?? `taskResults`?????????
+- F18 ?????????? `review.taskResults = ...` ??????? Review ???? `replanPlanBundleAfterReview()` ??? PlanBundle / legacy DailyPlan[]?
+- F18 ?????????????????????? fixture ?? `Goal.status`?`Task.scheduledDate`?`DailyReview.taskResults`??????????????
 
 - 将红框中的项目地图、约束、规格和初始化文档移动到 `docs/harness/`
 - 保留 `docs/progress.md` 和 `docs/decisions.md` 作为主文件
@@ -136,7 +149,7 @@
 - `2026-05-26` 已更新 `docs/harness/ARCHITECTURE.md` 和 `AGENTS.md`：`ARCHITECTURE.md` 作为架构 README，`AGENTS.md` 增加数据模型、storage、services 的按需读取和迁移约束。
 - `2026-05-26` 已完成 `models/` 与 `services/` 初步审计：当前主要风险是 `models/plan.ts` 混合领域模型和页面视图、`planner/replanner/storage/today-suggestion/ai-client` 仍强依赖 `DailyPlan[]`，后续应先新增目标类型和 legacy adapter，再逐步迁移服务输出。
 - `2026-05-26` 已生成 App v0.3 工作计划：`docs/log/v0.3/work-plan.md`。
-- `2026-05-26` 已生成 App v0.3 功能清单：`docs/harness/feature_list_v0.3.json`，并同步为当前工作入口 `docs/harness/feature_list.json`；F12 为 `active`，F13-F17 按依赖顺序 `not_started`。
+- `2026-05-26` 已生成 App v0.3 功能清单：`docs/harness/feature_list_v0.3.json`；F12 为 `active`，F13-F17 按依赖顺序 `not_started`。
 - `2026-05-26` `scripts/harness-gate.mjs` 已从固定要求 `completionGate.version: "v0.2"` 调整为接受 `v0.x` 版本格式，`docs/harness/verification-policy.md` 已同步说明。
 
 - `2026-05-26` F12 已完成目标数据模型与 legacy adapter：新增 `GoalStatus`、`PlanStatus`、`StageStatus`、`TaskType`、`Plan`、`Stage`、`PlanBundle`、`DailyTaskView`、`PlanProgress`，并提供 `dailyPlansToPlanBundle()` / `planBundleToDailyPlans()` 双向 adapter。
@@ -213,10 +226,10 @@
 
 ## 下一步
 
-- v0.3 F12-F17 已全部完成并通过门禁。
+- v0.3 F12-F17 已全部完成并通过门禁；F18、F19 为 2026-05-27 审计后补充的后续修复项。
 
 ## 交接说明
 
-- 任务开始先读 `docs/harness/feature_list.json` 和本文件
+- 任务开始先读 `docs/harness/feature_list_v0.3.json` 和本文件
 - 完成判断按 `docs/harness/verification-policy.md`
 - 失败详情或手动冒烟详情写入 `docs/log/`
