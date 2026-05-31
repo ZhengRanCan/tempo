@@ -1,6 +1,5 @@
 <script setup lang="ts">
 defineProps<{
-  eyebrow?: string
   title: string
   hint?: string
 }>()
@@ -8,13 +7,10 @@ defineProps<{
 
 <template>
   <view class="app-page-header">
-    <text
-      v-if="eyebrow"
-      class="eyebrow"
-    >
-      {{ eyebrow }}
-    </text>
-    <text class="title">{{ title }}</text>
+    <view class="header-main">
+      <text class="title">{{ title }}</text>
+      <slot name="action" />
+    </view>
     <text
       v-if="hint"
       class="hint"
@@ -26,37 +22,29 @@ defineProps<{
 
 <style scoped lang="scss">
 .app-page-header {
-  margin-bottom: 32rpx;
+  margin-bottom: 24rpx;
 }
 
-.eyebrow {
-  display: inline-block;
-  padding: 8rpx 18rpx;
-  border-radius: 999rpx;
-  background: #fff2e8;
-  color: #d68a5a;
-  font-size: 24rpx;
-  font-weight: 500;
-  line-height: 1.4;
-}
-
-.title,
-.hint {
-  display: block;
+.header-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16rpx;
 }
 
 .title {
-  margin-top: 28rpx;
+  display: block;
   color: #24211c;
-  font-size: 44rpx;
+  font-size: 40rpx;
   font-weight: 600;
   line-height: 1.3;
 }
 
 .hint {
-  margin-top: 16rpx;
+  display: block;
+  margin-top: 8rpx;
   color: #4b463d;
-  font-size: 30rpx;
-  line-height: 1.55;
+  font-size: 26rpx;
+  line-height: 1.5;
 }
 </style>

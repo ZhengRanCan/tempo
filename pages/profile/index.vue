@@ -62,25 +62,13 @@ function goCreateGoal(): void {
   })
 }
 
-function goToday(): void {
-  uni.switchTab({
-    url: '/pages/today/index'
-  })
-}
-
-function goCalendar(): void {
-  uni.switchTab({
-    url: '/pages/plan-calendar/index'
-  })
-}
 </script>
 
 <template>
   <view class="page">
     <AppPageHeader
-      eyebrow="我的"
-      title="个人状态"
-      hint="这里只保留和任务安排相关的偏好。"
+      title="我的"
+      hint="查看目标、偏好和最近推进"
     />
 
     <EmptyState
@@ -137,21 +125,6 @@ function goCalendar(): void {
           偏好只用于调整表达和轻量排序，不用于诊断或预测。
         </text>
       </view>
-
-      <view class="action-row">
-        <button
-          class="secondary-button"
-          @tap="goToday"
-        >
-          今日任务
-        </button>
-        <button
-          class="secondary-button"
-          @tap="goCalendar"
-        >
-          任务日历
-        </button>
-      </view>
     </template>
   </view>
 </template>
@@ -160,12 +133,11 @@ function goCalendar(): void {
 .page {
   min-height: 100vh;
   box-sizing: border-box;
-  padding: 112rpx 40rpx 48rpx;
+  padding: 96rpx 32rpx 48rpx;
   background: #faf8f3;
 }
 
-.panel,
-.empty-state {
+.panel {
   padding: 32rpx;
   border: 2rpx solid #e5ded2;
   border-radius: 28rpx;
@@ -179,8 +151,6 @@ function goCalendar(): void {
 .section-title,
 .main-value,
 .helper,
-.empty-title,
-.empty-copy,
 .item-label,
 .item-value {
   display: block;
@@ -201,8 +171,7 @@ function goCalendar(): void {
   line-height: 1.35;
 }
 
-.helper,
-.empty-copy {
+.helper {
   margin-top: 12rpx;
   color: #7c7568;
   font-size: 26rpx;
@@ -251,8 +220,7 @@ function goCalendar(): void {
   line-height: 1.35;
 }
 
-.primary-button,
-.secondary-button {
+.primary-button {
   height: 84rpx;
   border-radius: 20rpx;
   font-size: 30rpx;
@@ -266,23 +234,4 @@ function goCalendar(): void {
   color: #ffffff;
 }
 
-.action-row {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 16rpx;
-  margin-top: 28rpx;
-}
-
-.secondary-button {
-  border: 2rpx solid #e5ded2;
-  background: #ffffff;
-  color: #24211c;
-}
-
-.empty-title {
-  color: #24211c;
-  font-size: 36rpx;
-  font-weight: 600;
-  line-height: 1.35;
-}
 </style>

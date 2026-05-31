@@ -172,9 +172,8 @@ function goCreateGoal(): void {
 <template>
   <view class="page">
     <AppPageHeader
-      eyebrow="晚间复盘"
-      :title="goal?.title || '今天先有一个目标'"
-      hint="只记录今天真实推进到哪里，明天再继续。"
+      title="晚间复盘"
+      hint="记录今天推进到哪里，明天再继续"
     />
 
     <EmptyState
@@ -262,53 +261,18 @@ function goCreateGoal(): void {
 .page {
   min-height: 100vh;
   box-sizing: border-box;
-  padding: 112rpx 40rpx 48rpx;
+  padding: 96rpx 32rpx 48rpx;
   background: #faf8f3;
 }
 
-.header {
-  margin-bottom: 28rpx;
-}
-
-.eyebrow {
-  display: inline-block;
-  padding: 8rpx 18rpx;
-  border-radius: 999rpx;
-  background: #fff2e8;
-  color: #d68a5a;
-  font-size: 24rpx;
-  font-weight: 500;
-  line-height: 1.4;
-}
-
-.title,
-.hint,
 .section-title,
 .task-title,
 .task-helper,
-.helper,
-.empty-title,
-.empty-copy {
+.helper {
   display: block;
 }
 
-.title {
-  margin-top: 28rpx;
-  color: #24211c;
-  font-size: 44rpx;
-  font-weight: 600;
-  line-height: 1.3;
-}
-
-.hint {
-  margin-top: 16rpx;
-  color: #4b463d;
-  font-size: 30rpx;
-  line-height: 1.55;
-}
-
-.panel,
-.empty-state {
+.panel {
   padding: 32rpx;
   border: 2rpx solid #e5ded2;
   border-radius: 28rpx;
@@ -348,23 +312,14 @@ function goCreateGoal(): void {
   line-height: 1.5;
 }
 
-.status-options,
-.energy-options {
+.status-options {
   display: grid;
   gap: 12rpx;
   margin-top: 18rpx;
-}
-
-.status-options {
   grid-template-columns: repeat(3, 1fr);
 }
 
-.energy-options {
-  grid-template-columns: repeat(3, 1fr);
-}
-
-.status-option,
-.energy-option {
+.status-option {
   height: 68rpx;
   padding: 0;
   border: 2rpx solid #e5ded2;
@@ -375,8 +330,7 @@ function goCreateGoal(): void {
   line-height: 68rpx;
 }
 
-.status-option.active,
-.energy-option.active {
+.status-option.active {
   border-color: #6b6fd6;
   background: #ececff;
   color: #555ac0;
@@ -419,17 +373,4 @@ function goCreateGoal(): void {
   line-height: 88rpx;
 }
 
-.empty-title {
-  color: #24211c;
-  font-size: 36rpx;
-  font-weight: 600;
-  line-height: 1.35;
-}
-
-.empty-copy {
-  margin-top: 16rpx;
-  color: #4b463d;
-  font-size: 28rpx;
-  line-height: 1.55;
-}
 </style>

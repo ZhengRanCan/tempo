@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, reactive, ref } from 'vue'
+import AppPageHeader from '../../components/AppPageHeader.vue'
 import EnergySelector from '../../components/EnergySelector.vue'
 import type { EnergyLevel, UserProfile, WorkStyle } from '../../models'
 import { buildGoal, formatGoalDate, validateGoalInput } from '../../models/goal'
@@ -204,13 +205,10 @@ async function handleSubmit(): Promise<void> {
 
 <template>
   <view class="page">
-    <view class="header">
-      <text class="eyebrow">Tempo</text>
-      <text class="title">创建目标</text>
-      <text class="hint">
-        先写下一个想推进的目标，再选一个从今天开始还来得及完成的截止日期。
-      </text>
-    </view>
+    <AppPageHeader
+      title="创建目标"
+      hint="写下目标和每天能投入的时间"
+    />
 
     <view class="form">
       <view class="field">
@@ -387,41 +385,8 @@ async function handleSubmit(): Promise<void> {
 .page {
   min-height: 100vh;
   box-sizing: border-box;
-  padding: 112rpx 40rpx 48rpx;
+  padding: 96rpx 32rpx 48rpx;
   background: #faf8f3;
-}
-
-.header {
-  margin-bottom: 32rpx;
-}
-
-.eyebrow {
-  display: block;
-  width: fit-content;
-  padding: 8rpx 18rpx;
-  border-radius: 999rpx;
-  background: #fff2e8;
-  color: #d68a5a;
-  font-size: 24rpx;
-  font-weight: 500;
-  line-height: 1.4;
-}
-
-.title {
-  display: block;
-  margin-top: 28rpx;
-  color: #24211c;
-  font-size: 44rpx;
-  font-weight: 600;
-  line-height: 1.3;
-}
-
-.hint {
-  display: block;
-  margin-top: 16rpx;
-  color: #4b463d;
-  font-size: 30rpx;
-  line-height: 1.55;
 }
 
 .form {
@@ -487,7 +452,7 @@ async function handleSubmit(): Promise<void> {
 }
 
 .error {
-  color: #c75c54;
+  color: #8a6727;
 }
 
 .time-options {
@@ -581,31 +546,6 @@ async function handleSubmit(): Promise<void> {
 }
 
 .work-style-option.active .option-helper {
-  color: #555ac0;
-}
-
-.energy-options {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12rpx;
-  padding: 8rpx;
-  border-radius: 999rpx;
-  background: #ece6da;
-}
-
-.energy-option {
-  height: 64rpx;
-  padding: 0;
-  border: 0;
-  border-radius: 999rpx;
-  background: transparent;
-  color: #4b463d;
-  font-size: 24rpx;
-  line-height: 64rpx;
-}
-
-.energy-option.active {
-  background: #ececff;
   color: #555ac0;
 }
 

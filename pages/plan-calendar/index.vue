@@ -60,19 +60,13 @@ function goCreateGoal(): void {
   })
 }
 
-function goToday(): void {
-  uni.switchTab({
-    url: '/pages/today/index'
-  })
-}
 </script>
 
 <template>
   <view class="page">
     <AppPageHeader
-      eyebrow="任务日历"
-      :title="goal?.title || '还没有计划'"
-      hint="先看最近 7 天，每天只保留能执行的小步骤。"
+      title="任务日历"
+      hint="先看最近 7 天的可执行安排"
     />
 
     <EmptyState
@@ -118,13 +112,6 @@ function goToday(): void {
         </text>
       </view>
 
-      <button
-        class="primary-button"
-        @tap="goToday"
-      >
-        查看今日任务
-      </button>
-
       <view class="day-list">
         <view
           v-for="day in days"
@@ -145,11 +132,13 @@ function goToday(): void {
             </text>
           </view>
 
-          <TaskCard
-            v-for="task in day.tasks"
-            :key="task.id"
-            :task="task"
-          />
+          <view class="task-list">
+            <TaskCard
+              v-for="task in day.tasks"
+              :key="task.id"
+              :task="task"
+            />
+          </view>
         </view>
       </view>
 
@@ -175,45 +164,8 @@ function goToday(): void {
 .page {
   min-height: 100vh;
   box-sizing: border-box;
-  padding: 112rpx 40rpx 48rpx;
+  padding: 96rpx 32rpx 48rpx;
   background: #faf8f3;
-}
-
-.header {
-  margin-bottom: 32rpx;
-}
-
-.eyebrow,
-.today-tag,
-.status-label {
-  display: inline-block;
-  border-radius: 999rpx;
-  font-size: 24rpx;
-  font-weight: 500;
-  line-height: 1.4;
-}
-
-.eyebrow {
-  padding: 8rpx 18rpx;
-  background: #fff2e8;
-  color: #d68a5a;
-}
-
-.title {
-  display: block;
-  margin-top: 28rpx;
-  color: #24211c;
-  font-size: 44rpx;
-  font-weight: 600;
-  line-height: 1.3;
-}
-
-.hint {
-  display: block;
-  margin-top: 16rpx;
-  color: #4b463d;
-  font-size: 30rpx;
-  line-height: 1.55;
 }
 
 .summary {
@@ -232,7 +184,14 @@ function goToday(): void {
 }
 
 .summary-value,
-.summary-label {
+.summary-label,
+.plan-title,
+.plan-copy,
+.section-title,
+.stage-title,
+.stage-meta,
+.date,
+.day-summary {
   display: block;
 }
 
@@ -250,17 +209,6 @@ function goToday(): void {
   line-height: 1.4;
 }
 
-.primary-button {
-  height: 88rpx;
-  margin-bottom: 28rpx;
-  border-radius: 20rpx;
-  background: #6b6fd6;
-  color: #ffffff;
-  font-size: 32rpx;
-  font-weight: 500;
-  line-height: 88rpx;
-}
-
 .plan-panel,
 .stage-card {
   padding: 24rpx;
@@ -271,14 +219,6 @@ function goToday(): void {
 
 .plan-panel {
   margin-bottom: 24rpx;
-}
-
-.plan-title,
-.plan-copy,
-.section-title,
-.stage-title,
-.stage-meta {
-  display: block;
 }
 
 .plan-title,
@@ -331,11 +271,6 @@ function goToday(): void {
   margin-bottom: 20rpx;
 }
 
-.date,
-.day-summary {
-  display: block;
-}
-
 .date {
   color: #24211c;
   font-size: 32rpx;
@@ -351,115 +286,19 @@ function goToday(): void {
 }
 
 .today-tag {
+  display: inline-block;
   padding: 8rpx 16rpx;
+  border-radius: 999rpx;
   background: #6b6fd6;
   color: #ffffff;
-}
-
-.task-card {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 12rpx;
-  padding: 24rpx;
-  border: 2rpx solid #e5ded2;
-  border-radius: 24rpx;
-  background: #ffffff;
-}
-
-.task-card + .task-card {
-  margin-top: 16rpx;
-}
-
-.task-card.priority {
-  border-left: 6rpx solid #6b6fd6;
-}
-
-.task-card.status-done {
-  background: #eaf6ee;
-}
-
-.task-card.status-partial {
-  background: #fff5da;
-}
-
-.task-card.status-skipped {
-  background: #f3efe7;
-}
-
-.task-meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10rpx;
-  align-items: center;
-}
-
-.status-label {
-  padding: 6rpx 14rpx;
-  background: #f3efe7;
-  color: #4b463d;
-}
-
-.status-done .status-label {
-  background: #eaf6ee;
-  color: #4f9d69;
-}
-
-.status-partial .status-label {
-  background: #fff5da;
-  color: #8a6727;
-}
-
-.status-skipped .status-label {
-  background: #ece6da;
-  color: #7c7568;
-}
-
-.minutes {
-  color: #7c7568;
   font-size: 24rpx;
+  font-weight: 500;
   line-height: 1.4;
 }
 
-.task-title {
-  color: #24211c;
-  font-size: 30rpx;
-  font-weight: 600;
-  line-height: 1.35;
-}
-
-.minimum-line {
-  padding: 18rpx;
-  border-radius: 18rpx;
-  background: #ececff;
-  color: #4b463d;
-  font-size: 26rpx;
-  line-height: 1.5;
-}
-
-.empty-state {
-  padding: 40rpx 32rpx;
-  border: 2rpx solid #e5ded2;
-  border-radius: 28rpx;
-  background: #ffffff;
-}
-
-.empty-title,
-.empty-copy {
-  display: block;
-}
-
-.empty-title {
-  color: #24211c;
-  font-size: 36rpx;
-  font-weight: 600;
-  line-height: 1.35;
-}
-
-.empty-copy {
-  margin: 16rpx 0 28rpx;
-  color: #4b463d;
-  font-size: 28rpx;
-  line-height: 1.55;
+.task-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
 }
 </style>

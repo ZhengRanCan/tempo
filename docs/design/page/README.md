@@ -41,6 +41,7 @@
 |---|---|
 | `00-ui-redesign-overview.md` | UI 改造原因、共同问题、全局原则和本轮不做事项 |
 | `01-page-layout-contract.md` | 顶部导航、底部 TabBar、页面首屏和页面职责契约 |
+| `02-f20-page-shell-component-baseline.md` | F20 页面壳与组件基线执行合约 |
 | `pages/today-page.md` | 今日任务页规范 |
 | `pages/calendar-page.md` | 任务日历页规范 |
 | `pages/create-goal-page.md` | 创建目标页规范 |

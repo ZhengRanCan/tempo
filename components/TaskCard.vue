@@ -30,6 +30,13 @@ const priorityLabels: Record<Task['priority'], string> = {
       <text class="minimum-label">最低完成线</text>
       <text class="minimum-text">{{ task.minimumLine }}</text>
     </view>
+
+    <view
+      v-if="$slots.action"
+      class="action-slot"
+    >
+      <slot name="action" />
+    </view>
   </view>
 </template>
 
@@ -136,5 +143,9 @@ const priorityLabels: Record<Task['priority'], string> = {
   color: #4b463d;
   font-size: 26rpx;
   line-height: 1.5;
+}
+
+.action-slot {
+  margin-top: 2rpx;
 }
 </style>

@@ -1,0 +1,443 @@
+[
+  {
+    "id": "F20",
+    "title": "v0.3 UI 改造：页面壳与全局组件基线",
+    "status": "passing",
+    "dependsOn": [],
+    "behavior": "Use docs/design/page/02-f20-page-shell-component-baseline.md as the execution contract for the UI baseline: apply a shared page shell to the four Tab pages and review page, remove duplicated body title areas, align TabBar/page-body responsibilities, standardize TaskCard, TodayFocusCard, EmptyState, EnergySelector, buttons, cards, and tags as low-pressure component shells, keep existing data/service paths unchanged, and do not pre-implement the F21-F23 page information redesigns.",
+    "scope": {
+      "pages": [
+        "pages/today/index.vue",
+        "pages/plan-calendar/index.vue",
+        "pages/goal-create/index.vue",
+        "pages/profile/index.vue",
+        "pages/review/index.vue"
+      ],
+      "components": [
+        "components/AppPageHeader.vue",
+        "components/TaskCard.vue",
+        "components/TodayFocusCard.vue",
+        "components/EmptyState.vue",
+        "components/EnergySelector.vue"
+      ],
+      "services": [],
+      "models": [],
+      "schemas": [],
+      "tests": [
+        "tests/ui-components.test.ts",
+        "tests/navigation-shell.test.ts",
+        "tests/today.test.ts",
+        "tests/plan-calendar.test.ts",
+        "tests/review.test.ts"
+      ],
+      "docs": [
+        "docs/harness/DESIGN.md",
+        "docs/design/README.md",
+        "docs/design/visual-system.md",
+        "docs/design/components.md",
+        "docs/design/interaction-states.md",
+        "docs/design/content-rules.md",
+        "docs/design/page/README.md",
+        "docs/design/page/00-ui-redesign-overview.md",
+        "docs/design/page/01-page-layout-contract.md",
+        "docs/design/page/02-f20-page-shell-component-baseline.md",
+        "docs/progress.md"
+      ]
+    },
+    "acceptance": [
+      {
+        "id": "A01",
+        "text": "四个 Tab 主页面统一使用页面壳规则：顶部导航只负责页面名称和轻提示，页面主体不再重复大标题、胶囊标签和长副标题",
+        "method": "mixed"
+      },
+      {
+        "id": "A02",
+        "text": "底部 TabBar 只负责今日任务、任务日历、创建目标、我的四个主入口；页面主体不重复制作同等 TabBar 入口按钮",
+        "method": "automated"
+      },
+      {
+        "id": "A03",
+        "text": "全局按钮、卡片、标签、输入、空状态、任务卡片样式遵守 docs/design/visual-system.md 和 docs/design/components.md，避免页面各自复制冲突样式",
+        "method": "mixed"
+      },
+      {
+        "id": "A04",
+        "text": "低压力风格保留：不用高压红色、大面积警告、强阴影、玻璃拟态或大面积渐变；状态颜色必须配合文字",
+        "method": "manual_smoke"
+      },
+      {
+        "id": "A05",
+        "text": "本 feature 不改变 PlanBundle、Goal、Task、DailyReview、storage key、planner、replanner 或 AI/tarot 服务逻辑",
+        "method": "automated"
+      }
+    ],
+    "verify": {
+      "static": "npm run verify:static",
+      "feature": "npm run test -- ui-components navigation-shell today plan-calendar review",
+      "system": "npm run verify:system"
+    },
+    "outOfScope": [
+      "不重构数据模型",
+      "不改变 storage key",
+      "不接入真实 Deepseek",
+      "不新增完整塔罗 UI",
+      "不一次性重做四个页面的业务信息结构"
+    ],
+    "completionGate": {
+      "version": "v0.3",
+      "l3": "required",
+      "userPath": [
+        "打开四个 Tab 主页面 -> 顶部标题和主体内容不重复抢占首屏",
+        "无目标数据 -> 今日、日历、我的页空状态仍清晰可操作",
+        "有目标和计划数据 -> 通用任务卡片、按钮、状态标签样式一致"
+      ],
+      "integrationEvidence": [
+        "tests/ui-components.test.ts 覆盖组件接入和样式关键类名",
+        "tests/navigation-shell.test.ts 覆盖 TabBar 页面注册与顺序",
+        "npm.cmd run verify:system 通过，mp-weixin 构建产物生成成功",
+        "人工冒烟需至少检查 today、plan-calendar、goal-create、profile 四个 Tab 页首屏"
+      ],
+      "knownUnverified": [],
+      "humanReviewRequired": []
+    },
+    "evidence": {
+      "lastVerifiedAt": "2026-05-31T20:30:00+08:00",
+      "commands": [
+        {
+          "command": "npm.cmd run test -- ui-components navigation-shell today plan-calendar review",
+          "result": "passed",
+          "notes": "36 tests passed across ui-components, navigation-shell, today, today-suggestion, plan-calendar, and review."
+        },
+        {
+          "command": "npm.cmd run verify:static",
+          "result": "passed",
+          "notes": "eslint and vue-tsc --noEmit passed."
+        },
+        {
+          "command": "npm.cmd run verify:system",
+          "result": "passed",
+          "notes": "mp-weixin build completed successfully; Sass legacy API warnings only."
+        },
+        {
+          "command": "npm.cmd run verify:harness",
+          "result": "passed",
+          "notes": "Harness gate passed with 4 features, 1 passing, 3 not_started, 0 warnings, 0 errors."
+        }
+      ],
+      "manualSmoke": "Source/build smoke for F20: four Tab pages and review page use AppPageHeader; body-level duplicate header/eyebrow styles were removed; today no longer links to calendar as a peer tab entry; calendar no longer links to today as a peer tab entry; profile no longer duplicates today/calendar TabBar entries; task, empty, focus, and energy shell styles are owned by shared components; no high-pressure red, large gradient, shadow, or glass style was introduced.",
+      "notes": "F20 establishes only the shared page shell and component baseline. Data, storage, planner, replanner, AI, tarot, Goal, Plan, Stage, Task, DailyReview, and UserProfile logic were not changed; F21-F23 remain responsible for page-specific information architecture."
+    }
+  },
+  {
+    "id": "F21",
+    "title": "v0.3 UI 改造：今日任务执行台",
+    "status": "not_started",
+    "dependsOn": [
+      "F20"
+    ],
+    "behavior": "按 docs/design/page/pages/today-page.md 重做今日任务页首屏信息层级，把今日页定位为执行台：突出一个今日重点任务、今日状态、短 AI 建议和轻量复盘入口。",
+    "scope": {
+      "pages": [
+        "pages/today/index.vue",
+        "pages/review/index.vue"
+      ],
+      "components": [
+        "components/TodayFocusCard.vue",
+        "components/TaskCard.vue",
+        "components/EmptyState.vue",
+        "components/EnergySelector.vue"
+      ],
+      "services": [
+        "services/today-suggestion.ts",
+        "services/plan-view.ts"
+      ],
+      "models": [],
+      "schemas": [],
+      "tests": [
+        "tests/today.test.ts",
+        "tests/today-suggestion.test.ts",
+        "tests/review.test.ts",
+        "tests/ui-components.test.ts"
+      ],
+      "docs": [
+        "docs/harness/DESIGN.md",
+        "docs/design/page/pages/today-page.md",
+        "docs/design/page/01-page-layout-contract.md",
+        "docs/design/visual-system.md",
+        "docs/design/components.md",
+        "docs/design/content-rules.md",
+        "docs/progress.md"
+      ]
+    },
+    "acceptance": [
+      {
+        "id": "A01",
+        "text": "今日任务页第一张核心卡片是今日重点任务，展示任务标题、最低完成线、预计时长、推荐专注时段和注意事项",
+        "method": "mixed"
+      },
+      {
+        "id": "A02",
+        "text": "今日任务可能有多个，但首页只突出一个主任务；多任务时显示“今日共 N 个任务 · 查看全部”或等价轻量入口",
+        "method": "mixed"
+      },
+      {
+        "id": "A03",
+        "text": "今日状态卡展示当前能量、可用时间或当前状态，并提供管理入口；AI 今日建议保持短句，不出现大段解释",
+        "method": "manual_smoke"
+      },
+      {
+        "id": "A04",
+        "text": "晚间复盘入口轻量展示；今日页不展示完整目标计划，不承担日历页职责",
+        "method": "mixed"
+      },
+      {
+        "id": "A05",
+        "text": "今日页继续通过 PlanBundle/DailyTaskView/TodaySuggestion 读取数据，不直接拼装底层 storage 结构",
+        "method": "automated"
+      }
+    ],
+    "verify": {
+      "static": "npm run verify:static",
+      "feature": "npm run test -- today today-suggestion review ui-components",
+      "system": "npm run verify:system"
+    },
+    "outOfScope": [
+      "不新增完整今日全部任务页面，除非已有路由支持；可先用轻量入口或抽屉占位",
+      "不展示完整目标计划",
+      "不接入真实 Deepseek",
+      "不把塔罗、MBTI、每日关键词作为任务决策依据"
+    ],
+    "completionGate": {
+      "version": "v0.3",
+      "l3": "required",
+      "userPath": [
+        "有今日多个任务 -> 打开今日页 -> 首屏突出一个重点任务并显示查看全部入口",
+        "今日无任务或无目标 -> 打开今日页 -> 显示明确低压力空状态和创建目标入口",
+        "点击晚间复盘入口 -> 可进入复盘页，原复盘保存路径仍可用"
+      ],
+      "integrationEvidence": [
+        "tests/today.test.ts 覆盖今日页源码结构和数据读取路径",
+        "tests/today-suggestion.test.ts 覆盖 TodaySuggestionView 仍可从 PlanBundle/DailyTaskView 生成",
+        "tests/review.test.ts 保持复盘入口和保存路径通过",
+        "npm.cmd run verify:system 通过，mp-weixin 构建产物生成成功"
+      ],
+      "knownUnverified": [],
+      "humanReviewRequired": []
+    },
+    "evidence": {
+      "lastVerifiedAt": null,
+      "commands": [],
+      "manualSmoke": "",
+      "notes": "今日页 UI 改造必须优先满足执行台定位，不扩展完整计划展示。"
+    }
+  },
+  {
+    "id": "F22",
+    "title": "v0.3 UI 改造：任务日历计划板",
+    "status": "not_started",
+    "dependsOn": [
+      "F21"
+    ],
+    "behavior": "按 docs/design/page/pages/calendar-page.md 重做任务日历页信息层级，把日历页定位为目标计划板：展示当前目标、整体进度、时间压力、近 7 天任务和远期阶段。",
+    "scope": {
+      "pages": [
+        "pages/plan-calendar/index.vue"
+      ],
+      "components": [
+        "components/TaskCard.vue",
+        "components/EmptyState.vue"
+      ],
+      "services": [
+        "services/plan-view.ts",
+        "services/storage.ts"
+      ],
+      "models": [],
+      "schemas": [],
+      "tests": [
+        "tests/plan-calendar.test.ts",
+        "tests/ui-components.test.ts",
+        "tests/data-layer.test.ts"
+      ],
+      "docs": [
+        "docs/harness/DESIGN.md",
+        "docs/design/page/pages/calendar-page.md",
+        "docs/design/page/01-page-layout-contract.md",
+        "docs/design/visual-system.md",
+        "docs/design/components.md",
+        "docs/architecture/goal-plan-task-state-model.md",
+        "docs/progress.md"
+      ]
+    },
+    "acceptance": [
+      {
+        "id": "A01",
+        "text": "任务日历页展示当前目标计划卡、当前目标整体进度、时间压力信息和调整计划入口",
+        "method": "mixed"
+      },
+      {
+        "id": "A02",
+        "text": "近 7 天展示具体 Task；DDL 超过 7 天时展示远期 Stage 阶段安排，不一次性展开大量远期 Task",
+        "method": "automated"
+      },
+      {
+        "id": "A03",
+        "text": "点击或选择某一天后能看到当天任务列表；默认视图仍保持最近 7 天可扫读",
+        "method": "mixed"
+      },
+      {
+        "id": "A04",
+        "text": "AI 计划建议保持短句，不出现长篇计划解读；进度表示当前目标整体进度，不是单个任务进度",
+        "method": "manual_smoke"
+      },
+      {
+        "id": "A05",
+        "text": "日历页继续通过 Goal/Plan/Stage/Task 视图服务读取数据，不在页面层直接拼装底层存储结构",
+        "method": "automated"
+      }
+    ],
+    "verify": {
+      "static": "npm run verify:static",
+      "feature": "npm run test -- plan-calendar ui-components data-layer",
+      "system": "npm run verify:system"
+    },
+    "outOfScope": [
+      "不做完整拖拽排程",
+      "不新增云端同步",
+      "不改变 PlanBundle 持久化结构",
+      "不改变 replanner 顺延策略"
+    ],
+    "completionGate": {
+      "version": "v0.3",
+      "l3": "required",
+      "userPath": [
+        "DDL 7 天内 -> 打开日历页 -> 全部展示为近 7 天具体任务",
+        "DDL 超过 7 天 -> 打开日历页 -> 同时看到近 7 天任务和远期阶段",
+        "无计划数据 -> 打开日历页 -> 显示明确空状态和创建目标入口"
+      ],
+      "integrationEvidence": [
+        "tests/plan-calendar.test.ts 覆盖 PlanBundle calendar view、近 7 天任务、远期 Stage 和 progress",
+        "tests/data-layer.test.ts 保持旧数据迁移与新 PlanBundle 主路径通过",
+        "npm.cmd run verify:system 通过，mp-weixin 构建产物生成成功",
+        "人工冒烟需检查日历页首屏是否能区分目标进度、任务列表和远期阶段"
+      ],
+      "knownUnverified": [],
+      "humanReviewRequired": []
+    },
+    "evidence": {
+      "lastVerifiedAt": null,
+      "commands": [],
+      "manualSmoke": "",
+      "notes": "日历页 UI 改造必须保持计划板定位，不承担当天执行或复盘职责。"
+    }
+  },
+  {
+    "id": "F23",
+    "title": "v0.3 UI 改造：创建目标与我的页收口",
+    "status": "not_started",
+    "dependsOn": [
+      "F22"
+    ],
+    "behavior": "按 docs/design/page/pages/create-goal-page.md 和 docs/design/page/pages/profile-page.md 收口创建目标页与我的页：创建页专注创建 Goal 和触发 Plan 生成，我的页专注目标、偏好、AI 表达与设置。",
+    "scope": {
+      "pages": [
+        "pages/goal-create/index.vue",
+        "pages/profile/index.vue"
+      ],
+      "components": [
+        "components/EmptyState.vue",
+        "components/EnergySelector.vue"
+      ],
+      "services": [
+        "services/planner.ts",
+        "services/storage.ts",
+        "services/plan-view.ts"
+      ],
+      "models": [
+        "models/goal.ts",
+        "models/user-profile.ts"
+      ],
+      "schemas": [],
+      "tests": [
+        "tests/goal-create.test.ts",
+        "tests/user-profile.test.ts",
+        "tests/ui-components.test.ts",
+        "tests/navigation-shell.test.ts",
+        "tests/data-layer.test.ts"
+      ],
+      "docs": [
+        "docs/harness/DESIGN.md",
+        "docs/design/page/pages/create-goal-page.md",
+        "docs/design/page/pages/profile-page.md",
+        "docs/design/page/01-page-layout-contract.md",
+        "docs/design/visual-system.md",
+        "docs/design/components.md",
+        "docs/design/content-rules.md",
+        "docs/architecture/goal-plan-task-state-model.md",
+        "docs/progress.md"
+      ]
+    },
+    "acceptance": [
+      {
+        "id": "A01",
+        "text": "创建目标页使用步骤式卡片组织目标名称、截止日期、每日可用时间、补充说明和个性化安排偏好",
+        "method": "mixed"
+      },
+      {
+        "id": "A02",
+        "text": "个性化偏好默认展开，包含偏好工作时段、当前能量状态、计划强度或仪式感元素；仪式感只影响表达风格，不作为任务安排科学依据",
+        "method": "manual_smoke"
+      },
+      {
+        "id": "A03",
+        "text": "点击生成计划后仍创建 Goal 并触发 PlanBundle 生成和保存；创建页不直接展示任务日历或执行任务",
+        "method": "automated"
+      },
+      {
+        "id": "A04",
+        "text": "我的页展示当前目标卡、默认安排偏好、AI 表达与仪式感偏好、最近推进和设置入口；有目标时主操作是查看计划/管理目标，无目标时突出创建目标",
+        "method": "mixed"
+      },
+      {
+        "id": "A05",
+        "text": "我的页删除今日任务、任务日历等与 TabBar 重复的强入口；MBTI、塔罗、每日关键词放在 AI 表达偏好中，不作为默认安排硬参数",
+        "method": "manual_smoke"
+      }
+    ],
+    "verify": {
+      "static": "npm run verify:static",
+      "feature": "npm run test -- goal-create user-profile ui-components navigation-shell data-layer",
+      "system": "npm run verify:system"
+    },
+    "outOfScope": [
+      "不新增多目标完整管理",
+      "不新增完整设置页",
+      "不接入真实 Deepseek",
+      "不新增完整塔罗抽牌 UI",
+      "不改变 PlanBundle、Goal、UserProfile 的持久化结构"
+    ],
+    "completionGate": {
+      "version": "v0.3",
+      "l3": "required",
+      "userPath": [
+        "无目标 -> 打开我的页 -> 突出创建目标入口",
+        "创建目标页填写必填项 -> 生成计划 -> 保存 Goal、UserProfile、PlanBundle 并跳转到计划查看路径",
+        "有目标 -> 打开我的页 -> 展示当前目标、进度、偏好和查看计划/管理目标操作"
+      ],
+      "integrationEvidence": [
+        "tests/goal-create.test.ts 覆盖创建目标、校验、PlanBundle 生成保存路径",
+        "tests/user-profile.test.ts 覆盖偏好结构和保存路径",
+        "tests/navigation-shell.test.ts 覆盖 TabBar 入口未被破坏",
+        "tests/data-layer.test.ts 保持创建目标 -> 计划 -> 今日/日历读取主路径通过",
+        "npm.cmd run verify:system 通过，mp-weixin 构建产物生成成功"
+      ],
+      "knownUnverified": [],
+      "humanReviewRequired": []
+    },
+    "evidence": {
+      "lastVerifiedAt": null,
+      "commands": [],
+      "manualSmoke": "",
+      "notes": "创建目标页和我的页收口后，v0.3 UI 改造主路径应具备可人工冒烟的完整闭环。"
+    }
+  }
+]
