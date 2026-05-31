@@ -375,7 +375,7 @@
   {
     "id": "F23",
     "title": "v0.3 UI 改造：创建目标与我的页收口",
-    "status": "not_started",
+    "status": "passing",
     "dependsOn": [
       "F22"
     ],
@@ -476,10 +476,31 @@
       "humanReviewRequired": []
     },
     "evidence": {
-      "lastVerifiedAt": null,
-      "commands": [],
-      "manualSmoke": "",
-      "notes": "创建目标页和我的页收口后，v0.3 UI 改造主路径应具备可人工冒烟的完整闭环。"
+      "lastVerifiedAt": "2026-05-31T21:05:00+08:00",
+      "commands": [
+        {
+          "command": "npm.cmd run test -- goal-create user-profile ui-components navigation-shell data-layer",
+          "result": "passed",
+          "notes": "36 tests passed across goal-create, user-profile, ui-components, navigation-shell, and data-layer; coverage includes step-card create page structure, Goal/UserProfile/PlanBundle persistence, profile page source structure, expression preferences, navigation shell, and data compatibility."
+        },
+        {
+          "command": "npm.cmd run verify:static",
+          "result": "passed",
+          "notes": "eslint and vue-tsc --noEmit passed."
+        },
+        {
+          "command": "npm.cmd run verify:system",
+          "result": "passed",
+          "notes": "mp-weixin build completed successfully; Sass legacy API warnings only."
+        },
+        {
+          "command": "npm.cmd run verify:harness",
+          "result": "passed",
+          "notes": "Harness gate passed first with F23 active (4 features: 3 passing, 1 active) and then after F23 was marked passing (4 features: 4 passing), with 0 warnings and 0 errors."
+        }
+      ],
+      "manualSmoke": "Source/build smoke for F23: create goal page uses five step cards for title, deadline, daily time, description, and expanded personalized preferences; preferences include work style, energy, ritual expression, and optional MBTI; ritual and MBTI copy stays limited to expression, not scheduling science. Generate plan still saves Goal, UserProfile, PlanBundle, and legacy DailyPlan[] and routes to calendar without rendering task/calendar views. Profile page shows current goal, default scheduling preferences, AI expression and ritual preferences, recent progress, and settings entries; with a goal it offers view plan/manage goal, without a goal it highlights create goal, and it does not restore today/calendar hub entries.",
+      "notes": "F23 keeps PlanBundle, Goal, UserProfile, storage keys, planner, replanner, AI, and tarot persistence contracts unchanged. The manage goal and settings entries are lightweight placeholders within the existing MVP boundary."
     }
   }
 ]

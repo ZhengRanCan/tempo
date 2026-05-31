@@ -93,7 +93,7 @@ describe('navigation shell', () => {
     expect(header).not.toContain('navigateTo')
   })
 
-  it('keeps workflow switchTab calls without duplicating peer tab entry buttons', () => {
+  it('keeps workflow switchTab calls without restoring peer tab hub buttons', () => {
     const today = readProjectFile('pages/today/index.vue')
     const calendar = readProjectFile('pages/plan-calendar/index.vue')
     const createGoal = readProjectFile('pages/goal-create/index.vue')
@@ -106,6 +106,6 @@ describe('navigation shell', () => {
     expect(today).not.toContain("url: '/pages/plan-calendar/index'")
     expect(calendar).not.toContain("url: '/pages/today/index'")
     expect(profile).not.toContain("url: '/pages/today/index'")
-    expect(profile).not.toContain("url: '/pages/plan-calendar/index'")
+    expect(profile).toContain("uni.switchTab({\n    url: '/pages/plan-calendar/index'")
   })
 })

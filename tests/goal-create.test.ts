@@ -1,12 +1,31 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { readFileSync } from 'node:fs'
+import { dirname, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { buildGoal } from '../models/goal'
-import { getGoal, saveGoal } from '../services/storage'
+import { buildUserProfile } from '../models/user-profile'
+import { buildLegacyDailyPlansFromBundle, buildStarterPlanBundle } from '../services/planner'
+import {
+  getActivePlanBundle,
+  getDailyPlans,
+  getGoal,
+  getUserProfile,
+  saveDailyPlans,
+  saveGoal,
+  savePlanBundle,
+  saveUserProfile
+} from '../services/storage'
 
 interface StorageRecord {
   [key: string]: unknown
 }
 
 const storage: StorageRecord = {}
+const rootDir = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+
+function readProjectFile(path: string): string {
+  return readFileSync(resolve(rootDir, path), 'utf8')
+}
 
 beforeEach(() => {
   for (const key of Object.keys(storage)) {
@@ -154,5 +173,92 @@ describe('goal create', () => {
       createdAt: '2026-05-21T08:00:00.000Z',
       updatedAt: '2026-05-21T08:00:00.000Z'
     })
+  })
+
+  it('persists the generated Goal, UserProfile, PlanBundle and legacy daily view path', async () => {
+    const goalResult = buildGoal(
+      {
+        title: 'finish proposal',
+        deadline: '2026-06-10',
+        dailyAvailableMinutes: '60',
+        description: 'first version'
+      },
+      {
+        id: 'goal-plan',
+        now: new Date('2026-06-01T08:00:00.000Z'),
+        today: '2026-06-01'
+      }
+    )
+
+    expect(goalResult.ok).toBe(true)
+
+    if (!goalResult.ok) {
+      throw new Error('Expected goal creation to succeed.')
+    }
+
+    const profile = buildUserProfile(
+      {
+        workStyle: 'morning',
+        energyLevel: 'low',
+        preferredFocusMinutes: '45',
+        ritualPreference: 'warm'
+      },
+      {
+        now: new Date('2026-06-01T08:00:00.000Z')
+      }
+    )
+    const planResult = buildStarterPlanBundle({
+      goal: goalResult.goal,
+      startDate: '2026-06-01',
+      userProfile: profile
+    })
+
+    expect(planResult.status).toBe('ok')
+
+    if (planResult.status !== 'ok') {
+      throw new Error(planResult.reason)
+    }
+
+    await saveGoal(goalResult.goal)
+    await saveUserProfile(profile)
+    await savePlanBundle(planResult.bundle)
+    await saveDailyPlans(
+      goalResult.goal.id,
+      buildLegacyDailyPlansFromBundle(planResult.bundle, profile)
+    )
+
+    await expect(getGoal(goalResult.goal.id)).resolves.toMatchObject({
+      id: 'goal-plan',
+      title: 'finish proposal'
+    })
+    await expect(getUserProfile()).resolves.toMatchObject({
+      workStyle: 'morning',
+      energyLevel: 'low',
+      ritualPreference: 'warm'
+    })
+    await expect(getActivePlanBundle(goalResult.goal.id)).resolves.toMatchObject({
+      plan: {
+        goalId: 'goal-plan',
+        status: 'active'
+      }
+    })
+    await expect(getDailyPlans(goalResult.goal.id)).resolves.not.toHaveLength(0)
+  })
+
+  it('keeps the create page as step cards that trigger plan generation without task views', () => {
+    const source = readProjectFile('pages/goal-create/index.vue')
+
+    expect(source).toContain('step-card')
+    expect(source).toContain('preference-step')
+    expect(source).toContain('ritualOptions')
+    expect(source).toContain('ritualPreference')
+    expect(source).toContain('EnergySelector')
+    expect(source).toContain('buildStarterPlanBundle')
+    expect(source).toContain('savePlanBundle')
+    expect(source).toContain('buildLegacyDailyPlansFromBundle')
+    expect(source).not.toContain('TaskCard')
+    expect(source).not.toContain('TodayFocusCard')
+    expect(source).not.toContain('buildPlanBundleCalendarView')
+    expect(source).not.toContain("/pages/today/index")
   })
 })

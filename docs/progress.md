@@ -1,5 +1,14 @@
 # progress.md
 
+## F23 update 2026-05-31
+
+- `F23` 创建目标与我的页收口已完成并置为 `passing`；F20-F23 当前轻量 UI 清单已全部完成。
+- `pages/goal-create/index.vue` 已改为步骤式卡片，按目标名称、截止日期、每日可用时间、补充说明、个性化安排偏好组织输入；偏好默认展开，包含工作时段、能量状态、仪式感表达和 MBTI。
+- 创建页仍只负责创建 Goal、保存 UserProfile、生成并保存 PlanBundle，同时写入 legacy DailyPlan[] 兼容视图；页面不展示任务日历或执行任务。
+- `pages/profile/index.vue` 已收口为当前目标、默认安排偏好、AI 表达与仪式感、最近推进和设置入口；有目标时提供查看计划/管理目标动作，无目标时突出创建目标。
+- 边界：不新增多目标完整管理、不新增完整设置页、不接入真实 Deepseek，不改变 PlanBundle、Goal、UserProfile 持久化结构或 storage key。
+- 已通过 `npm.cmd run test -- goal-create user-profile ui-components navigation-shell data-layer`、`npm.cmd run verify:static`、`npm.cmd run verify:system`、`npm.cmd run verify:harness`。
+
 ## F22 update 2026-05-31
 
 - `F22` 任务日历计划板已完成并置为 `passing`；下一步按依赖启动 `F23` 创建目标与我的页收口。
@@ -23,18 +32,18 @@
 - 当前 UI 改造入口已切换为 `docs/harness/feature_list_v3_v2.json`。
 - `docs/harness/feature_list_v3_v2.json` 只保留 F20-F23，用于降低后续 UI 任务的上下文占用。
 - `docs/harness/feature_list_v0.3.json` 保留为 F12-F23 的完整历史清单，不再作为默认任务入口。
-- 当前无 `active` feature；下一步按依赖启动 `F23`。
+- 当前 `active` feature：无。
 - `npm.cmd run verify:harness` 默认校验轻量清单；如需校验完整历史清单，可设置 `HARNESS_FEATURE_LIST=docs/harness/feature_list_v0.3.json` 后运行。
 
 ## 当前 feature
 
 - 当前 `active` feature：无
-- 下一步：启动 `F23`：v0.3 UI 改造：创建目标与我的页收口
+- 状态：F20-F23 均为 `passing`
 
 ## 当前状态
 
-- 项目阶段：App v0.3 数据模型与服务迁移已完成，UI 改造已完成 F20 页面壳与组件基线、F21 今日任务执行台、F22 任务日历计划板。
-- Harness 状态：F12-F22 已 `passing`；F23 为 `not_started`。
+- 项目阶段：App v0.3 数据模型与服务迁移已完成，UI 改造已完成 F20 页面壳与组件基线、F21 今日任务执行台、F22 任务日历计划板、F23 创建目标与我的页收口。
+- Harness 状态：F12-F23 已 `passing`；轻量清单 F20-F23 均为 `passing`。
 - 当前工作功能清单位置：`docs/harness/feature_list_v3_v2.json`
 
 ## 功能状态摘要
@@ -50,7 +59,7 @@
 - `F20` passing
 - `F21` passing
 - `F22` passing
-- `F23` not_started
+- `F23` passing
 - v0.3 版本化功能清单位置：`docs/harness/feature_list_v0.3.json`
 - v0.2 版本化功能清单位置：`docs/log/v0.2/feature_list_v0.2.json`
 - v0.1 归档功能清单位置：`docs/log/v0.1/feature_list.json`

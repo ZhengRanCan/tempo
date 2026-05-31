@@ -4,7 +4,7 @@ import AppPageHeader from '../../components/AppPageHeader.vue'
 import EnergySelector from '../../components/EnergySelector.vue'
 import type { EnergyLevel, UserProfile, WorkStyle } from '../../models'
 import { buildGoal, formatGoalDate, validateGoalInput } from '../../models/goal'
-import { buildUserProfile } from '../../models/user-profile'
+import { buildUserProfile, type RitualPreference } from '../../models/user-profile'
 import { buildLegacyDailyPlansFromBundle, buildStarterPlanBundle } from '../../services/planner'
 import { saveDailyPlans, saveGoal, savePlanBundle, saveUserProfile } from '../../services/storage'
 
@@ -19,22 +19,43 @@ const workStyleOptions: Array<{
   {
     value: 'morning',
     label: '上午',
-    helper: '适合先做重点'
+    helper: '先处理重点任务'
   },
   {
     value: 'afternoon',
     label: '下午',
-    helper: '适合稳定推进'
+    helper: '稳定推进和整理'
   },
   {
     value: 'evening',
     label: '晚上',
-    helper: '适合安静收尾'
+    helper: '适合收尾和复盘'
   },
   {
     value: 'flexible',
     label: '都可以',
-    helper: '按当天安排'
+    helper: '按当天状态安排'
+  }
+]
+const ritualOptions: Array<{
+  value: RitualPreference
+  label: string
+  helper: string
+}> = [
+  {
+    value: 'simple',
+    label: '简洁',
+    helper: '直接给出下一步'
+  },
+  {
+    value: 'warm',
+    label: '温和',
+    helper: '提醒更像陪伴'
+  },
+  {
+    value: 'energetic',
+    label: '轻快',
+    helper: '文案更有行动感'
   }
 ]
 const form = reactive({
@@ -46,11 +67,11 @@ const form = reactive({
 const profileForm = reactive({
   workStyle: 'flexible' as WorkStyle,
   energyLevel: 'normal' as EnergyLevel,
-  mbti: ''
+  mbti: '',
+  ritualPreference: 'simple' as RitualPreference
 })
 const errors = reactive<Partial<Record<GoalValidationField, string>>>({})
 const isSaving = ref(false)
-const isSavingProfile = ref(false)
 const todayDate = formatGoalDate(new Date())
 
 const isFormReady = computed(() =>
@@ -115,33 +136,18 @@ function selectWorkStyle(workStyle: WorkStyle): void {
   profileForm.workStyle = workStyle
 }
 
+function selectRitualPreference(ritualPreference: RitualPreference): void {
+  profileForm.ritualPreference = ritualPreference
+}
 
 function buildCurrentProfile(): UserProfile {
   return buildUserProfile({
     workStyle: profileForm.workStyle,
     energyLevel: profileForm.energyLevel,
     mbti: profileForm.mbti,
+    ritualPreference: profileForm.ritualPreference,
     preferredFocusMinutes: form.dailyAvailableMinutes
   })
-}
-
-async function handleSaveProfile(): Promise<void> {
-  isSavingProfile.value = true
-
-  try {
-    await saveUserProfile(buildCurrentProfile())
-    uni.showToast({
-      title: '偏好已保存',
-      icon: 'success'
-    })
-  } catch {
-    uni.showToast({
-      title: '偏好保存失败，请稍后再试',
-      icon: 'none'
-    })
-  } finally {
-    isSavingProfile.value = false
-  }
 }
 
 async function handleSubmit(): Promise<void> {
@@ -210,9 +216,12 @@ async function handleSubmit(): Promise<void> {
       hint="写下目标和每天能投入的时间"
     />
 
-    <view class="form">
-      <view class="field">
-        <text class="label">目标名称</text>
+    <view class="step-list">
+      <view class="step-card">
+        <view class="step-heading">
+          <text class="step-index">01</text>
+          <text class="step-title">目标名称</text>
+        </view>
         <input
           class="input"
           maxlength="40"
@@ -234,8 +243,11 @@ async function handleSubmit(): Promise<void> {
         </text>
       </view>
 
-      <view class="field">
-        <text class="label">截止日期</text>
+      <view class="step-card">
+        <view class="step-heading">
+          <text class="step-index">02</text>
+          <text class="step-title">截止日期</text>
+        </view>
         <picker
           mode="date"
           :start="todayDate"
@@ -259,12 +271,15 @@ async function handleSubmit(): Promise<void> {
           v-else
           class="helper"
         >
-          不能早于今天，DDL 当天也可以安排任务。
+          DDL 当天也可以安排任务。
         </text>
       </view>
 
-      <view class="field">
-        <text class="label">每天可用时间</text>
+      <view class="step-card">
+        <view class="step-heading">
+          <text class="step-index">03</text>
+          <text class="step-title">每天可用时间</text>
+        </view>
         <view class="time-options">
           <button
             v-for="minutes in timeOptions"
@@ -297,13 +312,31 @@ async function handleSubmit(): Promise<void> {
         </text>
       </view>
 
-      <view class="preference-panel">
-        <view class="section-heading">
-          <text class="section-title">状态与偏好</text>
-          <text class="section-helper">
-            可选，只用来调整任务表达和轻量排序。
-          </text>
+      <view class="step-card">
+        <view class="step-heading">
+          <text class="step-index">04</text>
+          <text class="step-title">补充说明</text>
         </view>
+        <textarea
+          class="textarea"
+          maxlength="160"
+          placeholder="可选：补充背景、范围或优先完成的部分"
+          :value="form.description"
+          @input="handleDescriptionInput"
+        />
+        <text class="helper">
+          不写也能创建目标。
+        </text>
+      </view>
+
+      <view class="step-card preference-step">
+        <view class="step-heading">
+          <text class="step-index">05</text>
+          <text class="step-title">个性化安排偏好</text>
+        </view>
+        <text class="section-helper">
+          默认展开，只影响轻量排序和表达方式。
+        </text>
 
         <view class="field">
           <text class="label">偏好工作时段</text>
@@ -311,7 +344,7 @@ async function handleSubmit(): Promise<void> {
             <button
               v-for="option in workStyleOptions"
               :key="option.value"
-              class="work-style-option"
+              class="option-button"
               :class="{ active: profileForm.workStyle === option.value }"
               @tap="selectWorkStyle(option.value)"
             >
@@ -319,16 +352,32 @@ async function handleSubmit(): Promise<void> {
               <text class="option-helper">{{ option.helper }}</text>
             </button>
           </view>
-          <text class="helper">
-            后续会优先把重点任务放到你更顺手的时段。
-          </text>
         </view>
 
         <view class="field">
           <text class="label">当前能量状态</text>
           <EnergySelector v-model="profileForm.energyLevel" />
           <text class="helper">
-            低能量时优先保留最低完成线，不增加压力。
+            低能量时优先保留最低完成线。
+          </text>
+        </view>
+
+        <view class="field">
+          <text class="label">仪式感表达</text>
+          <view class="ritual-options">
+            <button
+              v-for="option in ritualOptions"
+              :key="option.value"
+              class="option-button"
+              :class="{ active: profileForm.ritualPreference === option.value }"
+              @tap="selectRitualPreference(option.value)"
+            >
+              <text class="option-title">{{ option.label }}</text>
+              <text class="option-helper">{{ option.helper }}</text>
+            </button>
+          </view>
+          <text class="helper">
+            仪式感只影响提醒文案，不作为任务安排依据。
           </text>
         </view>
 
@@ -342,31 +391,9 @@ async function handleSubmit(): Promise<void> {
             @input="handleMbtiInput"
           >
           <text class="helper">
-            只作为轻量表达偏好，不作为测评或判断依据。
+            只作为表达偏好，不用于心理判断。
           </text>
         </view>
-
-        <button
-          class="secondary-button"
-          :disabled="isSavingProfile"
-          @tap="handleSaveProfile"
-        >
-          {{ isSavingProfile ? '保存中' : '保存偏好' }}
-        </button>
-      </view>
-
-      <view class="field">
-        <text class="label">目标说明</text>
-        <textarea
-          class="textarea"
-          maxlength="160"
-          placeholder="可选：补充背景、范围或你最想先完成的部分"
-          :value="form.description"
-          @input="handleDescriptionInput"
-        />
-        <text class="helper">
-          可选，不写也能创建目标。
-        </text>
       </view>
     </view>
 
@@ -389,25 +416,50 @@ async function handleSubmit(): Promise<void> {
   background: #faf8f3;
 }
 
-.form {
-  padding: 32rpx;
-  border: 2rpx solid #e5ded2;
-  border-radius: 32rpx;
-  background: #ffffff;
+.step-list {
   display: flex;
   flex-direction: column;
-  gap: 26rpx;
+  gap: 24rpx;
 }
 
+.step-card {
+  display: flex;
+  flex-direction: column;
+  gap: 18rpx;
+  padding: 32rpx;
+  border: 2rpx solid #e5ded2;
+  border-radius: 28rpx;
+  background: #ffffff;
+}
+
+.preference-step {
+  gap: 24rpx;
+}
+
+.step-heading,
 .field {
   display: flex;
   flex-direction: column;
   gap: 12rpx;
 }
 
+.step-index {
+  color: #6b6fd6;
+  font-size: 24rpx;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.step-title {
+  color: #24211c;
+  font-size: 32rpx;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
 .label {
   color: #24211c;
-  font-size: 30rpx;
+  font-size: 28rpx;
   font-weight: 600;
   line-height: 1.35;
 }
@@ -442,12 +494,14 @@ async function handleSubmit(): Promise<void> {
 }
 
 .helper,
-.error {
+.error,
+.section-helper {
   font-size: 24rpx;
   line-height: 1.5;
 }
 
-.helper {
+.helper,
+.section-helper {
   color: #7c7568;
 }
 
@@ -478,52 +532,29 @@ async function handleSubmit(): Promise<void> {
   color: #555ac0;
 }
 
-.preference-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 24rpx;
-  padding: 28rpx;
-  border-radius: 24rpx;
-  background: #f3efe7;
-}
-
-.section-heading {
-  display: flex;
-  flex-direction: column;
-  gap: 8rpx;
-}
-
-.section-title {
-  color: #24211c;
-  font-size: 32rpx;
-  font-weight: 600;
-  line-height: 1.35;
-}
-
-.section-helper {
-  color: #7c7568;
-  font-size: 24rpx;
-  line-height: 1.5;
-}
-
-.work-style-options {
+.work-style-options,
+.ritual-options {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 12rpx;
 }
 
-.work-style-option {
+.ritual-options {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.option-button {
   min-height: 112rpx;
   padding: 18rpx 16rpx;
   border: 2rpx solid #e5ded2;
   border-radius: 20rpx;
-  background: #ffffff;
+  background: #f3efe7;
   color: #4b463d;
   text-align: left;
   line-height: 1.4;
 }
 
-.work-style-option.active {
+.option-button.active {
   border-color: #6b6fd6;
   background: #ececff;
   color: #555ac0;
@@ -545,20 +576,8 @@ async function handleSubmit(): Promise<void> {
   font-size: 22rpx;
 }
 
-.work-style-option.active .option-helper {
+.option-button.active .option-helper {
   color: #555ac0;
-}
-
-.secondary-button {
-  height: 80rpx;
-  padding: 0;
-  border: 2rpx solid #e5ded2;
-  border-radius: 20rpx;
-  background: #ffffff;
-  color: #24211c;
-  font-size: 30rpx;
-  font-weight: 500;
-  line-height: 80rpx;
 }
 
 .primary-button {
