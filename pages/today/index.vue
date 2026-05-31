@@ -31,6 +31,8 @@ const extraTaskPreview = computed(() =>
     .slice(0, 2)
     .join(', ')
 )
+const visibleSuggestionTips = computed(() => todayView.value?.suggestionTips.slice(0, 3) ?? [])
+const showAllTasks = ref(false)
 
 onShow(() => {
   void loadToday()
@@ -46,6 +48,7 @@ async function loadToday(): Promise<void> {
 
     if (!currentGoal) {
       todayView.value = null
+      showAllTasks.value = false
       return
     }
 
@@ -57,6 +60,7 @@ async function loadToday(): Promise<void> {
           userProfile
         })
       : null
+    showAllTasks.value = false
   } finally {
     isLoading.value = false
   }
@@ -74,6 +78,25 @@ function goReview(): void {
   })
 }
 
+function goManageStatus(): void {
+  uni.switchTab({
+    url: '/pages/profile/index'
+  })
+}
+
+function toggleAllTasks(): void {
+  showAllTasks.value = !showAllTasks.value
+}
+
+function getEnergyLabel(level: TodaySuggestionView['energyLevel']): string {
+  const labels: Record<TodaySuggestionView['energyLevel'], string> = {
+    low: '低能量',
+    normal: '普通',
+    high: '高能量'
+  }
+
+  return labels[level]
+}
 </script>
 
 <template>
@@ -98,18 +121,9 @@ function goReview(): void {
     />
 
     <template v-else-if="todayView">
-      <view class="energy-row">
-        <text
-          class="energy-pill"
-          :class="`energy-${todayView.energyLevel}`"
-        >
-          {{ todayView.energyLevel === 'low' ? '低能量' : todayView.energyLevel === 'high' ? '高能量' : '普通状态' }}
-        </text>
-        <text class="energy-note">{{ todayView.pressureNote }}</text>
-      </view>
-
       <TodayFocusCard
         :daily-keyword="todayView.dailyKeyword"
+        :goal-title="goal?.title"
         :recommended-focus-window="todayView.recommendedFocusWindow"
         :task="todayView.focusTask"
       />
@@ -118,18 +132,25 @@ function goReview(): void {
         v-if="taskCount > 1"
         class="today-entry"
       >
-        <text class="today-entry-title">今日共 {{ taskCount }} 个任务 · 查看全部</text>
+        <view class="entry-head">
+          <text class="today-entry-title">今日共 {{ taskCount }} 个任务</text>
+          <button
+            class="text-button"
+            @tap="toggleAllTasks"
+          >
+            {{ showAllTasks ? '收起' : '查看全部' }}
+          </button>
+        </view>
         <text
           v-if="extraTaskPreview"
           class="today-entry-copy"
         >
           其余任务：{{ extraTaskPreview }}
         </text>
-      </view>
-
-      <view class="task-section">
-        <text class="section-title">今日任务</text>
-        <view class="task-list">
+        <view
+          v-if="showAllTasks"
+          class="task-list"
+        >
           <TaskCard
             v-for="task in todayView.tasks"
             :key="task.id"
@@ -138,12 +159,62 @@ function goReview(): void {
         </view>
       </view>
 
-      <button
-        class="secondary-button"
-        @tap="goReview"
-      >
-        晚间复盘
-      </button>
+      <view class="status-card">
+        <view class="section-head">
+          <text class="section-title">今日状态</text>
+          <button
+            class="text-button"
+            @tap="goManageStatus"
+          >
+            管理
+          </button>
+        </view>
+        <view class="status-grid">
+          <view class="status-item">
+            <text class="item-label">能量</text>
+            <text class="item-value">{{ getEnergyLabel(todayView.energyLevel) }}</text>
+          </view>
+          <view class="status-item">
+            <text class="item-label">可用时间</text>
+            <text class="item-value">{{ todayView.availableMinutes }} 分钟</text>
+          </view>
+          <view class="status-item">
+            <text class="item-label">当前状态</text>
+            <text class="item-value">{{ todayView.stateLabel }}</text>
+          </view>
+        </view>
+        <text class="helper">{{ todayView.pressureNote }}</text>
+      </view>
+
+      <view class="advice-card">
+        <view class="section-head">
+          <text class="section-title">AI 今日建议</text>
+          <text class="keyword-tag">{{ todayView.dailyKeyword }}</text>
+        </view>
+        <view class="advice-list">
+          <text
+            v-for="tip in visibleSuggestionTips"
+            :key="tip"
+            class="advice-tip"
+          >
+            {{ tip }}
+          </text>
+        </view>
+        <text class="advice-note">关键词和灵感只用于提醒节奏，不作为预测依据。</text>
+      </view>
+
+      <view class="review-entry">
+        <view>
+          <text class="review-title">晚间复盘</text>
+          <text class="review-copy">晚上记录完成情况，我会根据结果调整后续安排。</text>
+        </view>
+        <button
+          class="secondary-button"
+          @tap="goReview"
+        >
+          去复盘
+        </button>
+      </view>
     </template>
   </view>
 </template>
@@ -156,44 +227,10 @@ function goReview(): void {
   background: #faf8f3;
 }
 
-.energy-row {
-  display: flex;
-  flex-direction: column;
-  gap: 12rpx;
-  margin-bottom: 24rpx;
-  padding: 24rpx;
-  border-radius: 24rpx;
-  background: #f3efe7;
-}
-
-.energy-pill {
-  display: inline-block;
-  width: fit-content;
-  padding: 8rpx 18rpx;
-  border-radius: 999rpx;
-  background: #ececff;
-  color: #555ac0;
-  font-size: 24rpx;
-  font-weight: 500;
-  line-height: 1.4;
-}
-
-.energy-low {
-  background: #fff2e8;
-  color: #8a5a35;
-}
-
-.energy-note {
-  color: #4b463d;
-  font-size: 26rpx;
-  line-height: 1.5;
-}
-
-.task-section {
-  margin-top: 32rpx;
-}
-
-.today-entry {
+.today-entry,
+.status-card,
+.advice-card,
+.review-entry {
   margin-top: 24rpx;
   padding: 24rpx;
   border: 2rpx solid #e5ded2;
@@ -201,9 +238,25 @@ function goReview(): void {
   background: #ffffff;
 }
 
+.entry-head,
+.section-head,
+.review-entry {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16rpx;
+}
+
 .today-entry-title,
 .today-entry-copy,
-.section-title {
+.section-title,
+.helper,
+.item-label,
+.item-value,
+.advice-tip,
+.advice-note,
+.review-title,
+.review-copy {
   display: block;
 }
 
@@ -214,7 +267,9 @@ function goReview(): void {
   line-height: 1.4;
 }
 
-.today-entry-copy {
+.today-entry-copy,
+.helper,
+.review-copy {
   margin-top: 8rpx;
   color: #7c7568;
   font-size: 24rpx;
@@ -222,7 +277,6 @@ function goReview(): void {
 }
 
 .section-title {
-  margin-bottom: 16rpx;
   color: #24211c;
   font-size: 32rpx;
   font-weight: 600;
@@ -233,17 +287,96 @@ function goReview(): void {
   display: flex;
   flex-direction: column;
   gap: 16rpx;
+  margin-top: 18rpx;
+}
+
+.text-button {
+  min-width: 112rpx;
+  height: 56rpx;
+  padding: 0 18rpx;
+  border: 0;
+  border-radius: 999rpx;
+  background: #ececff;
+  color: #555ac0;
+  font-size: 24rpx;
+  font-weight: 500;
+  line-height: 56rpx;
+}
+
+.status-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12rpx;
+  margin-top: 20rpx;
+}
+
+.status-item {
+  padding: 18rpx 14rpx;
+  border-radius: 20rpx;
+  background: #f3efe7;
+}
+
+.item-label {
+  color: #7c7568;
+  font-size: 22rpx;
+  line-height: 1.4;
+}
+
+.item-value {
+  margin-top: 6rpx;
+  color: #24211c;
+  font-size: 26rpx;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.keyword-tag {
+  display: inline-block;
+  padding: 6rpx 14rpx;
+  border-radius: 999rpx;
+  background: #fff2e8;
+  color: #d68a5a;
+  font-size: 24rpx;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.advice-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10rpx;
+  margin-top: 18rpx;
+}
+
+.advice-tip {
+  color: #4b463d;
+  font-size: 26rpx;
+  line-height: 1.5;
+}
+
+.advice-note {
+  margin-top: 16rpx;
+  color: #7c7568;
+  font-size: 22rpx;
+  line-height: 1.5;
+}
+
+.review-title {
+  color: #24211c;
+  font-size: 30rpx;
+  font-weight: 600;
+  line-height: 1.35;
 }
 
 .secondary-button {
-  height: 88rpx;
-  margin-top: 32rpx;
+  flex: 0 0 160rpx;
+  height: 72rpx;
   border: 2rpx solid #e5ded2;
   border-radius: 20rpx;
   background: #ffffff;
   color: #24211c;
   font-size: 30rpx;
   font-weight: 500;
-  line-height: 88rpx;
+  line-height: 72rpx;
 }
 </style>

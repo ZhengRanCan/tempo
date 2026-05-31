@@ -148,6 +148,10 @@ describe('today suggestion service', () => {
     expect(view?.dailyKeyword).toBe('steady')
     expect(view?.focusTask.id).toBe('task-high')
     expect(view?.tasks.map((task) => task.id)).toEqual(['task-high', 'task-low'])
+    expect(view?.availableMinutes).toBe(30)
+    expect(view?.stateLabel).toBe('正常推进')
+    expect(view?.suggestionTips).toHaveLength(3)
+    expect(view?.suggestionTips[0]).toContain('draft core argument')
   })
 
   it('applies AI ordering and expression without mutating the source plan', () => {
@@ -166,9 +170,29 @@ describe('today suggestion service', () => {
     expect(view?.tasks.map((task) => task.id)).toEqual(['task-low', 'task-high'])
     expect(view?.tasks[0]?.caution).toBe('stop after the first useful source')
     expect(view?.energyLevel).toBe('low')
+    expect(view?.availableMinutes).toBe(25)
+    expect(view?.stateLabel).toBe('放轻推进')
     expect(view?.pressureNote).toContain('最低线')
+    expect(view?.suggestionTips).toHaveLength(3)
+    expect(view?.suggestionTips[0]).toBe('Keep the plan small.')
     expect(JSON.stringify(plans)).toBe(before)
     expect(plans[0]?.tasks[0]?.status).toBe('todo')
+  })
+
+  it('keeps AI advice short for the today execution desk', () => {
+    const view = buildTodaySuggestion(createPlans(), {
+      today,
+      userProfile: createLowEnergyProfile(),
+      aiSuggestion: {
+        ...createAiSuggestion(),
+        note: 'This is a deliberately long suggestion that should be trimmed before it reaches the today page.'
+      }
+    })
+
+    expect(view?.suggestionTips).toHaveLength(3)
+    expect(view?.suggestionTips[0]?.length).toBeLessThanOrEqual(39)
+    expect(view?.suggestionTips[0]).toMatch(/\.\.\.$/)
+    expect(view?.suggestionTips.some((tip) => tip.includes('低能量'))).toBe(true)
   })
 
   it('uses optional tarot draw as expression context only', () => {

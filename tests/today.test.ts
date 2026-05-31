@@ -1,6 +1,15 @@
 import { describe, expect, it } from 'vitest'
+import { readFileSync } from 'node:fs'
+import { dirname, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import type { DailyPlan, UserProfile } from '../models'
 import { buildTodayView } from '../services/plan-view'
+
+const rootDir = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+
+function readProjectFile(path: string): string {
+  return readFileSync(resolve(rootDir, path), 'utf8')
+}
 
 function createPlans(): DailyPlan[] {
   return [
@@ -121,5 +130,36 @@ describe('today view', () => {
     })
 
     expect(view).toBeNull()
+  })
+
+  it('keeps the today page focused on one execution task before status, advice and review', () => {
+    const source = readProjectFile('pages/today/index.vue')
+    const focusIndex = source.indexOf('<TodayFocusCard')
+    const multipleTasksIndex = source.indexOf('class="today-entry"')
+    const statusIndex = source.indexOf('class="status-card"')
+    const adviceIndex = source.indexOf('class="advice-card"')
+    const reviewIndex = source.indexOf('class="review-entry"')
+
+    expect(focusIndex).toBeGreaterThan(-1)
+    expect(multipleTasksIndex).toBeGreaterThan(focusIndex)
+    expect(statusIndex).toBeGreaterThan(multipleTasksIndex)
+    expect(adviceIndex).toBeGreaterThan(statusIndex)
+    expect(reviewIndex).toBeGreaterThan(adviceIndex)
+    expect(source).toContain('今日共 {{ taskCount }} 个任务')
+    expect(source).toContain("{{ showAllTasks ? '收起' : '查看全部' }}")
+    expect(source).toContain('v-if="showAllTasks"')
+  })
+
+  it('reads through TodaySuggestion and PlanBundle services without taking calendar duties', () => {
+    const source = readProjectFile('pages/today/index.vue')
+
+    expect(source).toContain('buildTodaySuggestionFromPlanBundle')
+    expect(source).toContain('type TodaySuggestionView')
+    expect(source).toContain('migrateLegacyDailyPlans')
+    expect(source).toContain('suggestionTips.slice(0, 3)')
+    expect(source).toContain('/pages/review/index')
+    expect(source).not.toContain('buildPlanBundleCalendarView')
+    expect(source).not.toContain('PlanBundleCalendarView')
+    expect(source).not.toContain('/pages/plan-calendar/index')
   })
 })

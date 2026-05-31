@@ -3,6 +3,7 @@ import type { Task } from '../models'
 
 defineProps<{
   dailyKeyword: string
+  goalTitle?: string
   recommendedFocusWindow: string
   task: Task
 }>()
@@ -12,6 +13,12 @@ defineProps<{
   <view class="focus-card">
     <text class="keyword">今日关键词：{{ dailyKeyword }}</text>
     <text class="focus-label">今天最重要的一件事</text>
+    <text
+      v-if="goalTitle"
+      class="goal-title"
+    >
+      {{ goalTitle }}
+    </text>
     <text class="focus-title">{{ task.title }}</text>
 
     <view class="minimum-box">
@@ -53,6 +60,7 @@ defineProps<{
 }
 
 .focus-label,
+.goal-title,
 .focus-title,
 .minimum-label,
 .minimum-text,
@@ -73,6 +81,13 @@ defineProps<{
   font-size: 40rpx;
   font-weight: 600;
   line-height: 1.35;
+}
+
+.goal-title {
+  margin-top: 8rpx;
+  color: #7c7568;
+  font-size: 24rpx;
+  line-height: 1.4;
 }
 
 .minimum-box {

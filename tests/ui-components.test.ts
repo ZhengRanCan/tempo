@@ -41,6 +41,7 @@ describe('core UI components', () => {
 
     expect(source).toContain('dailyKeyword')
     expect(source).toContain('今天最重要的一件事')
+    expect(source).toContain('goalTitle')
     expect(source).toContain('task.minimumLine')
     expect(source).toContain('recommendedFocusWindow')
     expect(source).toContain('task.caution')

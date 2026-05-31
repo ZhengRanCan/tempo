@@ -14,7 +14,10 @@ export interface TodaySuggestionView {
   focusTask: Task
   tasks: Task[]
   energyLevel: UserProfile['energyLevel']
+  availableMinutes: number
+  stateLabel: string
   pressureNote: string
+  suggestionTips: string[]
 }
 
 export interface BuildTodaySuggestionOptions {
@@ -39,6 +42,7 @@ export function buildTodaySuggestion(
   const tasks = applySuggestion(baseTasks, options.aiSuggestion, options.tarotDraw)
   const focusTask = selectFocusTask(tasks, options.aiSuggestion)
   const energyLevel = options.userProfile?.energyLevel ?? 'normal'
+  const availableMinutes = options.userProfile?.preferredFocusMinutes ?? focusTask.estimatedMinutes
   const source = options.aiSuggestion
     ? 'ai_suggestion'
     : options.tarotDraw
@@ -54,10 +58,18 @@ export function buildTodaySuggestion(
     focusTask,
     tasks,
     energyLevel,
+    availableMinutes,
+    stateLabel: getEnergyStateLabel(energyLevel),
     pressureNote:
       energyLevel === 'low'
         ? '今天先保留一点推进感，完成最低线就算往前走了一步。'
-        : '先完成最重要的一小步，再决定是否继续加量。'
+        : '先完成最重要的一小步，再决定是否继续加量。',
+    suggestionTips: buildSuggestionTips({
+      aiSuggestion: options.aiSuggestion,
+      energyLevel,
+      focusTask,
+      taskCount: tasks.length
+    })
   }
 }
 
@@ -135,6 +147,43 @@ function compareTaskPriority(left: Task, right: Task): number {
   }
 
   return priorityScore[left.priority] - priorityScore[right.priority]
+}
+
+function getEnergyStateLabel(energyLevel: UserProfile['energyLevel']): string {
+  const labels: Record<UserProfile['energyLevel'], string> = {
+    low: '放轻推进',
+    normal: '正常推进',
+    high: '适合推进'
+  }
+
+  return labels[energyLevel]
+}
+
+function buildSuggestionTips(options: {
+  aiSuggestion?: AiTodaySuggestion | null
+  energyLevel: UserProfile['energyLevel']
+  focusTask: Task
+  taskCount: number
+}): string[] {
+  const focusTip = `先完成「${options.focusTask.title}」的最低完成线。`
+  const flowTip =
+    options.taskCount > 1 ? '其余任务等状态允许时再继续。' : '完成后可以直接进入晚间复盘记录结果。'
+  const stateTip =
+    options.energyLevel === 'low'
+      ? '低能量时不加量，留下问题也算推进。'
+      : '如果卡住，记录问题，复盘时再调整。'
+  const tips =
+    options.energyLevel === 'low' ? [focusTip, stateTip, flowTip] : [focusTip, flowTip, stateTip]
+  const aiNote = options.aiSuggestion?.note?.trim()
+
+  return (aiNote ? [toShortTip(aiNote), ...tips] : tips).slice(0, 3)
+}
+
+function toShortTip(note: string): string {
+  const [firstLine = note] = note.split(/\n|。|\. /)
+  const text = firstLine.trim()
+
+  return text.length > 36 ? `${text.slice(0, 36)}...` : text
 }
 
 function getFallbackFocusWindow(userProfile?: UserProfile | null): string {

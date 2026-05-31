@@ -1,5 +1,13 @@
 # progress.md
 
+## F21 update 2026-05-31
+
+- `F21` 今日任务执行台改造已完成并置为 `passing`；下一步按依赖启动 `F22` 任务日历计划板。
+- 今日页首屏改为执行台信息层级：`TodayFocusCard` 是有任务状态下的第一张核心卡，只突出一个 focus task；多任务通过“今日共 N 个任务 / 查看全部”的轻量展开入口处理。
+- 今日状态卡展示能量、可用时间、当前状态和管理入口；AI 今日建议限制为最多 3 条短句；晚间复盘保留为轻量入口并跳转到 `pages/review/index`。
+- 数据读取继续经由 `migrateLegacyDailyPlans()` 与 `buildTodaySuggestionFromPlanBundle()` / `TodaySuggestionView`，页面未直接拼装底层 Plan/Stage/Task 存储结构，也未修改 planner、replanner、storage key 或任务状态写回逻辑。
+- 已通过 `npm.cmd run test -- today today-suggestion review ui-components`、`npm.cmd run verify:static`、`npm.cmd run verify:system`、`npm.cmd run verify:harness`。
+
 ## Current handoff 2026-05-31
 
 - `2026-05-31` 新增 `docs/design/page/02-f20-page-shell-component-baseline.md`，用于把 F20 的页面壳、TabBar 协同、组件基线、禁止项和验收点写成执行级设计合约。
@@ -8,19 +16,18 @@
 - 当前 UI 改造入口已切换为 `docs/harness/feature_list_v3_v2.json`。
 - `docs/harness/feature_list_v3_v2.json` 只保留 F20-F23，用于降低后续 UI 任务的上下文占用。
 - `docs/harness/feature_list_v0.3.json` 保留为 F12-F23 的完整历史清单，不再作为默认任务入口。
-- 当前无 `active` feature；下一候选为 `F21`。
+- 当前无 `active` feature；下一步按依赖启动 `F22`。
 - `npm.cmd run verify:harness` 默认校验轻量清单；如需校验完整历史清单，可设置 `HARNESS_FEATURE_LIST=docs/harness/feature_list_v0.3.json` 后运行。
 
 ## 当前 feature
 
-- 当前无 `active` feature
-- 下一候选：`F21`：v0.3 UI 改造：今日任务执行台
-- 状态：`not_started`
+- 当前 `active` feature：无
+- 下一步：启动 `F22`：v0.3 UI 改造：任务日历计划板
 
 ## 当前状态
 
-- 项目阶段：App v0.3 数据模型与服务迁移已完成，UI 改造已完成 F20 页面壳与组件基线。
-- Harness 状态：F12-F20 已 `passing`；F21-F23 为 UI 改造后续任务，均为 `not_started`。
+- 项目阶段：App v0.3 数据模型与服务迁移已完成，UI 改造已完成 F20 页面壳与组件基线、F21 今日任务执行台。
+- Harness 状态：F12-F21 已 `passing`；F22-F23 为 `not_started`。
 - 当前工作功能清单位置：`docs/harness/feature_list_v3_v2.json`
 
 ## 功能状态摘要
@@ -34,7 +41,7 @@
 - `F18` passing
 - `F19` passing
 - `F20` passing
-- `F21` not_started
+- `F21` passing
 - `F22` not_started
 - `F23` not_started
 - v0.3 版本化功能清单位置：`docs/harness/feature_list_v0.3.json`

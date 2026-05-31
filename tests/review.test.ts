@@ -142,4 +142,14 @@ describe('daily review', () => {
     expect(source).toContain('replanPlanBundleAfterReview')
     expect(source).not.toContain('review.taskResults =')
   })
+
+  it('keeps the today page review entry lightweight and linked to the review route', async () => {
+    const fs = await import('node:fs')
+    const source = fs.readFileSync('pages/today/index.vue', 'utf8')
+
+    expect(source).toContain('class="review-entry"')
+    expect(source).toContain('goReview')
+    expect(source).toContain('/pages/review/index')
+    expect(source).not.toContain('saveDailyReview')
+  })
 })

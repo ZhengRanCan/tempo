@@ -131,7 +131,7 @@
   {
     "id": "F21",
     "title": "v0.3 UI 改造：今日任务执行台",
-    "status": "not_started",
+    "status": "passing",
     "dependsOn": [
       "F20"
     ],
@@ -225,10 +225,31 @@
       "humanReviewRequired": []
     },
     "evidence": {
-      "lastVerifiedAt": null,
-      "commands": [],
-      "manualSmoke": "",
-      "notes": "今日页 UI 改造必须优先满足执行台定位，不扩展完整计划展示。"
+      "lastVerifiedAt": "2026-05-31T20:42:00+08:00",
+      "commands": [
+        {
+          "command": "npm.cmd run test -- today today-suggestion review ui-components",
+          "result": "passed",
+          "notes": "30 tests passed across today, today-suggestion, review, and ui-components; coverage includes today page source structure, PlanBundle/TodaySuggestion read path, short suggestions, status fields, and review entry."
+        },
+        {
+          "command": "npm.cmd run verify:static",
+          "result": "passed",
+          "notes": "eslint and vue-tsc --noEmit passed."
+        },
+        {
+          "command": "npm.cmd run verify:system",
+          "result": "passed",
+          "notes": "mp-weixin build completed successfully; Sass legacy API warnings only."
+        },
+        {
+          "command": "npm.cmd run verify:harness",
+          "result": "passed",
+          "notes": "Harness gate passed first with F21 active (4 features: 1 passing, 1 active, 2 not_started) and then after F21 was marked passing (4 features: 2 passing, 2 not_started), with 0 warnings and 0 errors."
+        }
+      ],
+      "manualSmoke": "Source/build smoke for F21: today page first shows TodayFocusCard with one focus task, minimum line, estimated minutes, recommended focus window, caution, and goal title; multiple tasks are behind a lightweight expandable entry; status card shows energy, available minutes, current state, and management entry; AI advice is limited to short tips; review entry navigates to review; no full goal plan or calendar page responsibility was added.",
+      "notes": "F21 keeps data reads on migrateLegacyDailyPlans() + buildTodaySuggestionFromPlanBundle()/TodaySuggestionView. It extends TodaySuggestionView with availableMinutes, stateLabel, and suggestionTips only; it does not write Task.status, DailyReview, PlanBundle, storage keys, planner, replanner, AI, or tarot state."
     }
   },
   {
