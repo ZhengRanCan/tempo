@@ -6,25 +6,32 @@ import EmptyState from '../../components/EmptyState.vue'
 import TaskCard from '../../components/TaskCard.vue'
 import type { Goal } from '../../models'
 import { formatDate } from '../../services/date'
-import { buildPlanBundleCalendarView, type PlanBundleCalendarView } from '../../services/plan-view'
+import {
+  buildPlanBundleCalendarView,
+  getPlanStatusLabel,
+  getStageStatusLabel,
+  type PlanBundleCalendarView
+} from '../../services/plan-view'
 import { getCurrentGoal, migrateLegacyDailyPlans } from '../../services/storage'
 
 const goal = ref<Goal | null>(null)
 const calendarView = ref<PlanBundleCalendarView | null>(null)
 const isLoading = ref(true)
 const today = formatDate(new Date())
+const selectedDate = ref(today)
 
+const plan = computed(() => calendarView.value?.plan ?? null)
 const days = computed(() => calendarView.value?.days ?? [])
 const stages = computed(() => calendarView.value?.stages ?? [])
 const progress = computed(() => calendarView.value?.progress ?? null)
-const planStatus = computed(() => calendarView.value?.plan.status ?? 'active')
+const timePressure = computed(() => calendarView.value?.timePressure ?? null)
+const planAdvice = computed(() => calendarView.value?.planAdvice ?? [])
 const hasPlan = computed(() => calendarView.value !== null)
-const totalTasks = computed(() =>
-  days.value.reduce((total, day) => total + day.taskCount, 0)
+const selectedDay = computed(
+  () => days.value.find((day) => day.date === selectedDate.value) ?? days.value[0] ?? null
 )
-const totalMinutes = computed(() =>
-  days.value.reduce((total, day) => total + day.totalMinutes, 0)
-)
+const selectedTasks = computed(() => selectedDay.value?.tasks ?? [])
+const progressPercentStyle = computed(() => `${progress.value?.progressPercent ?? 0}%`)
 
 onShow(() => {
   void loadCalendar()
@@ -39,16 +46,20 @@ async function loadCalendar(): Promise<void> {
 
     if (!currentGoal) {
       calendarView.value = null
+      selectedDate.value = today
       return
     }
 
     const bundleResult = await migrateLegacyDailyPlans(currentGoal.id)
-    calendarView.value = bundleResult.data
+    const nextView = bundleResult.data
       ? buildPlanBundleCalendarView(bundleResult.data, {
           today,
           limit: 7
         })
       : null
+
+    calendarView.value = nextView
+    selectedDate.value = nextView?.days.find((day) => day.isToday)?.date ?? nextView?.days[0]?.date ?? today
   } finally {
     isLoading.value = false
   }
@@ -60,19 +71,32 @@ function goCreateGoal(): void {
   })
 }
 
+function goAdjustPlan(): void {
+  uni.navigateTo({
+    url: '/pages/review/index'
+  })
+}
+
+function selectDate(date: string): void {
+  selectedDate.value = date
+}
+
+function formatDateLabel(date: string): string {
+  return date.slice(5).replace('-', '/')
+}
 </script>
 
 <template>
   <view class="page">
     <AppPageHeader
       title="任务日历"
-      hint="先看最近 7 天的可执行安排"
+      hint="查看目标计划、近 7 天安排和远期阶段"
     />
 
     <EmptyState
       v-if="isLoading"
       title="正在整理计划"
-      copy="我在读取已经生成的每日任务。"
+      copy="我在读取已经生成的目标计划。"
     />
 
     <EmptyState
@@ -84,76 +108,156 @@ function goCreateGoal(): void {
     />
 
     <template v-else>
-      <view class="summary">
-        <view class="summary-item">
-          <text class="summary-value">{{ days.length }}</text>
-          <text class="summary-label">天计划</text>
+      <view class="goal-plan-card">
+        <view class="card-head">
+          <view>
+            <text class="card-kicker">当前目标计划</text>
+            <text class="goal-title">{{ goal?.title ?? '当前目标' }}</text>
+          </view>
+          <button
+            class="text-button"
+            @tap="goAdjustPlan"
+          >
+            调整计划
+          </button>
         </view>
-        <view class="summary-item">
-          <text class="summary-value">{{ totalTasks }}</text>
-          <text class="summary-label">个任务</text>
-        </view>
-        <view class="summary-item">
-          <text class="summary-value">{{ totalMinutes }}</text>
-          <text class="summary-label">分钟</text>
+
+        <view class="metric-grid">
+          <view class="metric-item">
+            <text class="metric-label">截止日期</text>
+            <text class="metric-value">{{ plan?.deadline }}</text>
+          </view>
+          <view class="metric-item">
+            <text class="metric-label">计划状态</text>
+            <text class="metric-value">{{ plan ? getPlanStatusLabel(plan.status) : '-' }}</text>
+          </view>
+          <view class="metric-item">
+            <text class="metric-label">每日可用</text>
+            <text class="metric-value">{{ plan?.dailyAvailableMinutes ?? 0 }} 分钟</text>
+          </view>
         </view>
       </view>
 
       <view
-        v-if="progress"
-        class="plan-panel"
+        v-if="progress && timePressure"
+        class="progress-card"
       >
-        <text class="plan-title">计划状态：{{ planStatus }}</text>
-        <text class="plan-copy">
-          已完成 {{ progress.completedTaskCount }} / {{ progress.totalTaskCount }} 个任务，进度 {{ progress.progressPercent }}%
-        </text>
-        <text class="plan-copy">
-          剩余预计 {{ progress.remainingEstimatedMinutes }} 分钟
-        </text>
+        <view class="section-head">
+          <text class="section-title">整体进度</text>
+          <text
+            class="pressure-tag"
+            :class="`pressure-${timePressure.level}`"
+          >
+            {{ timePressure.label }}
+          </text>
+        </view>
+        <view class="progress-track">
+          <view
+            class="progress-bar"
+            :style="{ width: progressPercentStyle }"
+          />
+        </view>
+        <view class="progress-grid">
+          <text>已完成 {{ progress.completedTaskCount }} / {{ progress.totalTaskCount }} 个任务</text>
+          <text>剩余约 {{ progress.remainingEstimatedMinutes }} 分钟</text>
+          <text>剩余 {{ timePressure.remainingDays }} 天，每日约 {{ timePressure.requiredDailyMinutes }} 分钟</text>
+        </view>
+        <text class="helper">{{ timePressure.helper }}</text>
       </view>
 
-      <view class="day-list">
-        <view
-          v-for="day in days"
-          :key="day.date"
-          class="day-block"
-          :class="{ today: day.isToday }"
-        >
-          <view class="day-head">
-            <view>
-              <text class="date">{{ day.date }}</text>
-              <text class="day-summary">{{ day.statusSummary }}</text>
-            </view>
-            <text
-              v-if="day.isToday"
-              class="today-tag"
-            >
-              今天
-            </text>
-          </view>
-
-          <view class="task-list">
-            <TaskCard
-              v-for="task in day.tasks"
-              :key="task.id"
-              :task="task"
-            />
-          </view>
+      <view class="week-board">
+        <view class="section-head">
+          <text class="section-title">未来 7 天</text>
+          <text class="section-copy">选择日期查看当天任务</text>
         </view>
+
+        <view class="day-strip">
+          <button
+            v-for="day in days"
+            :key="day.date"
+            class="day-chip"
+            :class="{ selected: day.date === selectedDate, today: day.isToday }"
+            @tap="selectDate(day.date)"
+          >
+            <text class="date-label">{{ formatDateLabel(day.date) }}</text>
+            <text class="day-count">{{ day.taskCount }} 个 · {{ day.totalMinutes }} 分钟</text>
+            <text class="day-status">{{ day.statusSummary }}</text>
+          </button>
+        </view>
+      </view>
+
+      <view
+        v-if="selectedDay"
+        class="selected-day-card"
+      >
+        <view class="section-head">
+          <view>
+            <text class="section-title">{{ selectedDay.date }}</text>
+            <text class="section-copy">{{ selectedDay.statusSummary }}</text>
+          </view>
+          <text
+            v-if="selectedDay.isToday"
+            class="today-tag"
+          >
+            今天
+          </text>
+        </view>
+
+        <view
+          v-if="selectedTasks.length > 0"
+          class="task-list"
+        >
+          <TaskCard
+            v-for="task in selectedTasks"
+            :key="task.id"
+            :task="task"
+          />
+        </view>
+        <text
+          v-else
+          class="empty-day"
+        >
+          这天暂时没有任务，可以作为缓冲日。
+        </text>
       </view>
 
       <view
         v-if="stages.length > 0"
-        class="stage-list"
+        class="stage-panel"
       >
-        <text class="section-title">远期阶段</text>
+        <view class="section-head">
+          <text class="section-title">远期阶段</text>
+          <text class="section-copy">只看阶段，不展开大量远期任务</text>
+        </view>
         <view
           v-for="stage in stages"
           :key="stage.id"
-          class="stage-card"
+          class="stage-row"
         >
-          <text class="stage-title">{{ stage.title }}</text>
-          <text class="stage-meta">{{ stage.startDate }} - {{ stage.endDate }} · {{ stage.status }}</text>
+          <view>
+            <text class="stage-title">{{ stage.title }}</text>
+            <text class="stage-meta">{{ stage.startDate }} - {{ stage.endDate }}</text>
+          </view>
+          <text class="stage-tag">{{ getStageStatusLabel(stage.status) }}</text>
+        </view>
+      </view>
+
+      <view
+        v-if="planAdvice.length > 0"
+        class="advice-card"
+      >
+        <view class="section-head">
+          <text class="section-title">AI 计划建议</text>
+          <text class="section-copy">短句提醒</text>
+        </view>
+        <view class="advice-list">
+          <text
+            v-for="tip in planAdvice"
+            :key="tip"
+            class="advice-tip"
+          >
+            {{ tip }}
+          </text>
         </view>
       </view>
     </template>
@@ -168,61 +272,226 @@ function goCreateGoal(): void {
   background: #faf8f3;
 }
 
-.summary {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12rpx;
-  margin-bottom: 24rpx;
-}
-
-.summary-item {
-  padding: 24rpx 16rpx;
-  border: 2rpx solid #e5ded2;
-  border-radius: 24rpx;
-  background: #ffffff;
-  text-align: center;
-}
-
-.summary-value,
-.summary-label,
-.plan-title,
-.plan-copy,
-.section-title,
-.stage-title,
-.stage-meta,
-.date,
-.day-summary {
-  display: block;
-}
-
-.summary-value {
-  color: #24211c;
-  font-size: 36rpx;
-  font-weight: 600;
-  line-height: 1.3;
-}
-
-.summary-label {
-  margin-top: 4rpx;
-  color: #7c7568;
-  font-size: 24rpx;
-  line-height: 1.4;
-}
-
-.plan-panel,
-.stage-card {
+.goal-plan-card,
+.progress-card,
+.week-board,
+.selected-day-card,
+.stage-panel,
+.advice-card {
+  margin-top: 24rpx;
   padding: 24rpx;
   border: 2rpx solid #e5ded2;
   border-radius: 24rpx;
   background: #ffffff;
 }
 
-.plan-panel {
-  margin-bottom: 24rpx;
+.goal-plan-card {
+  margin-top: 0;
 }
 
-.plan-title,
+.card-head,
+.section-head,
+.stage-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16rpx;
+}
+
+.card-kicker,
+.goal-title,
+.metric-label,
+.metric-value,
 .section-title,
+.section-copy,
+.helper,
+.date-label,
+.day-count,
+.day-status,
+.empty-day,
+.stage-title,
+.stage-meta,
+.advice-tip {
+  display: block;
+}
+
+.card-kicker,
+.metric-label,
+.section-copy,
+.helper,
+.day-count,
+.day-status,
+.empty-day,
+.stage-meta {
+  color: #7c7568;
+  font-size: 24rpx;
+  line-height: 1.5;
+}
+
+.goal-title {
+  margin-top: 8rpx;
+  color: #24211c;
+  font-size: 40rpx;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.text-button {
+  min-width: 132rpx;
+  height: 56rpx;
+  padding: 0 18rpx;
+  border: 0;
+  border-radius: 999rpx;
+  background: #ececff;
+  color: #555ac0;
+  font-size: 24rpx;
+  font-weight: 500;
+  line-height: 56rpx;
+}
+
+.metric-grid,
+.progress-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12rpx;
+  margin-top: 22rpx;
+}
+
+.metric-item {
+  min-width: 0;
+  padding: 18rpx 14rpx;
+  border-radius: 18rpx;
+  background: #f3efe7;
+}
+
+.metric-value {
+  margin-top: 6rpx;
+  color: #24211c;
+  font-size: 26rpx;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.section-title {
+  color: #24211c;
+  font-size: 30rpx;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.pressure-tag,
+.today-tag,
+.stage-tag {
+  display: inline-block;
+  flex: 0 0 auto;
+  padding: 8rpx 16rpx;
+  border-radius: 999rpx;
+  background: #f3efe7;
+  color: #7c7568;
+  font-size: 24rpx;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.pressure-steady,
+.pressure-done {
+  background: #eaf6ee;
+  color: #4f9d69;
+}
+
+.pressure-tight,
+.pressure-overdue {
+  background: #fff5da;
+  color: #9a6b1e;
+}
+
+.progress-track {
+  height: 16rpx;
+  margin-top: 22rpx;
+  overflow: hidden;
+  border-radius: 999rpx;
+  background: #f3efe7;
+}
+
+.progress-bar {
+  height: 100%;
+  border-radius: 999rpx;
+  background: #6b6fd6;
+}
+
+.progress-grid {
+  color: #4b463d;
+  font-size: 24rpx;
+  line-height: 1.5;
+}
+
+.helper {
+  margin-top: 16rpx;
+}
+
+.day-strip {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12rpx;
+  margin-top: 20rpx;
+}
+
+.day-chip {
+  min-height: 156rpx;
+  margin: 0;
+  padding: 18rpx;
+  border: 2rpx solid #e5ded2;
+  border-radius: 20rpx;
+  background: #ffffff;
+  text-align: left;
+  line-height: 1.4;
+}
+
+.day-chip.selected {
+  border-color: #6b6fd6;
+  background: #ececff;
+}
+
+.day-chip.today .date-label {
+  color: #555ac0;
+}
+
+.date-label {
+  color: #24211c;
+  font-size: 30rpx;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.day-count,
+.day-status {
+  margin-top: 6rpx;
+}
+
+.today-tag {
+  background: #ececff;
+  color: #555ac0;
+}
+
+.task-list,
+.advice-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+  margin-top: 20rpx;
+}
+
+.stage-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 18rpx;
+}
+
+.stage-row {
+  padding-top: 18rpx;
+  border-top: 2rpx solid #f3efe7;
+}
+
 .stage-title {
   color: #24211c;
   font-size: 28rpx;
@@ -230,75 +499,18 @@ function goCreateGoal(): void {
   line-height: 1.4;
 }
 
-.plan-copy,
 .stage-meta {
-  margin-top: 8rpx;
-  color: #7c7568;
-  font-size: 24rpx;
-  line-height: 1.5;
-}
-
-.day-list {
-  display: flex;
-  flex-direction: column;
-  gap: 24rpx;
-}
-
-.stage-list {
-  display: flex;
-  flex-direction: column;
-  gap: 16rpx;
-  margin-top: 28rpx;
-}
-
-.day-block {
-  padding: 28rpx;
-  border: 2rpx solid #e5ded2;
-  border-radius: 28rpx;
-  background: #ffffff;
-}
-
-.day-block.today {
-  border-color: #6b6fd6;
-  background: #ececff;
-}
-
-.day-head {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16rpx;
-  margin-bottom: 20rpx;
-}
-
-.date {
-  color: #24211c;
-  font-size: 32rpx;
-  font-weight: 600;
-  line-height: 1.35;
-}
-
-.day-summary {
   margin-top: 6rpx;
-  color: #7c7568;
-  font-size: 24rpx;
+}
+
+.stage-tag {
+  background: #fff2e8;
+  color: #d68a5a;
+}
+
+.advice-tip {
+  color: #4b463d;
+  font-size: 26rpx;
   line-height: 1.5;
-}
-
-.today-tag {
-  display: inline-block;
-  padding: 8rpx 16rpx;
-  border-radius: 999rpx;
-  background: #6b6fd6;
-  color: #ffffff;
-  font-size: 24rpx;
-  font-weight: 500;
-  line-height: 1.4;
-}
-
-.task-list {
-  display: flex;
-  flex-direction: column;
-  gap: 16rpx;
 }
 </style>

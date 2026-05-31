@@ -1,5 +1,12 @@
 # progress.md
 
+## F22 update 2026-05-31
+
+- `F22` 任务日历计划板已完成并置为 `passing`；下一步按依赖启动 `F23` 创建目标与我的页收口。
+- `pages/plan-calendar/index.vue` 已收口为目标计划板，展示当前目标、整体进度、时间压力、近 7 天任务、远期阶段和轻量调整计划入口。
+- 边界：继续通过 `migrateLegacyDailyPlans()`、`buildPlanBundleCalendarView()` 和 plan-view 视图模型读取 Goal/Plan/Stage/Task，不改 PlanBundle 持久化结构、storage key 或 replanner 顺延策略。
+- 已通过 `npm.cmd run test -- plan-calendar ui-components data-layer`、`npm.cmd run verify:static`、`npm.cmd run verify:system`、`npm.cmd run verify:harness`。
+
 ## F21 update 2026-05-31
 
 - `F21` 今日任务执行台改造已完成并置为 `passing`；下一步按依赖启动 `F22` 任务日历计划板。
@@ -16,18 +23,18 @@
 - 当前 UI 改造入口已切换为 `docs/harness/feature_list_v3_v2.json`。
 - `docs/harness/feature_list_v3_v2.json` 只保留 F20-F23，用于降低后续 UI 任务的上下文占用。
 - `docs/harness/feature_list_v0.3.json` 保留为 F12-F23 的完整历史清单，不再作为默认任务入口。
-- 当前无 `active` feature；下一步按依赖启动 `F22`。
+- 当前无 `active` feature；下一步按依赖启动 `F23`。
 - `npm.cmd run verify:harness` 默认校验轻量清单；如需校验完整历史清单，可设置 `HARNESS_FEATURE_LIST=docs/harness/feature_list_v0.3.json` 后运行。
 
 ## 当前 feature
 
 - 当前 `active` feature：无
-- 下一步：启动 `F22`：v0.3 UI 改造：任务日历计划板
+- 下一步：启动 `F23`：v0.3 UI 改造：创建目标与我的页收口
 
 ## 当前状态
 
-- 项目阶段：App v0.3 数据模型与服务迁移已完成，UI 改造已完成 F20 页面壳与组件基线、F21 今日任务执行台。
-- Harness 状态：F12-F21 已 `passing`；F22-F23 为 `not_started`。
+- 项目阶段：App v0.3 数据模型与服务迁移已完成，UI 改造已完成 F20 页面壳与组件基线、F21 今日任务执行台、F22 任务日历计划板。
+- Harness 状态：F12-F22 已 `passing`；F23 为 `not_started`。
 - 当前工作功能清单位置：`docs/harness/feature_list_v3_v2.json`
 
 ## 功能状态摘要
@@ -42,7 +49,7 @@
 - `F19` passing
 - `F20` passing
 - `F21` passing
-- `F22` not_started
+- `F22` passing
 - `F23` not_started
 - v0.3 版本化功能清单位置：`docs/harness/feature_list_v0.3.json`
 - v0.2 版本化功能清单位置：`docs/log/v0.2/feature_list_v0.2.json`

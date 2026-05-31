@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { DailyPlan, DailyReview, UserProfile } from '../models'
 import { normalizeDailyReview } from '../models/review'
 import { buildLegacyDailyPlansFromBundle, buildStarterPlanBundle } from '../services/planner'
+import { buildPlanBundleCalendarView } from '../services/plan-view'
 import { replanPlanBundleAfterReview } from '../services/replanner'
 import { buildTodaySuggestion } from '../services/today-suggestion'
 import {
@@ -116,6 +117,51 @@ describe('data layer compatibility', () => {
     expect(bundle?.stages).toHaveLength(1)
     expect(storedPlans[0]?.tasks[0]?.scheduledDate).toBe('2026-06-01')
     expect(storedPlans[0]?.dailyKeyword).toBe('启动')
+  })
+
+  it('supports the stored PlanBundle to calendar board view path through storage', async () => {
+    const goal = {
+      id: 'goal-1',
+      title: 'finish proposal',
+      deadline: '2026-06-20',
+      dailyAvailableMinutes: 45,
+      status: 'active' as const,
+      createdAt: '2026-05-24T00:00:00.000Z',
+      updatedAt: '2026-05-24T00:00:00.000Z'
+    }
+    const planResult = buildStarterPlanBundle({
+      goal,
+      startDate: '2026-06-01'
+    })
+
+    expect(planResult.status).toBe('ok')
+
+    if (planResult.status !== 'ok') {
+      throw new Error(planResult.reason)
+    }
+
+    await saveGoal(goal)
+    await savePlanBundle(planResult.bundle)
+
+    const bundle = await getActivePlanBundle(goal.id)
+
+    expect(bundle).not.toBeNull()
+
+    if (!bundle) {
+      throw new Error('Expected stored plan bundle')
+    }
+
+    const view = buildPlanBundleCalendarView(bundle, {
+      today: '2026-06-01',
+      limit: 7
+    })
+
+    expect(view.days).toHaveLength(7)
+    expect(view.days[0]?.tasks[0]?.scheduledDate).toBe('2026-06-01')
+    expect(view.stages).toHaveLength(1)
+    expect(view.progress.planId).toBe(view.plan.id)
+    expect(view.timePressure.remainingEstimatedMinutes).toBeGreaterThan(0)
+    expect(view.planAdvice).toHaveLength(3)
   })
 
   it('supports saving PlanBundle, review, replanning, and reading the updated bundle', async () => {

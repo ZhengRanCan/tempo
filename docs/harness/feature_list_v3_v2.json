@@ -255,7 +255,7 @@
   {
     "id": "F22",
     "title": "v0.3 UI 改造：任务日历计划板",
-    "status": "not_started",
+    "status": "passing",
     "dependsOn": [
       "F21"
     ],
@@ -345,10 +345,31 @@
       "humanReviewRequired": []
     },
     "evidence": {
-      "lastVerifiedAt": null,
-      "commands": [],
-      "manualSmoke": "",
-      "notes": "日历页 UI 改造必须保持计划板定位，不承担当天执行或复盘职责。"
+      "lastVerifiedAt": "2026-05-31T20:52:00+08:00",
+      "commands": [
+        {
+          "command": "npm.cmd run test -- plan-calendar ui-components data-layer",
+          "result": "passed",
+          "notes": "25 tests passed across plan-calendar, ui-components, and data-layer; coverage includes PlanBundle calendar view, near 7 day task limit, far Stage summaries, overall progress, time pressure, page source structure, and storage-to-view path."
+        },
+        {
+          "command": "npm.cmd run verify:static",
+          "result": "passed",
+          "notes": "eslint and vue-tsc --noEmit passed."
+        },
+        {
+          "command": "npm.cmd run verify:system",
+          "result": "passed",
+          "notes": "mp-weixin build completed successfully; Sass legacy API warnings only."
+        },
+        {
+          "command": "npm.cmd run verify:harness",
+          "result": "passed",
+          "notes": "Harness gate passed first with F22 active (4 features: 2 passing, 1 active, 1 not_started) and then after F22 was marked passing (4 features: 3 passing, 1 not_started), with 0 warnings and 0 errors."
+        }
+      ],
+      "manualSmoke": "Source/build smoke for F22: calendar page first renders the current goal plan card; progress card shows whole-plan progress and time pressure; near 7 day board is scanable and uses selectable date chips; selecting a date reveals that day TaskCard list; far Stage rows are summarized separately without expanding future tasks; AI plan advice is limited to short tips; adjust plan entry is present and routes to the existing review path; page reads through migrateLegacyDailyPlans() and buildPlanBundleCalendarView().",
+      "notes": "F22 extends the plan-view selector with PlanTimePressure and short planAdvice fields. It does not change PlanBundle persistence, storage keys, planner output, replanner strategy, Task.status writeback, AI services, or tarot behavior."
     }
   },
   {

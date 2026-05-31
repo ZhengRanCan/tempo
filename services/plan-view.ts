@@ -21,11 +21,25 @@ export interface PlanProgress {
   remainingEstimatedMinutes: number
 }
 
+export type PlanTimePressureLevel = 'done' | 'steady' | 'tight' | 'overdue'
+
+export interface PlanTimePressure {
+  level: PlanTimePressureLevel
+  label: string
+  helper: string
+  remainingDays: number
+  dailyAvailableMinutes: number
+  requiredDailyMinutes: number
+  remainingEstimatedMinutes: number
+}
+
 export interface PlanBundleCalendarView {
   plan: Plan
   days: PlanCalendarDay[]
   stages: Stage[]
   progress: PlanProgress
+  timePressure: PlanTimePressure
+  planAdvice: string[]
 }
 
 export interface PlanCalendarTask extends Task {
@@ -91,11 +105,24 @@ export function buildPlanBundleCalendarView(
     limit?: number
   }
 ): PlanBundleCalendarView {
+  const days = buildPlanCalendarDays(planBundleToDailyPlans(bundle), options)
+  const stages = [...bundle.stages].sort((left, right) =>
+    left.startDate.localeCompare(right.startDate)
+  )
+  const progress = buildPlanProgress(bundle)
+  const timePressure = buildPlanTimePressure(bundle.plan, progress, options.today)
+
   return {
     plan: bundle.plan,
-    days: buildPlanCalendarDays(planBundleToDailyPlans(bundle), options),
-    stages: [...bundle.stages].sort((left, right) => left.startDate.localeCompare(right.startDate)),
-    progress: buildPlanProgress(bundle)
+    days,
+    stages,
+    progress,
+    timePressure,
+    planAdvice: buildPlanAdvice({
+      days,
+      stages,
+      timePressure
+    })
   }
 }
 
@@ -136,6 +163,30 @@ export function getTaskStatusLabel(status: TaskStatus): string {
     todo: '未开始',
     done: '已完成',
     partial: '部分完成',
+    skipped: '已跳过'
+  }
+
+  return labels[status]
+}
+
+export function getPlanStatusLabel(status: Plan['status']): string {
+  const labels: Record<Plan['status'], string> = {
+    draft: '草稿',
+    active: '进行中',
+    needs_adjustment: '需要调整',
+    infeasible: '暂不可行',
+    completed: '已完成',
+    archived: '已归档'
+  }
+
+  return labels[status]
+}
+
+export function getStageStatusLabel(status: Stage['status']): string {
+  const labels: Record<Stage['status'], string> = {
+    planned: '计划中',
+    active: '推进中',
+    completed: '已完成',
     skipped: '已跳过'
   }
 
@@ -197,6 +248,103 @@ function buildStatusSummary(tasks: PlanCalendarTask[]): string {
   }
 
   return '任务已记录'
+}
+
+function buildPlanTimePressure(
+  plan: Plan,
+  progress: PlanProgress,
+  today: string
+): PlanTimePressure {
+  const remainingDays = getInclusiveRemainingDays(today, plan.deadline)
+  const remainingEstimatedMinutes = progress.remainingEstimatedMinutes
+  const requiredDailyMinutes =
+    remainingEstimatedMinutes === 0
+      ? 0
+      : Math.ceil(remainingEstimatedMinutes / Math.max(remainingDays, 1))
+
+  if (remainingEstimatedMinutes === 0) {
+    return {
+      level: 'done',
+      label: '计划完成',
+      helper: '当前计划内任务已完成，可以保留为历史记录。',
+      remainingDays,
+      dailyAvailableMinutes: plan.dailyAvailableMinutes,
+      requiredDailyMinutes,
+      remainingEstimatedMinutes
+    }
+  }
+
+  if (plan.deadline < today) {
+    return {
+      level: 'overdue',
+      label: '需要调整',
+      helper: '截止日期已过，建议先缩小范围或重新生成后续计划。',
+      remainingDays,
+      dailyAvailableMinutes: plan.dailyAvailableMinutes,
+      requiredDailyMinutes,
+      remainingEstimatedMinutes
+    }
+  }
+
+  if (requiredDailyMinutes > plan.dailyAvailableMinutes) {
+    return {
+      level: 'tight',
+      label: '节奏偏紧',
+      helper: '剩余任务需要的每日时间高于当前可用时间，建议调整计划。',
+      remainingDays,
+      dailyAvailableMinutes: plan.dailyAvailableMinutes,
+      requiredDailyMinutes,
+      remainingEstimatedMinutes
+    }
+  }
+
+  return {
+    level: 'steady',
+    label: '节奏稳定',
+    helper: '按最近 7 天安排推进即可，保留复盘后的调整空间。',
+    remainingDays,
+    dailyAvailableMinutes: plan.dailyAvailableMinutes,
+    requiredDailyMinutes,
+    remainingEstimatedMinutes
+  }
+}
+
+function buildPlanAdvice(options: {
+  days: PlanCalendarDay[]
+  stages: Stage[]
+  timePressure: PlanTimePressure
+}): string[] {
+  const pressureTip =
+    options.timePressure.level === 'tight' || options.timePressure.level === 'overdue'
+      ? '先通过复盘或调整计划降低每日压力。'
+      : '按最近 7 天计划推进即可。'
+  const nearTaskTip =
+    options.days.length > 0
+      ? `先查看 ${options.days[0]!.date} 的任务，再逐日推进。`
+      : '当前没有近 7 天任务，可先检查目标计划。'
+  const stageTip =
+    options.stages.length > 0
+      ? '远期阶段先保持概览，不展开为大量任务。'
+      : '当前计划主要集中在近 7 天。'
+
+  return [pressureTip, nearTaskTip, stageTip]
+}
+
+function getInclusiveRemainingDays(today: string, deadline: string): number {
+  const todayTime = parseIsoDate(today)
+  const deadlineTime = parseIsoDate(deadline)
+
+  if (deadlineTime < todayTime) {
+    return 0
+  }
+
+  return Math.floor((deadlineTime - todayTime) / 86400000) + 1
+}
+
+function parseIsoDate(date: string): number {
+  const [year = 0, month = 1, day = 1] = date.split('-').map(Number)
+
+  return Date.UTC(year, month - 1, day)
 }
 
 function compareTaskPriority(left: Task, right: Task): number {
