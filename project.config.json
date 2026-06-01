@@ -1,7 +1,7 @@
 {
   "appid": "wxfd227c1188a9c9d5",
   "projectname": "tempo",
-  "miniprogramRoot": "dist/dev/mp-weixin/",
+  "miniprogramRoot": "dist/build/mp-weixin/",
   "cloudfunctionRoot": "cloud/functions/",
   "setting": {
     "urlCheck": false,

@@ -1,5 +1,11 @@
 # progress.md
 
+## UI visibility fix 2026-06-01
+
+- 发现微信开发者工具入口 `project.config.json.miniprogramRoot` 指向 `dist/dev/mp-weixin/`，而当前系统验证和实际构建命令 `npm.cmd run verify:system` / `build:mp-weixin` 生成的是 `dist/build/mp-weixin/`。
+- `dist/dev/mp-weixin/` 仍是 2026-05-24 到 2026-05-26 的旧产物，导致开发者工具中看不到 F20-F23 的新版 UI。
+- 已将 `project.config.json.miniprogramRoot` 对齐到 `dist/build/mp-weixin/`，并在 `tests/navigation-shell.test.ts` 增加配置一致性测试，避免后续再次出现“构建成功但开发者工具看旧目录”的问题。
+
 ## F23 update 2026-05-31
 
 - `F23` 创建目标与我的页收口已完成并置为 `passing`；F20-F23 当前轻量 UI 清单已全部完成。

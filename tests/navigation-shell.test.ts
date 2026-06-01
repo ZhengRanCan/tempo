@@ -18,10 +18,26 @@ interface PagesJson {
   }
 }
 
+interface ProjectConfig {
+  miniprogramRoot?: string
+}
+
+interface PackageJson {
+  scripts?: Record<string, string>
+}
+
 const rootDir = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 
 function readPagesJson(): PagesJson {
   return JSON.parse(readFileSync(resolve(rootDir, 'pages.json'), 'utf8')) as PagesJson
+}
+
+function readProjectConfig(): ProjectConfig {
+  return JSON.parse(readFileSync(resolve(rootDir, 'project.config.json'), 'utf8')) as ProjectConfig
+}
+
+function readPackageJson(): PackageJson {
+  return JSON.parse(readFileSync(resolve(rootDir, 'package.json'), 'utf8')) as PackageJson
 }
 
 function readProjectFile(path: string): string {
@@ -70,6 +86,15 @@ describe('navigation shell', () => {
       expect(pagePaths.has(tab.pagePath)).toBe(true)
       expect(existsSync(resolve(rootDir, `${tab.pagePath}.vue`))).toBe(true)
     }
+  })
+
+  it('points WeChat DevTools at the same mp-weixin output used by system verification', () => {
+    const projectConfig = readProjectConfig()
+    const packageJson = readPackageJson()
+
+    expect(projectConfig.miniprogramRoot).toBe('dist/build/mp-weixin/')
+    expect(packageJson.scripts?.['verify:system']).toBe('npm run build:mp-weixin')
+    expect(packageJson.scripts?.['build:mp-weixin']).toContain('build -p mp-weixin')
   })
 
   it('uses the shared page header without duplicating bottom tab navigation work', () => {
