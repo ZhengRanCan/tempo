@@ -6,6 +6,13 @@
 - `dist/dev/mp-weixin/` 仍是 2026-05-24 到 2026-05-26 的旧产物，导致开发者工具中看不到 F20-F23 的新版 UI。
 - 已将 `project.config.json.miniprogramRoot` 对齐到 `dist/build/mp-weixin/`，并在 `tests/navigation-shell.test.ts` 增加配置一致性测试，避免后续再次出现“构建成功但开发者工具看旧目录”的问题。
 
+## Native navigation duplicate title fix 2026-06-01
+
+- 实机截图确认 F23 步骤式卡片已经生效，但微信原生导航栏标题和正文 `AppPageHeader` 标题重复，且页面顶部仍保留 `96rpx` 大留白，视觉上像旧版头图区仍存在。
+- 已将 `AppPageHeader` 收口为正文轻提示和可选 action，不再渲染同名大标题；五个页面的顶部 padding 调整为 `32rpx 32rpx 48rpx`，让原生导航栏下方直接进入页面核心内容。
+- 本地开发入口重新对齐到 `dist/dev/mp-weixin/`，匹配 `npm.cmd run dev:mp-weixin` 的输出目录；`tests/navigation-shell.test.ts` 增加该约束。
+- 已通过 `npm.cmd run test -- ui-components navigation-shell`、`npm.cmd run verify:static`、`npm.cmd run verify:system`、`npm.cmd run verify:harness`；dev/build 产物均确认不再包含正文 title。
+
 ## F23 update 2026-05-31
 
 - `F23` 创建目标与我的页收口已完成并置为 `passing`；F20-F23 当前轻量 UI 清单已全部完成。

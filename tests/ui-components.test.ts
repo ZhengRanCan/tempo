@@ -25,12 +25,13 @@ describe('core UI components', () => {
     expect(source).not.toContain('danger')
   })
 
-  it('AppPageHeader keeps the page shell to title, hint and optional action only', () => {
+  it('AppPageHeader keeps body chrome to hint and optional action only', () => {
     const source = readProjectFile('components/AppPageHeader.vue')
 
     expect(source).toContain('title')
     expect(source).toContain('hint')
     expect(source).toContain('slot name="action"')
+    expect(source).not.toContain('class="title"')
     expect(source).not.toContain('eyebrow')
     expect(source).not.toContain('switchTab')
     expect(source).not.toContain('navigateTo')
@@ -108,6 +109,21 @@ describe('core UI components', () => {
 
     expect(pages[0]).not.toContain('.task-card')
     expect(pages[1]).not.toContain('.task-card')
+  })
+
+  it('tab pages keep native navigation from being duplicated by body title spacing', () => {
+    const pages = [
+      readProjectFile('pages/today/index.vue'),
+      readProjectFile('pages/plan-calendar/index.vue'),
+      readProjectFile('pages/goal-create/index.vue'),
+      readProjectFile('pages/profile/index.vue'),
+      readProjectFile('pages/review/index.vue')
+    ]
+
+    for (const page of pages) {
+      expect(page).toContain('padding: 32rpx 32rpx 48rpx;')
+      expect(page).not.toContain('padding: 96rpx 32rpx 48rpx;')
+    }
   })
 
   it('main pages read v0.3 PlanBundle view services instead of assembling raw storage', () => {

@@ -88,13 +88,12 @@ describe('navigation shell', () => {
     }
   })
 
-  it('points WeChat DevTools at the same mp-weixin output used by system verification', () => {
+  it('points WeChat DevTools at the same mp-weixin output used by local dev', () => {
     const projectConfig = readProjectConfig()
     const packageJson = readPackageJson()
 
-    expect(projectConfig.miniprogramRoot).toBe('dist/build/mp-weixin/')
-    expect(packageJson.scripts?.['verify:system']).toBe('npm run build:mp-weixin')
-    expect(packageJson.scripts?.['build:mp-weixin']).toContain('build -p mp-weixin')
+    expect(projectConfig.miniprogramRoot).toBe('dist/dev/mp-weixin/')
+    expect(packageJson.scripts?.['dev:mp-weixin']).toBe('node scripts/uni-run.mjs -p mp-weixin')
   })
 
   it('uses the shared page header without duplicating bottom tab navigation work', () => {

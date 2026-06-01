@@ -412,7 +412,7 @@ async function handleSubmit(): Promise<void> {
 .page {
   min-height: 100vh;
   box-sizing: border-box;
-  padding: 96rpx 32rpx 48rpx;
+  padding: 32rpx 32rpx 48rpx;
   background: #faf8f3;
 }
 

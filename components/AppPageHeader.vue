@@ -8,7 +8,6 @@ defineProps<{
 <template>
   <view class="app-page-header">
     <view class="header-main">
-      <text class="title">{{ title }}</text>
       <slot name="action" />
     </view>
     <text
@@ -28,21 +27,12 @@ defineProps<{
 .header-main {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 16rpx;
-}
-
-.title {
-  display: block;
-  color: #24211c;
-  font-size: 40rpx;
-  font-weight: 600;
-  line-height: 1.3;
 }
 
 .hint {
   display: block;
-  margin-top: 8rpx;
   color: #4b463d;
   font-size: 26rpx;
   line-height: 1.5;
