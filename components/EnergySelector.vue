@@ -47,28 +47,31 @@ function selectEnergy(value: EnergyLevel): void {
 </template>
 
 <style scoped lang="scss">
+@use "../styles/ui" as ui;
+
 .energy-options {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 12rpx;
   padding: 8rpx;
   border-radius: 999rpx;
-  background: #f3efe7;
+  background: ui.$surface-soft;
 }
 
 .energy-option {
+  @include ui.button-reset;
+
   min-height: 68rpx;
   padding: 0 12rpx;
-  border: 0;
   border-radius: 999rpx;
   background: transparent;
-  color: #4b463d;
+  color: ui.$body;
   font-size: 24rpx;
   line-height: 68rpx;
 }
 
 .energy-option.active {
-  background: #ececff;
-  color: #555ac0;
+  background: ui.$accent-soft;
+  color: ui.$accent-pressed;
 }
 </style>

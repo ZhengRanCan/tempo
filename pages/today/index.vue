@@ -220,22 +220,19 @@ function getEnergyLabel(level: TodaySuggestionView['energyLevel']): string {
 </template>
 
 <style scoped lang="scss">
+@use "../../styles/ui" as ui;
+
 .page {
-  min-height: 100vh;
-  box-sizing: border-box;
-  padding: 32rpx 32rpx 48rpx;
-  background: #faf8f3;
+  @include ui.page-shell;
 }
 
 .today-entry,
 .status-card,
 .advice-card,
 .review-entry {
+  @include ui.card;
+
   margin-top: 24rpx;
-  padding: 24rpx;
-  border: 2rpx solid #e5ded2;
-  border-radius: 24rpx;
-  background: #ffffff;
 }
 
 .entry-head,
@@ -261,26 +258,18 @@ function getEnergyLabel(level: TodaySuggestionView['energyLevel']): string {
 }
 
 .today-entry-title {
-  color: #24211c;
-  font-size: 28rpx;
-  font-weight: 600;
-  line-height: 1.4;
+  @include ui.section-title(28rpx);
 }
 
 .today-entry-copy,
 .helper,
 .review-copy {
   margin-top: 8rpx;
-  color: #7c7568;
-  font-size: 24rpx;
-  line-height: 1.5;
+  @include ui.helper-text;
 }
 
 .section-title {
-  color: #24211c;
-  font-size: 32rpx;
-  font-weight: 600;
-  line-height: 1.35;
+  @include ui.section-title;
 }
 
 .task-list {
@@ -291,16 +280,7 @@ function getEnergyLabel(level: TodaySuggestionView['energyLevel']): string {
 }
 
 .text-button {
-  min-width: 112rpx;
-  height: 56rpx;
-  padding: 0 18rpx;
-  border: 0;
-  border-radius: 999rpx;
-  background: #ececff;
-  color: #555ac0;
-  font-size: 24rpx;
-  font-weight: 500;
-  line-height: 56rpx;
+  @include ui.text-button;
 }
 
 .status-grid {
@@ -311,34 +291,25 @@ function getEnergyLabel(level: TodaySuggestionView['energyLevel']): string {
 }
 
 .status-item {
-  padding: 18rpx 14rpx;
-  border-radius: 20rpx;
-  background: #f3efe7;
+  @include ui.soft-block(18rpx 14rpx, 20rpx);
 }
 
 .item-label {
-  color: #7c7568;
+  color: ui.$muted;
   font-size: 22rpx;
   line-height: 1.4;
 }
 
 .item-value {
   margin-top: 6rpx;
-  color: #24211c;
+  color: ui.$ink;
   font-size: 26rpx;
   font-weight: 600;
   line-height: 1.35;
 }
 
 .keyword-tag {
-  display: inline-block;
-  padding: 6rpx 14rpx;
-  border-radius: 999rpx;
-  background: #fff2e8;
-  color: #d68a5a;
-  font-size: 24rpx;
-  font-weight: 500;
-  line-height: 1.4;
+  @include ui.status-tag(ui.$warm-soft, ui.$warm);
 }
 
 .advice-list {
@@ -349,34 +320,25 @@ function getEnergyLabel(level: TodaySuggestionView['energyLevel']): string {
 }
 
 .advice-tip {
-  color: #4b463d;
+  color: ui.$body;
   font-size: 26rpx;
   line-height: 1.5;
 }
 
 .advice-note {
   margin-top: 16rpx;
-  color: #7c7568;
+  color: ui.$muted;
   font-size: 22rpx;
   line-height: 1.5;
 }
 
 .review-title {
-  color: #24211c;
-  font-size: 30rpx;
-  font-weight: 600;
-  line-height: 1.35;
+  @include ui.section-title;
 }
 
 .secondary-button {
+  @include ui.secondary-button;
+
   flex: 0 0 160rpx;
-  height: 72rpx;
-  border: 2rpx solid #e5ded2;
-  border-radius: 20rpx;
-  background: #ffffff;
-  color: #24211c;
-  font-size: 30rpx;
-  font-weight: 500;
-  line-height: 72rpx;
 }
 </style>

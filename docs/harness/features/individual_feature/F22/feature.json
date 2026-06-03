@@ -1,0 +1,122 @@
+{
+  "id": "F22",
+  "title": "v0.3 UI 改造：任务日历计划板",
+  "status": "passing",
+  "dependsOn": [
+    "F21"
+  ],
+  "behavior": "按 docs/design/page/pages/calendar-page.md 重做任务日历页信息层级，把日历页定位为目标计划板：展示当前目标、整体进度、时间压力、近 7 天任务和远期阶段。",
+  "scope": {
+    "pages": [
+      "pages/plan-calendar/index.vue"
+    ],
+    "components": [
+      "components/TaskCard.vue",
+      "components/EmptyState.vue"
+    ],
+    "services": [
+      "services/plan-view.ts",
+      "services/storage.ts"
+    ],
+    "models": [],
+    "schemas": [],
+    "tests": [
+      "tests/plan-calendar.test.ts",
+      "tests/ui-components.test.ts",
+      "tests/data-layer.test.ts"
+    ],
+    "docs": [
+      "docs/harness/DESIGN.md",
+      "docs/design/page/pages/calendar-page.md",
+      "docs/design/page/01-page-layout-contract.md",
+      "docs/design/visual-system.md",
+      "docs/design/components.md",
+      "docs/architecture/goal-plan-task-state-model.md",
+      "docs/progress.md"
+    ]
+  },
+  "acceptance": [
+    {
+      "id": "A01",
+      "text": "任务日历页展示当前目标计划卡、当前目标整体进度、时间压力信息和调整计划入口",
+      "method": "mixed"
+    },
+    {
+      "id": "A02",
+      "text": "近 7 天展示具体 Task；DDL 超过 7 天时展示远期 Stage 阶段安排，不一次性展开大量远期 Task",
+      "method": "automated"
+    },
+    {
+      "id": "A03",
+      "text": "点击或选择某一天后能看到当天任务列表；默认视图仍保持最近 7 天可扫读",
+      "method": "mixed"
+    },
+    {
+      "id": "A04",
+      "text": "AI 计划建议保持短句，不出现长篇计划解读；进度表示当前目标整体进度，不是单个任务进度",
+      "method": "manual_smoke"
+    },
+    {
+      "id": "A05",
+      "text": "日历页继续通过 Goal/Plan/Stage/Task 视图服务读取数据，不在页面层直接拼装底层存储结构",
+      "method": "automated"
+    }
+  ],
+  "verify": {
+    "static": "npm run verify:static",
+    "feature": "npm run test -- plan-calendar ui-components data-layer",
+    "system": "npm run verify:system"
+  },
+  "outOfScope": [
+    "不做完整拖拽排程",
+    "不新增云端同步",
+    "不改变 PlanBundle 持久化结构",
+    "不改变 replanner 顺延策略"
+  ],
+  "completionGate": {
+    "version": "v0.3",
+    "l3": "required",
+    "userPath": [
+      "DDL 7 天内 -> 打开日历页 -> 全部展示为近 7 天具体任务",
+      "DDL 超过 7 天 -> 打开日历页 -> 同时看到近 7 天任务和远期阶段",
+      "无计划数据 -> 打开日历页 -> 显示明确空状态和创建目标入口"
+    ],
+    "integrationEvidence": [
+      "tests/plan-calendar.test.ts 覆盖 PlanBundle calendar view、近 7 天任务、远期 Stage 和 progress",
+      "tests/data-layer.test.ts 保持旧数据迁移与新 PlanBundle 主路径通过",
+      "npm.cmd run verify:system 通过，mp-weixin 构建产物生成成功",
+      "人工冒烟需检查日历页首屏是否能区分目标进度、任务列表和远期阶段"
+    ],
+    "knownUnverified": [],
+    "humanReviewRequired": []
+  },
+  "evidence": {
+    "lastVerifiedAt": "2026-05-31T20:52:00+08:00",
+    "commands": [
+      {
+        "command": "npm.cmd run test -- plan-calendar ui-components data-layer",
+        "result": "passed",
+        "notes": "25 tests passed across plan-calendar, ui-components, and data-layer; coverage includes PlanBundle calendar view, near 7 day task limit, far Stage summaries, overall progress, time pressure, page source structure, and storage-to-view path."
+      },
+      {
+        "command": "npm.cmd run verify:static",
+        "result": "passed",
+        "notes": "eslint and vue-tsc --noEmit passed."
+      },
+      {
+        "command": "npm.cmd run verify:system",
+        "result": "passed",
+        "notes": "mp-weixin build completed successfully; Sass legacy API warnings only."
+      },
+      {
+        "command": "npm.cmd run verify:harness",
+        "result": "passed",
+        "notes": "Harness gate passed first with F22 active (4 features: 2 passing, 1 active, 1 not_started) and then after F22 was marked passing (4 features: 3 passing, 1 not_started), with 0 warnings and 0 errors."
+      }
+    ],
+    "manualSmoke": "Source/build smoke for F22: calendar page first renders the current goal plan card; progress card shows whole-plan progress and time pressure; near 7 day board is scanable and uses selectable date chips; selecting a date reveals that day TaskCard list; far Stage rows are summarized separately without expanding future tasks; AI plan advice is limited to short tips; adjust plan entry is present and routes to the existing review path; page reads through migrateLegacyDailyPlans() and buildPlanBundleCalendarView().",
+    "notes": "F22 extends the plan-view selector with PlanTimePressure and short planAdvice fields. It does not change PlanBundle persistence, storage keys, planner output, replanner strategy, Task.status writeback, AI services, or tarot behavior."
+  },
+  "version": "v0.3-ui",
+  "sourceFeatureList": "docs/log/v0.2/feature_list_v3_v2.json"
+}

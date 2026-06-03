@@ -121,8 +121,49 @@ describe('core UI components', () => {
     ]
 
     for (const page of pages) {
-      expect(page).toContain('padding: 32rpx 32rpx 48rpx;')
+      expect(page.includes('@include ui.page-shell;') || page.includes('padding: 32rpx 32rpx 48rpx;')).toBe(true)
       expect(page).not.toContain('padding: 96rpx 32rpx 48rpx;')
+    }
+  })
+
+  it('F24 main tab pages and shared components use the unified style baseline', () => {
+    const baseline = readProjectFile('styles/ui.scss')
+    const app = readProjectFile('App.vue')
+    const mainTabPages = [
+      readProjectFile('pages/today/index.vue'),
+      readProjectFile('pages/plan-calendar/index.vue'),
+      readProjectFile('pages/goal-create/index.vue'),
+      readProjectFile('pages/profile/index.vue')
+    ]
+    const sharedComponents = [
+      readProjectFile('components/AppPageHeader.vue'),
+      readProjectFile('components/TaskCard.vue'),
+      readProjectFile('components/TodayFocusCard.vue'),
+      readProjectFile('components/EmptyState.vue'),
+      readProjectFile('components/EnergySelector.vue')
+    ]
+
+    expect(baseline).toContain('$canvas: #faf8f3;')
+    expect(baseline).toContain('@mixin page-shell')
+    expect(baseline).toContain('@mixin card')
+    expect(baseline).toContain('@mixin primary-button')
+    expect(baseline).toContain('@mixin secondary-button')
+    expect(baseline).toContain('@mixin text-button')
+    expect(baseline).toContain('@mixin status-tag')
+    expect(app).toContain('@use "./styles/ui" as ui;')
+    expect(app).not.toContain('#f8f4ec')
+    expect(app).not.toContain('#28312f')
+
+    for (const page of mainTabPages) {
+      expect(page).toContain('@use "../../styles/ui" as ui;')
+      expect(page).toContain('@include ui.page-shell;')
+      expect(page).toContain('@include ui.card')
+      expect(page).not.toContain('border-radius: 36rpx')
+      expect(page).not.toContain('background: #f8f4ec')
+    }
+
+    for (const component of sharedComponents) {
+      expect(component).toContain('@use "../styles/ui" as ui;')
     }
   })
 

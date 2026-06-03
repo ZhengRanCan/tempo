@@ -1,0 +1,133 @@
+{
+  "id": "F23",
+  "title": "v0.3 UI 改造：创建目标与我的页收口",
+  "status": "passing",
+  "dependsOn": [
+    "F22"
+  ],
+  "behavior": "按 docs/design/page/pages/create-goal-page.md 和 docs/design/page/pages/profile-page.md 收口创建目标页与我的页：创建页专注创建 Goal 和触发 Plan 生成，我的页专注目标、偏好、AI 表达与设置。",
+  "scope": {
+    "pages": [
+      "pages/goal-create/index.vue",
+      "pages/profile/index.vue"
+    ],
+    "components": [
+      "components/EmptyState.vue",
+      "components/EnergySelector.vue"
+    ],
+    "services": [
+      "services/planner.ts",
+      "services/storage.ts",
+      "services/plan-view.ts"
+    ],
+    "models": [
+      "models/goal.ts",
+      "models/user-profile.ts"
+    ],
+    "schemas": [],
+    "tests": [
+      "tests/goal-create.test.ts",
+      "tests/user-profile.test.ts",
+      "tests/ui-components.test.ts",
+      "tests/navigation-shell.test.ts",
+      "tests/data-layer.test.ts"
+    ],
+    "docs": [
+      "docs/harness/DESIGN.md",
+      "docs/design/page/pages/create-goal-page.md",
+      "docs/design/page/pages/profile-page.md",
+      "docs/design/page/01-page-layout-contract.md",
+      "docs/design/visual-system.md",
+      "docs/design/components.md",
+      "docs/design/content-rules.md",
+      "docs/architecture/goal-plan-task-state-model.md",
+      "docs/progress.md"
+    ]
+  },
+  "acceptance": [
+    {
+      "id": "A01",
+      "text": "创建目标页使用步骤式卡片组织目标名称、截止日期、每日可用时间、补充说明和个性化安排偏好",
+      "method": "mixed"
+    },
+    {
+      "id": "A02",
+      "text": "个性化偏好默认展开，包含偏好工作时段、当前能量状态、计划强度或仪式感元素；仪式感只影响表达风格，不作为任务安排科学依据",
+      "method": "manual_smoke"
+    },
+    {
+      "id": "A03",
+      "text": "点击生成计划后仍创建 Goal 并触发 PlanBundle 生成和保存；创建页不直接展示任务日历或执行任务",
+      "method": "automated"
+    },
+    {
+      "id": "A04",
+      "text": "我的页展示当前目标卡、默认安排偏好、AI 表达与仪式感偏好、最近推进和设置入口；有目标时主操作是查看计划/管理目标，无目标时突出创建目标",
+      "method": "mixed"
+    },
+    {
+      "id": "A05",
+      "text": "我的页删除今日任务、任务日历等与 TabBar 重复的强入口；MBTI、塔罗、每日关键词放在 AI 表达偏好中，不作为默认安排硬参数",
+      "method": "manual_smoke"
+    }
+  ],
+  "verify": {
+    "static": "npm run verify:static",
+    "feature": "npm run test -- goal-create user-profile ui-components navigation-shell data-layer",
+    "system": "npm run verify:system"
+  },
+  "outOfScope": [
+    "不新增多目标完整管理",
+    "不新增完整设置页",
+    "不接入真实 Deepseek",
+    "不新增完整塔罗抽牌 UI",
+    "不改变 PlanBundle、Goal、UserProfile 的持久化结构"
+  ],
+  "completionGate": {
+    "version": "v0.3",
+    "l3": "required",
+    "userPath": [
+      "无目标 -> 打开我的页 -> 突出创建目标入口",
+      "创建目标页填写必填项 -> 生成计划 -> 保存 Goal、UserProfile、PlanBundle 并跳转到计划查看路径",
+      "有目标 -> 打开我的页 -> 展示当前目标、进度、偏好和查看计划/管理目标操作"
+    ],
+    "integrationEvidence": [
+      "tests/goal-create.test.ts 覆盖创建目标、校验、PlanBundle 生成保存路径",
+      "tests/user-profile.test.ts 覆盖偏好结构和保存路径",
+      "tests/navigation-shell.test.ts 覆盖 TabBar 入口未被破坏",
+      "tests/data-layer.test.ts 保持创建目标 -> 计划 -> 今日/日历读取主路径通过",
+      "npm.cmd run verify:system 通过，mp-weixin 构建产物生成成功"
+    ],
+    "knownUnverified": [],
+    "humanReviewRequired": []
+  },
+  "evidence": {
+    "lastVerifiedAt": "2026-05-31T21:05:00+08:00",
+    "commands": [
+      {
+        "command": "npm.cmd run test -- goal-create user-profile ui-components navigation-shell data-layer",
+        "result": "passed",
+        "notes": "36 tests passed across goal-create, user-profile, ui-components, navigation-shell, and data-layer; coverage includes step-card create page structure, Goal/UserProfile/PlanBundle persistence, profile page source structure, expression preferences, navigation shell, and data compatibility."
+      },
+      {
+        "command": "npm.cmd run verify:static",
+        "result": "passed",
+        "notes": "eslint and vue-tsc --noEmit passed."
+      },
+      {
+        "command": "npm.cmd run verify:system",
+        "result": "passed",
+        "notes": "mp-weixin build completed successfully; Sass legacy API warnings only."
+      },
+      {
+        "command": "npm.cmd run verify:harness",
+        "result": "passed",
+        "notes": "Harness gate passed first with F23 active (4 features: 3 passing, 1 active) and then after F23 was marked passing (4 features: 4 passing), with 0 warnings and 0 errors."
+      }
+    ],
+    "manualSmoke": "Source/build smoke for F23: create goal page uses five step cards for title, deadline, daily time, description, and expanded personalized preferences; preferences include work style, energy, ritual expression, and optional MBTI; ritual and MBTI copy stays limited to expression, not scheduling science. Generate plan still saves Goal, UserProfile, PlanBundle, and legacy DailyPlan[] and routes to calendar without rendering task/calendar views. Profile page shows current goal, default scheduling preferences, AI expression and ritual preferences, recent progress, and settings entries; with a goal it offers view plan/manage goal, without a goal it highlights create goal, and it does not restore today/calendar hub entries.",
+    "notes": "F23 keeps PlanBundle, Goal, UserProfile, storage keys, planner, replanner, AI, and tarot persistence contracts unchanged. The manage goal and settings entries are lightweight placeholders within the existing MVP boundary."
+  },
+  "version": "v0.3-ui",
+  "sourceFeatureList": "docs/log/v0.2/feature_list_v3_v2.json"
+}

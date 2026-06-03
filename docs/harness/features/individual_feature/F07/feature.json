@@ -1,0 +1,89 @@
+{
+  "id": "F07",
+  "title": "自动重排后续计划",
+  "status": "passing",
+  "dependsOn": [
+    "F06"
+  ],
+  "behavior": "系统根据晚间复盘结果调整后续任务安排，并保留历史记录。",
+  "scope": {
+    "pages": [],
+    "components": [],
+    "services": [
+      "services/replanner.ts",
+      "services/planner.ts",
+      "services/date.ts"
+    ],
+    "models": [
+      "models/plan.ts",
+      "models/task.ts",
+      "models/review.ts"
+    ],
+    "schemas": [],
+    "tests": [
+      "tests/replanner.test.ts"
+    ]
+  },
+  "acceptance": [
+    {
+      "id": "A01",
+      "text": "未完成任务会被移动到后续日期",
+      "method": "automated"
+    },
+    {
+      "id": "A02",
+      "text": "高优先级任务优先保留",
+      "method": "automated"
+    },
+    {
+      "id": "A03",
+      "text": "重排后每日任务总时长不超过可用时间",
+      "method": "automated"
+    },
+    {
+      "id": "A04",
+      "text": "重排后保留已完成任务历史",
+      "method": "automated"
+    }
+  ],
+  "verify": {
+    "static": "npm run verify:static",
+    "feature": "npm run test -- replanner",
+    "system": "npm run verify:system"
+  },
+  "outOfScope": [
+    "不删除历史复盘",
+    "不调用真实 AI",
+    "不做多人协作",
+    "不生成长期统计报表"
+  ],
+  "evidence": {
+    "lastVerifiedAt": "2026-05-23",
+    "commands": [
+      {
+        "command": "npm.cmd run test -- replanner",
+        "result": "passed",
+        "notes": "5 tests passed; covers A01 moving partial/skipped tasks to future dates, A02 high-priority ordering, A03 daily available-time cap, A04 reviewed-day history preservation, and infeasible replanning."
+      },
+      {
+        "command": "npm.cmd run verify:static",
+        "result": "passed",
+        "notes": "lint and vue-tsc passed after adding deterministic replanner logic and date helper."
+      },
+      {
+        "command": "npm.cmd run verify:system",
+        "result": "passed",
+        "notes": "mp-weixin build completed; existing os alias and Sass deprecation warnings remain non-blocking."
+      },
+      {
+        "command": "npm.cmd run check",
+        "result": "passed",
+        "notes": "full static, feature and system verification passed; 8 test files and 39 tests passed."
+      }
+    ],
+    "manualSmoke": "",
+    "notes": "F07 implementation is complete. replanAfterReview applies the evening review to the reviewed day, keeps completed tasks as history, creates carryover tasks for partial/skipped work, schedules higher-priority carryovers first into future dates without exceeding dailyAvailableMinutes, and returns infeasible suggestions when the remaining window cannot hold the work. It does not call real AI, delete review history, support collaboration or generate long-term statistics."
+  },
+  "version": "v0.1",
+  "sourceFeatureList": "docs/log/v0.1/feature_list_v0.1.json"
+}

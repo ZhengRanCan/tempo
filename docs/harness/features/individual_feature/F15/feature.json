@@ -1,0 +1,124 @@
+{
+  "id": "F15",
+  "title": "v0.3 今日与日历视图服务迁移",
+  "status": "passing",
+  "dependsOn": [
+    "F14"
+  ],
+  "behavior": "新增或整理页面视图服务，让 today、calendar 和 AI suggestion 基于 PlanBundle/Task/DailyTaskView 工作，不再直接依赖 DailyPlan[] 作为计划真相来源。",
+  "scope": {
+    "pages": [],
+    "components": [],
+    "services": [
+      "services/today-suggestion.ts",
+      "services/ai-client.ts",
+      "services/storage.ts"
+    ],
+    "models": [
+      "models/ai-suggestion.ts",
+      "models/plan.ts",
+      "models/task.ts",
+      "models/user-profile.ts"
+    ],
+    "schemas": [
+      "schemas/ai-suggestion.ts"
+    ],
+    "tests": [
+      "tests/today-suggestion.test.ts",
+      "tests/ai-tarot-contract.test.ts",
+      "tests/plan-calendar.test.ts",
+      "tests/today.test.ts"
+    ],
+    "docs": [
+      "docs/architecture/services-boundary.md",
+      "docs/progress.md"
+    ]
+  },
+  "acceptance": [
+    {
+      "id": "A01",
+      "text": "today-suggestion 可以基于 PlanBundle 或 DailyTaskView 生成 TodaySuggestionView，不要求调用方传入 DailyPlan[]",
+      "method": "automated"
+    },
+    {
+      "id": "A02",
+      "text": "calendar 视图可以从 Goal/Plan/Stage/Task 汇总生成近 7 天任务、远期阶段、进度和计划状态",
+      "method": "automated"
+    },
+    {
+      "id": "A03",
+      "text": "ai-client 的今日建议输入不暴露完整历史 Plan，只接收受控的今日任务上下文",
+      "method": "automated"
+    },
+    {
+      "id": "A04",
+      "text": "AI/塔罗建议仍只影响表达和排序，不修改 Task.status、DailyReview 或历史 Plan",
+      "method": "automated"
+    },
+    {
+      "id": "A05",
+      "text": "旧 DailyPlan[] 今日建议路径在迁移期间仍可兼容或有明确 adapter",
+      "method": "automated"
+    }
+  ],
+  "verify": {
+    "static": "npm run verify:static",
+    "feature": "npm run test -- today-suggestion ai-tarot-contract plan-calendar today",
+    "system": "npm run verify:system"
+  },
+  "outOfScope": [
+    "不修改 replanner",
+    "不重做页面视觉",
+    "不接入真实 Deepseek",
+    "不删除旧兼容 adapter"
+  ],
+  "completionGate": {
+    "version": "v0.3",
+    "l3": "required",
+    "userPath": [
+      "读取 active PlanBundle -> 生成今日建议 -> focusTask 和 tasks 稳定展示",
+      "读取 active PlanBundle -> 生成日历视图 -> 近 7 天任务和远期 Stage 可区分"
+    ],
+    "integrationEvidence": [
+      "tests/today-suggestion.test.ts 覆盖 PlanBundle/DailyTaskView 输入、AI 排序、塔罗表达和不修改原始任务",
+      "tests/plan-calendar.test.ts 覆盖 Plan/Stage/Task 日历视图",
+      "npm.cmd run verify:system 通过，mp-weixin 构建产物生成成功"
+    ],
+    "knownUnverified": [],
+    "humanReviewRequired": []
+  },
+  "evidence": {
+    "lastVerifiedAt": "2026-05-26T16:25:31+08:00",
+    "commands": [
+      {
+        "command": "npm.cmd run test -- today-suggestion ai-tarot-contract plan-calendar today",
+        "result": "passed",
+        "summary": "4 个测试文件、25 个测试通过"
+      },
+      {
+        "command": "npm.cmd run verify:static",
+        "result": "passed",
+        "summary": "lint 和 vue-tsc --noEmit 通过"
+      },
+      {
+        "command": "npm.cmd run verify:system",
+        "result": "passed",
+        "summary": "build:mp-weixin 构建成功"
+      },
+      {
+        "command": "npm.cmd run check",
+        "result": "passed",
+        "summary": "15 个测试文件、87 个测试通过，F15 active 状态下 harness gate 0 warning / 0 error"
+      },
+      {
+        "command": "npm.cmd run verify:harness",
+        "result": "passed",
+        "summary": "F15 passing 状态通过，6 个 feature 中 4 个 passing、2 个 not_started，0 warning / 0 error"
+      }
+    ],
+    "manualSmoke": "L3b 采用自动化集成路径测试：tests/today-suggestion.test.ts 覆盖 PlanBundle/DailyTaskView -> TodaySuggestionView，包括 AI 排序、塔罗表达和不修改原始任务；tests/plan-calendar.test.ts 覆盖 PlanBundle -> 近 7 天任务 + 远期 Stage + progress + plan status。页面全面接入属于 F17 scope，不作为 F15 未验证项。",
+    "notes": "F15 adds PlanBundle/DailyTaskView today suggestion adapters, PlanBundle calendar summary, and requestTodayTaskSuggestion() so new AI suggestion input receives only controlled today task context. Legacy DailyPlan[] suggestion path remains compatible by delegating to the new task-context API."
+  },
+  "version": "v0.3",
+  "sourceFeatureList": "docs/log/v0.3/feature_list.json"
+}

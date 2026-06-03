@@ -1,0 +1,88 @@
+{
+  "id": "F06",
+  "title": "晚间复盘",
+  "status": "passing",
+  "dependsOn": [
+    "F05"
+  ],
+  "behavior": "用户可以记录当日任务完成情况、能量状态和简短复盘备注。",
+  "scope": {
+    "pages": [
+      "pages/"
+    ],
+    "components": [],
+    "services": [
+      "services/storage.ts"
+    ],
+    "models": [
+      "models/review.ts",
+      "models/task.ts"
+    ],
+    "schemas": [],
+    "tests": [
+      "tests/review.test.ts"
+    ]
+  },
+  "acceptance": [
+    {
+      "id": "A01",
+      "text": "可以记录任务完成、部分完成或未完成",
+      "method": "mixed"
+    },
+    {
+      "id": "A02",
+      "text": "可以记录当天能量状态",
+      "method": "mixed"
+    },
+    {
+      "id": "A03",
+      "text": "可以保存复盘备注",
+      "method": "mixed"
+    },
+    {
+      "id": "A04",
+      "text": "复盘备注为空时仍可保存结构化状态",
+      "method": "automated"
+    }
+  ],
+  "verify": {
+    "static": "npm run verify:static",
+    "feature": "npm run test -- review",
+    "system": "npm run verify:system"
+  },
+  "outOfScope": [
+    "不生成长期统计报表",
+    "不自动重排后续计划",
+    "不做社交分享",
+    "不上传复盘隐私数据"
+  ],
+  "evidence": {
+    "lastVerifiedAt": "2026-05-23",
+    "commands": [
+      {
+        "command": "npm.cmd run test -- review",
+        "result": "passed",
+        "notes": "5 tests passed; covers A01 completed/partial/unfinished task recording, A02 energy recording, A03 optional note saving, A04 empty-note structured save, and same-day review replacement."
+      },
+      {
+        "command": "npm.cmd run verify:static",
+        "result": "passed",
+        "notes": "lint and vue-tsc passed after adding review model builder and review page."
+      },
+      {
+        "command": "npm.cmd run verify:system",
+        "result": "passed",
+        "notes": "mp-weixin build completed; existing os alias and Sass deprecation warnings remain non-blocking."
+      },
+      {
+        "command": "npm.cmd run check",
+        "result": "passed",
+        "notes": "full static, feature and system verification passed; 7 test files and 34 tests passed."
+      }
+    ],
+    "manualSmoke": "Mixed verification note: review page now lets the user mark each today task as done, partial or unfinished, choose today's energy state, optionally enter a short note, and save through saveDailyReview. Final Weixin DevTools click-through can still be used as a product smoke check if desired.",
+    "notes": "F06 implementation is complete. buildDailyReview creates structured DailyReview records with completedTaskIds, partialTaskIds, skippedTaskIds, energy and optional trimmed note. Empty notes still save valid structured review data. The review page is lightweight and does not trigger replanning, statistics, sharing or uploads."
+  },
+  "version": "v0.1",
+  "sourceFeatureList": "docs/log/v0.1/feature_list_v0.1.json"
+}

@@ -1,0 +1,90 @@
+{
+  "id": "F03",
+  "title": "初始任务拆解",
+  "status": "passing",
+  "dependsOn": [
+    "F01",
+    "F02"
+  ],
+  "behavior": "系统根据目标、截止日期和每日可用时间生成按日期排列的初始任务计划。",
+  "scope": {
+    "pages": [],
+    "components": [],
+    "services": [
+      "services/planner.ts",
+      "services/date.ts"
+    ],
+    "models": [
+      "models/goal.ts",
+      "models/plan.ts",
+      "models/task.ts"
+    ],
+    "schemas": [],
+    "tests": [
+      "tests/planner.smoke.test.ts",
+      "tests/planner.test.ts"
+    ]
+  },
+  "acceptance": [
+    {
+      "id": "A01",
+      "text": "至少生成 7 天计划，除非截止日期不足 7 天",
+      "method": "automated"
+    },
+    {
+      "id": "A02",
+      "text": "每天任务总时长不超过每日可用时间",
+      "method": "automated"
+    },
+    {
+      "id": "A03",
+      "text": "每个任务都有标题、预计时长、优先级和最低完成线",
+      "method": "automated"
+    },
+    {
+      "id": "A04",
+      "text": "计划无法在截止日期前完成时返回不可行状态",
+      "method": "automated"
+    }
+  ],
+  "verify": {
+    "static": "npm run verify:static",
+    "feature": "npm run test -- planner",
+    "system": "npm run verify:system"
+  },
+  "outOfScope": [
+    "不调用真实 AI",
+    "不实现日历页面",
+    "不处理晚间复盘",
+    "不做自动重排"
+  ],
+  "evidence": {
+    "lastVerifiedAt": "2026-05-23",
+    "commands": [
+      {
+        "command": "npm.cmd run test -- planner",
+        "result": "passed",
+        "notes": "9 planner tests passed across planner.test.ts and planner.smoke.test.ts; covers A01-A04, low-energy minimum-line behavior, and generated DailyPlan persistence through the unified storage entry."
+      },
+      {
+        "command": "npm.cmd run verify:static",
+        "result": "passed",
+        "notes": "lint and vue-tsc passed after deterministic starter planner updates and goal-create planner integration."
+      },
+      {
+        "command": "npm.cmd run verify:system",
+        "result": "passed",
+        "notes": "mp-weixin build completed; existing os alias and Sass deprecation warnings remain non-blocking."
+      },
+      {
+        "command": "npm.cmd run check",
+        "result": "passed",
+        "notes": "full static, feature and system verification passed; 4 test files and 19 tests passed."
+      }
+    ],
+    "manualSmoke": "",
+    "notes": "F03 implementation is complete. planner.ts builds a deterministic dated starter plan without real AI, keeps each day within dailyAvailableMinutes, gives every task title/estimatedMinutes/priority/minimumLine, adapts low-energy language toward the minimum line, and returns infeasible when the start date is after the deadline or daily time is too small for an executable task. 2026-05-23 follow-up fixed the goal-create integration gap: tapping Generate Plan now builds the starter plan and saves DailyPlan[] through saveDailyPlans before showing the success toast. Displaying the plan remains F04 scope."
+  },
+  "version": "v0.1",
+  "sourceFeatureList": "docs/log/v0.1/feature_list_v0.1.json"
+}

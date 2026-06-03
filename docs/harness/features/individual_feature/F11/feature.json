@@ -1,0 +1,120 @@
+{
+  "id": "F11",
+  "title": "v0.2 Deepseek 与塔罗扩展接口预留",
+  "status": "passing",
+  "dependsOn": [
+    "F10"
+  ],
+  "behavior": "为后续 Deepseek 和塔罗能力预留类型、schema、服务边界和 deterministic fallback，使 AI/塔罗未来只能影响今日建议表达与排序，不直接破坏原始任务计划。",
+  "scope": {
+    "pages": [],
+    "components": [],
+    "services": [
+      "services/ai-client.ts",
+      "services/tarot.ts",
+      "services/today-suggestion.ts"
+    ],
+    "models": [
+      "models/tarot.ts",
+      "models/ai-suggestion.ts",
+      "models/plan.ts",
+      "models/task.ts",
+      "models/user-profile.ts"
+    ],
+    "schemas": [
+      "schemas/ai-suggestion.ts"
+    ],
+    "tests": [
+      "tests/ai-tarot-contract.test.ts",
+      "tests/today-suggestion.test.ts"
+    ]
+  },
+  "acceptance": [
+    {
+      "id": "A01",
+      "text": "TarotDraw 数据模型只记录抽牌结果、正逆位和行动提示，不生成命运预测、心理诊断或健康判断",
+      "method": "automated"
+    },
+    {
+      "id": "A02",
+      "text": "AI 今日建议 schema 只允许结构化 JSON，并校验任务排序、今日关键词、最低完成线和注意事项",
+      "method": "automated"
+    },
+    {
+      "id": "A03",
+      "text": "ai-client 只暴露受控调用边界和 typed fallback，不在小程序前端暴露 API key",
+      "method": "automated"
+    },
+    {
+      "id": "A04",
+      "text": "today-suggestion 服务可以在无真实 AI 的情况下基于现有 DailyPlan、UserProfile 和可选 TarotDraw 生成确定性今日建议",
+      "method": "automated"
+    },
+    {
+      "id": "A05",
+      "text": "AI/塔罗建议只影响表达和排序，不直接修改 Task.status、DailyReview 或历史 DailyPlan",
+      "method": "automated"
+    }
+  ],
+  "verify": {
+    "static": "npm run verify:static",
+    "feature": "npm run test -- ai-tarot-contract today-suggestion",
+    "system": "npm run verify:system"
+  },
+  "outOfScope": [
+    "不接入真实 Deepseek 网络请求",
+    "不实现完整塔罗抽牌 UI",
+    "不新增云函数",
+    "不上传用户隐私数据",
+    "不把塔罗解释为预测能力"
+  ],
+  "completionGate": {
+    "version": "v0.2",
+    "l3": "required",
+    "userPath": [
+      "打开今日任务 -> 无 AI 凭据时仍展示确定性今日建议",
+      "传入可选塔罗抽牌结果 -> 今日建议只改变表达和排序，不改变任务历史"
+    ],
+    "integrationEvidence": [
+      "tests/ai-tarot-contract.test.ts ?? TarotDraw ?????????/??/?????AI today suggestion schema?typed fallback ????????",
+      "tests/today-suggestion.test.ts ????? AI ????????AI ??/??????? TarotDraw ??????????? DailyPlan/Task.status",
+      "npm.cmd run verify:system ???mp-weixin ????????"
+    ],
+    "knownUnverified": [],
+    "humanReviewRequired": []
+  },
+  "evidence": {
+    "lastVerifiedAt": "2026-05-24T23:30:30+08:00",
+    "commands": [
+      {
+        "command": "npm.cmd run test -- ai-tarot-contract today-suggestion",
+        "result": "passed",
+        "summary": "2 个测试文件、11 个测试通过"
+      },
+      {
+        "command": "npm.cmd run verify:static",
+        "result": "passed",
+        "summary": "lint ? vue-tsc --noEmit ??"
+      },
+      {
+        "command": "npm.cmd run verify:system",
+        "result": "passed",
+        "summary": "build:mp-weixin ????"
+      },
+      {
+        "command": "npm.cmd run check",
+        "result": "passed",
+        "summary": "14 个测试文件、70 个测试通过，harness gate 在 F11 passing 状态下 0 warning / 0 error"
+      },
+      {
+        "command": "npm.cmd run verify:harness",
+        "result": "passed",
+        "summary": "F11 passing 状态通过，4 个 feature 全部 passing，0 warning / 0 error"
+      }
+    ],
+    "manualSmoke": "L3b ???????????????tests/today-suggestion.test.ts ????????? -> ? AI ???????????????????? TarotDraw -> ?????????/????????????tests/ai-tarot-contract.test.ts ????????? AI schema ???",
+    "notes": "F11 ?? Deepseek ???????????? AiTodaySuggestion?TarotDraw?AI suggestion schema?tarot fallback ? today-suggestion ?????????? Deepseek ????????????? UI ????????"
+  },
+  "version": "v0.2",
+  "sourceFeatureList": "docs/log/v0.2/feature_list_v0.2.json"
+}

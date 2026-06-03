@@ -1,0 +1,123 @@
+{
+  "id": "F18",
+  "title": "v0.3 审计修复：目标模型合同收紧",
+  "status": "passing",
+  "dependsOn": [
+    "F17"
+  ],
+  "behavior": "根据 v0.3 数据模型审计结果，收紧 Goal、Task、DailyReview 的目标模型合同，使代码实现与 docs/architecture/goal-plan-task-state-model.md 中的 MVP 必须字段保持一致，同时保留旧数据兼容。",
+  "scope": {
+    "pages": [
+      "pages/review/index.vue"
+    ],
+    "components": [],
+    "services": [],
+    "models": [
+      "models/goal.ts",
+      "models/task.ts",
+      "models/review.ts",
+      "models/index.ts"
+    ],
+    "schemas": [],
+    "tests": [
+      "tests/data-models-v0.3.test.ts",
+      "tests/goal-create.test.ts",
+      "tests/review.test.ts",
+      "tests/data-layer.test.ts"
+    ],
+    "docs": [
+      "docs/architecture/goal-plan-task-state-model.md",
+      "docs/progress.md"
+    ]
+  },
+  "acceptance": [
+    {
+      "id": "A01",
+      "text": "Goal.status 在目标模型中为必填字段；buildGoal() 新建目标默认写入 active；normalizeGoal() 读取旧数据缺失 status 时默认补 active",
+      "method": "automated"
+    },
+    {
+      "id": "A02",
+      "text": "Task.scheduledDate 在 normalize 后始终可用；旧 Task.date 继续可读，但会稳定映射为 scheduledDate；新增测试覆盖 standalone normalizeTask() 的旧 date 输入",
+      "method": "automated"
+    },
+    {
+      "id": "A03",
+      "text": "buildDailyReview() 直接生成 taskResults；旧 completedTaskIds、partialTaskIds、skippedTaskIds 继续保留并可由 normalizeDailyReview() 兼容读取",
+      "method": "automated"
+    },
+    {
+      "id": "A04",
+      "text": "复盘页不再依赖手动给 buildDailyReview() 返回值追加 taskResults；页面保存 Review 后仍可触发 replanPlanBundleAfterReview()",
+      "method": "automated"
+    },
+    {
+      "id": "A05",
+      "text": "DailyPlan 与 PlanBundle legacy adapter 继续保留，旧本地数据迁移、今日任务、日历、复盘主路径不被破坏",
+      "method": "automated"
+    }
+  ],
+  "verify": {
+    "static": "npm run verify:static",
+    "feature": "npm run test -- data-models-v0.3 goal-create review data-layer",
+    "system": "npm run verify:system"
+  },
+  "outOfScope": [
+    "不删除 DailyPlan",
+    "不删除 Task.date 兼容读取",
+    "不修改 storage key",
+    "不重构 UI",
+    "不接入真实 Deepseek 或塔罗 UI"
+  ],
+  "completionGate": {
+    "version": "v0.3",
+    "l3": "required",
+    "userPath": [
+      "读取缺失 Goal.status 的旧目标数据 -> normalizeGoal() 返回 active 状态 -> 页面仍可读取当前目标",
+      "读取只有 Task.date 的旧任务数据 -> normalizeTask() 和 DailyPlan/PlanBundle adapter 均能提供 scheduledDate",
+      "保存复盘 -> DailyReview 同时包含 taskResults 和旧三组 task id -> 触发重排后 Review 历史不被改写"
+    ],
+    "integrationEvidence": [
+      "tests/data-models-v0.3.test.ts 覆盖 Goal.status 默认值、Task.date 到 scheduledDate 的 standalone normalize、DailyReview.taskResults 构建和旧字段兼容",
+      "tests/review.test.ts 覆盖复盘页保存 taskResults 并触发新 replanner 路径",
+      "tests/data-layer.test.ts 保持通过，证明旧数据兼容和页面主路径未被破坏",
+      "npm.cmd run verify:system 通过，mp-weixin 构建产物生成成功"
+    ],
+    "knownUnverified": [],
+    "humanReviewRequired": []
+  },
+  "evidence": {
+    "lastVerifiedAt": "2026-05-27T10:47:11+08:00",
+    "commands": [
+      {
+        "command": "npm.cmd run test -- data-models-v0.3 goal-create review data-layer",
+        "result": "passed",
+        "summary": "4 ??????25 ???????? Goal.status?Task.scheduledDate?DailyReview.taskResults ??????????"
+      },
+      {
+        "command": "npm.cmd run verify:static",
+        "result": "passed",
+        "summary": "lint ? vue-tsc --noEmit ?????????????? fixture ????????"
+      },
+      {
+        "command": "npm.cmd run verify:system",
+        "result": "passed",
+        "summary": "build:mp-weixin ?????"
+      },
+      {
+        "command": "npm.cmd run check",
+        "result": "passed",
+        "summary": "15 ??????93 ??????F18 active ??? harness gate 0 warning / 0 error?"
+      },
+      {
+        "command": "npm.cmd run verify:harness",
+        "result": "passed",
+        "summary": "F18 passing ??? 8 ? feature ? 7 ? passing?1 ? not_started?0 warning / 0 error?"
+      }
+    ],
+    "manualSmoke": "L3b ????????????tests/data-models-v0.3.test.ts ???? Goal.status ?????? active?? Task.date ? scheduledDate ? standalone normalize?DailyReview.taskResults ?????? task id ???tests/review.test.ts ?? review ??????? replanPlanBundleAfterReview??????? buildDailyReview() ????? taskResults?tests/data-layer.test.ts ??? DailyPlan/PlanBundle adapter??? Review ??????????????",
+    "notes": "F18 ?? Goal?Task?DailyReview ?????buildGoal/normalizeGoal ????? status?normalizeTask ?? date ?? scheduledDate ??? scheduledDate?buildDailyReview/normalizeDailyReview ????? taskResults????? completedTaskIds/partialTaskIds/skippedTaskIds?????? review.taskResults ????????? replanPlanBundleAfterReview() ???"
+  },
+  "version": "v0.3",
+  "sourceFeatureList": "docs/log/v0.3/feature_list.json"
+}

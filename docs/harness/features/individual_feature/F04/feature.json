@@ -1,0 +1,88 @@
+{
+  "id": "F04",
+  "title": "任务日历页面",
+  "status": "passing",
+  "dependsOn": [
+    "F03"
+  ],
+  "behavior": "用户可以按日期查看每日任务安排，并区分任务完成状态。",
+  "scope": {
+    "pages": [
+      "pages/"
+    ],
+    "components": [],
+    "services": [
+      "services/storage.ts"
+    ],
+    "models": [
+      "models/plan.ts",
+      "models/task.ts"
+    ],
+    "schemas": [],
+    "tests": [
+      "tests/plan-calendar.test.ts"
+    ]
+  },
+  "acceptance": [
+    {
+      "id": "A01",
+      "text": "可以看到按日期分组的任务列表",
+      "method": "mixed"
+    },
+    {
+      "id": "A02",
+      "text": "可以区分已完成、未完成、部分完成任务",
+      "method": "mixed"
+    },
+    {
+      "id": "A03",
+      "text": "可以进入今日任务页",
+      "method": "manual_smoke"
+    },
+    {
+      "id": "A04",
+      "text": "无任务数据时显示低压力空状态",
+      "method": "manual_smoke"
+    }
+  ],
+  "verify": {
+    "static": "npm run verify:static",
+    "feature": "npm run test -- plan-calendar",
+    "system": "npm run verify:system"
+  },
+  "outOfScope": [
+    "不实现任务重排",
+    "不实现复盘提交",
+    "不做完整日历同步",
+    "不接入第三方日历"
+  ],
+  "evidence": {
+    "lastVerifiedAt": "2026-05-23",
+    "commands": [
+      {
+        "command": "npm.cmd run test -- plan-calendar",
+        "result": "passed",
+        "notes": "4 tests passed; covers current-goal storage lookup, stored DailyPlan retrieval, date-grouped visible calendar days, status labels and empty view data."
+      },
+      {
+        "command": "npm.cmd run verify:static",
+        "result": "passed",
+        "notes": "lint and vue-tsc passed after adding plan-calendar page, today placeholder entry, storage current-goal helpers and plan calendar model helpers."
+      },
+      {
+        "command": "npm.cmd run verify:system",
+        "result": "passed",
+        "notes": "mp-weixin build completed; existing os alias and Sass deprecation warnings remain non-blocking."
+      },
+      {
+        "command": "npm.cmd run check",
+        "result": "passed",
+        "notes": "full static, feature and system verification passed; 5 test files and 23 tests passed."
+      }
+    ],
+    "manualSmoke": "2026-05-23: User confirmed F04 manual smoke passed in Weixin DevTools. Plan calendar shows date-grouped tasks, visible status labels, the View Today Task entry opens the today placeholder page, and the empty state is low-pressure.",
+    "notes": "F04 implementation is complete. Added plan-calendar page focused on the nearest 7 days, low-pressure empty state, current-goal storage lookup, task status labels, and a minimal today page placeholder only for the F04 navigation entry. Updating pages.json was required to register the new mini-program pages."
+  },
+  "version": "v0.1",
+  "sourceFeatureList": "docs/log/v0.1/feature_list_v0.1.json"
+}

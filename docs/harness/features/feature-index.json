@@ -1,0 +1,170 @@
+[
+  {
+    "id": "F01",
+    "title": "创建目标",
+    "status": "passing",
+    "feature_folder": "docs/harness/features/individual_feature/F01",
+    "version": "v0.1"
+  },
+  {
+    "id": "F02",
+    "title": "用户状态与偏好输入",
+    "status": "passing",
+    "feature_folder": "docs/harness/features/individual_feature/F02",
+    "version": "v0.1"
+  },
+  {
+    "id": "F03",
+    "title": "初始任务拆解",
+    "status": "passing",
+    "feature_folder": "docs/harness/features/individual_feature/F03",
+    "version": "v0.1"
+  },
+  {
+    "id": "F04",
+    "title": "任务日历页面",
+    "status": "passing",
+    "feature_folder": "docs/harness/features/individual_feature/F04",
+    "version": "v0.1"
+  },
+  {
+    "id": "F05",
+    "title": "今日任务页",
+    "status": "passing",
+    "feature_folder": "docs/harness/features/individual_feature/F05",
+    "version": "v0.1"
+  },
+  {
+    "id": "F06",
+    "title": "晚间复盘",
+    "status": "passing",
+    "feature_folder": "docs/harness/features/individual_feature/F06",
+    "version": "v0.1"
+  },
+  {
+    "id": "F07",
+    "title": "自动重排后续计划",
+    "status": "passing",
+    "feature_folder": "docs/harness/features/individual_feature/F07",
+    "version": "v0.1"
+  },
+  {
+    "id": "F08",
+    "title": "v0.2 数据层整理与兼容边界",
+    "status": "passing",
+    "feature_folder": "docs/harness/features/individual_feature/F08",
+    "version": "v0.2"
+  },
+  {
+    "id": "F09",
+    "title": "v0.2 导航壳与页面顺序",
+    "status": "passing",
+    "feature_folder": "docs/harness/features/individual_feature/F09",
+    "version": "v0.2"
+  },
+  {
+    "id": "F10",
+    "title": "v0.2 核心组件与页面视觉整理",
+    "status": "passing",
+    "feature_folder": "docs/harness/features/individual_feature/F10",
+    "version": "v0.2"
+  },
+  {
+    "id": "F11",
+    "title": "v0.2 Deepseek 与塔罗扩展接口预留",
+    "status": "passing",
+    "feature_folder": "docs/harness/features/individual_feature/F11",
+    "version": "v0.2"
+  },
+  {
+    "id": "F12",
+    "title": "v0.3 目标数据模型与 legacy adapter",
+    "status": "passing",
+    "feature_folder": "docs/harness/features/individual_feature/F12",
+    "version": "v0.3"
+  },
+  {
+    "id": "F13",
+    "title": "v0.3 storage PlanBundle 读写与旧数据迁移",
+    "status": "passing",
+    "feature_folder": "docs/harness/features/individual_feature/F13",
+    "version": "v0.3"
+  },
+  {
+    "id": "F14",
+    "title": "v0.3 planner 输出 PlanBundle",
+    "status": "passing",
+    "feature_folder": "docs/harness/features/individual_feature/F14",
+    "version": "v0.3"
+  },
+  {
+    "id": "F15",
+    "title": "v0.3 今日与日历视图服务迁移",
+    "status": "passing",
+    "feature_folder": "docs/harness/features/individual_feature/F15",
+    "version": "v0.3"
+  },
+  {
+    "id": "F16",
+    "title": "v0.3 replanner 基于 Plan/Task 重排",
+    "status": "passing",
+    "feature_folder": "docs/harness/features/individual_feature/F16",
+    "version": "v0.3"
+  },
+  {
+    "id": "F17",
+    "title": "v0.3 页面 UI 与新数据视图接入",
+    "status": "passing",
+    "feature_folder": "docs/harness/features/individual_feature/F17",
+    "version": "v0.3"
+  },
+  {
+    "id": "F18",
+    "title": "v0.3 审计修复：目标模型合同收紧",
+    "status": "passing",
+    "feature_folder": "docs/harness/features/individual_feature/F18",
+    "version": "v0.3"
+  },
+  {
+    "id": "F19",
+    "title": "v0.3 审计修复：Plan 视图模型边界整理",
+    "status": "passing",
+    "feature_folder": "docs/harness/features/individual_feature/F19",
+    "version": "v0.3"
+  },
+  {
+    "id": "F20",
+    "title": "v0.3 UI 改造：页面壳与全局组件基线",
+    "status": "passing",
+    "feature_folder": "docs/harness/features/individual_feature/F20",
+    "version": "v0.3-ui"
+  },
+  {
+    "id": "F21",
+    "title": "v0.3 UI 改造：今日任务执行台",
+    "status": "passing",
+    "feature_folder": "docs/harness/features/individual_feature/F21",
+    "version": "v0.3-ui"
+  },
+  {
+    "id": "F22",
+    "title": "v0.3 UI 改造：任务日历计划板",
+    "status": "passing",
+    "feature_folder": "docs/harness/features/individual_feature/F22",
+    "version": "v0.3-ui"
+  },
+  {
+    "id": "F23",
+    "title": "v0.3 UI 改造：创建目标与我的页收口",
+    "status": "passing",
+    "feature_folder": "docs/harness/features/individual_feature/F23",
+    "version": "v0.3-ui"
+  },
+  {
+    "id": "F24",
+    "title": "v0.3 UI UI 统一样式基线",
+    "status": "passing",
+    "feature_folder": "docs/harness/features/individual_feature/F24-ui-overall-design",
+    "version": "v0.3"
+  }
+]

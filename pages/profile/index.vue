@@ -277,18 +277,14 @@ function openSettingEntry(title: string): void {
 </template>
 
 <style scoped lang="scss">
+@use "../../styles/ui" as ui;
+
 .page {
-  min-height: 100vh;
-  box-sizing: border-box;
-  padding: 32rpx 32rpx 48rpx;
-  background: #faf8f3;
+  @include ui.page-shell;
 }
 
 .panel {
-  padding: 32rpx;
-  border: 2rpx solid #e5ded2;
-  border-radius: 28rpx;
-  background: #ffffff;
+  @include ui.card;
 }
 
 .panel + .panel,
@@ -314,47 +310,38 @@ function openSettingEntry(title: string): void {
 }
 
 .section-title {
-  color: #24211c;
-  font-size: 32rpx;
-  font-weight: 600;
-  line-height: 1.35;
+  @include ui.section-title;
 }
 
 .status-pill {
-  flex-shrink: 0;
-  padding: 8rpx 18rpx;
-  border-radius: 999rpx;
-  background: #ececff;
-  color: #555ac0;
+  @include ui.status-tag(ui.$accent-soft, ui.$accent-pressed);
+
   font-size: 22rpx;
-  line-height: 1.3;
 }
 
 .main-value {
   margin-top: 18rpx;
-  color: #24211c;
-  font-size: 36rpx;
+  color: ui.$ink;
+  font-size: 34rpx;
   font-weight: 600;
   line-height: 1.35;
 }
 
 .helper {
   margin-top: 12rpx;
-  color: #7c7568;
-  font-size: 26rpx;
-  line-height: 1.5;
+  @include ui.helper-text(26rpx);
 }
 
 .progress-strip {
+  @include ui.soft-block(22rpx, 20rpx);
+
   margin-top: 20rpx;
-  padding: 22rpx;
-  border-radius: 20rpx;
-  background: #ececff;
+  background: ui.$accent-soft;
 }
 
 .progress-value,
 .recent-value {
-  color: #555ac0;
+  color: ui.$accent-pressed;
   font-size: 36rpx;
   font-weight: 600;
   line-height: 1.3;
@@ -370,23 +357,16 @@ function openSettingEntry(title: string): void {
 .primary-button,
 .secondary-button,
 .setting-item {
-  height: 84rpx;
-  border-radius: 20rpx;
   font-size: 30rpx;
-  font-weight: 500;
-  line-height: 84rpx;
 }
 
 .primary-button {
-  background: #6b6fd6;
-  color: #ffffff;
+  @include ui.primary-button(84rpx);
 }
 
 .secondary-button,
 .setting-item {
-  border: 2rpx solid #e5ded2;
-  background: #f3efe7;
-  color: #24211c;
+  @include ui.secondary-button(84rpx);
 }
 
 .profile-grid {
@@ -398,21 +378,18 @@ function openSettingEntry(title: string): void {
 
 .profile-item {
   min-height: 112rpx;
-  box-sizing: border-box;
-  padding: 22rpx;
-  border-radius: 20rpx;
-  background: #f3efe7;
+  @include ui.soft-block(22rpx, 20rpx);
 }
 
 .item-label {
-  color: #7c7568;
+  color: ui.$muted;
   font-size: 24rpx;
   line-height: 1.4;
 }
 
 .item-value {
   margin-top: 6rpx;
-  color: #24211c;
+  color: ui.$ink;
   font-size: 28rpx;
   font-weight: 600;
   line-height: 1.35;

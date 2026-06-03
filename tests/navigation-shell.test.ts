@@ -10,7 +10,12 @@ interface PagesJson {
       navigationBarTitleText?: string
     }
   }>
+  globalStyle?: {
+    navigationBarBackgroundColor?: string
+    backgroundColor?: string
+  }
   tabBar?: {
+    backgroundColor?: string
     list?: Array<{
       pagePath: string
       text: string
@@ -76,6 +81,14 @@ describe('navigation shell', () => {
         text: '我的'
       }
     ])
+  })
+
+  it('aligns native chrome colors with the F24 page style baseline', () => {
+    const pagesJson = readPagesJson()
+
+    expect(pagesJson.globalStyle?.navigationBarBackgroundColor).toBe('#faf8f3')
+    expect(pagesJson.globalStyle?.backgroundColor).toBe('#faf8f3')
+    expect(pagesJson.tabBar?.backgroundColor).toBe('#ffffff')
   })
 
   it('keeps all tab pages registered and backed by page files', () => {

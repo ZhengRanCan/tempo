@@ -1,0 +1,131 @@
+{
+  "id": "F20",
+  "title": "v0.3 UI 改造：页面壳与全局组件基线",
+  "status": "passing",
+  "dependsOn": [],
+  "behavior": "Use docs/design/page/02-f20-page-shell-component-baseline.md as the execution contract for the UI baseline: apply a shared page shell to the four Tab pages and review page, remove duplicated body title areas, align TabBar/page-body responsibilities, standardize TaskCard, TodayFocusCard, EmptyState, EnergySelector, buttons, cards, and tags as low-pressure component shells, keep existing data/service paths unchanged, and do not pre-implement the F21-F23 page information redesigns.",
+  "scope": {
+    "pages": [
+      "pages/today/index.vue",
+      "pages/plan-calendar/index.vue",
+      "pages/goal-create/index.vue",
+      "pages/profile/index.vue",
+      "pages/review/index.vue"
+    ],
+    "components": [
+      "components/AppPageHeader.vue",
+      "components/TaskCard.vue",
+      "components/TodayFocusCard.vue",
+      "components/EmptyState.vue",
+      "components/EnergySelector.vue"
+    ],
+    "services": [],
+    "models": [],
+    "schemas": [],
+    "tests": [
+      "tests/ui-components.test.ts",
+      "tests/navigation-shell.test.ts",
+      "tests/today.test.ts",
+      "tests/plan-calendar.test.ts",
+      "tests/review.test.ts"
+    ],
+    "docs": [
+      "docs/harness/DESIGN.md",
+      "docs/design/README.md",
+      "docs/design/visual-system.md",
+      "docs/design/components.md",
+      "docs/design/interaction-states.md",
+      "docs/design/content-rules.md",
+      "docs/design/page/README.md",
+      "docs/design/page/00-ui-redesign-overview.md",
+      "docs/design/page/01-page-layout-contract.md",
+      "docs/design/page/02-f20-page-shell-component-baseline.md",
+      "docs/progress.md"
+    ]
+  },
+  "acceptance": [
+    {
+      "id": "A01",
+      "text": "四个 Tab 主页面统一使用页面壳规则：顶部导航只负责页面名称和轻提示，页面主体不再重复大标题、胶囊标签和长副标题",
+      "method": "mixed"
+    },
+    {
+      "id": "A02",
+      "text": "底部 TabBar 只负责今日任务、任务日历、创建目标、我的四个主入口；页面主体不重复制作同等 TabBar 入口按钮",
+      "method": "automated"
+    },
+    {
+      "id": "A03",
+      "text": "全局按钮、卡片、标签、输入、空状态、任务卡片样式遵守 docs/design/visual-system.md 和 docs/design/components.md，避免页面各自复制冲突样式",
+      "method": "mixed"
+    },
+    {
+      "id": "A04",
+      "text": "低压力风格保留：不用高压红色、大面积警告、强阴影、玻璃拟态或大面积渐变；状态颜色必须配合文字",
+      "method": "manual_smoke"
+    },
+    {
+      "id": "A05",
+      "text": "本 feature 不改变 PlanBundle、Goal、Task、DailyReview、storage key、planner、replanner 或 AI/tarot 服务逻辑",
+      "method": "automated"
+    }
+  ],
+  "verify": {
+    "static": "npm run verify:static",
+    "feature": "npm run test -- ui-components navigation-shell today plan-calendar review",
+    "system": "npm run verify:system"
+  },
+  "outOfScope": [
+    "不重构数据模型",
+    "不改变 storage key",
+    "不接入真实 Deepseek",
+    "不新增完整塔罗 UI",
+    "不一次性重做四个页面的业务信息结构"
+  ],
+  "completionGate": {
+    "version": "v0.3",
+    "l3": "required",
+    "userPath": [
+      "打开四个 Tab 主页面 -> 顶部标题和主体内容不重复抢占首屏",
+      "无目标数据 -> 今日、日历、我的页空状态仍清晰可操作",
+      "有目标和计划数据 -> 通用任务卡片、按钮、状态标签样式一致"
+    ],
+    "integrationEvidence": [
+      "tests/ui-components.test.ts 覆盖组件接入和样式关键类名",
+      "tests/navigation-shell.test.ts 覆盖 TabBar 页面注册与顺序",
+      "npm.cmd run verify:system 通过，mp-weixin 构建产物生成成功",
+      "人工冒烟需至少检查 today、plan-calendar、goal-create、profile 四个 Tab 页首屏"
+    ],
+    "knownUnverified": [],
+    "humanReviewRequired": []
+  },
+  "evidence": {
+    "lastVerifiedAt": "2026-05-31T20:30:00+08:00",
+    "commands": [
+      {
+        "command": "npm.cmd run test -- ui-components navigation-shell today plan-calendar review",
+        "result": "passed",
+        "notes": "36 tests passed across ui-components, navigation-shell, today, today-suggestion, plan-calendar, and review."
+      },
+      {
+        "command": "npm.cmd run verify:static",
+        "result": "passed",
+        "notes": "eslint and vue-tsc --noEmit passed."
+      },
+      {
+        "command": "npm.cmd run verify:system",
+        "result": "passed",
+        "notes": "mp-weixin build completed successfully; Sass legacy API warnings only."
+      },
+      {
+        "command": "npm.cmd run verify:harness",
+        "result": "passed",
+        "notes": "Harness gate passed with 4 features, 1 passing, 3 not_started, 0 warnings, 0 errors."
+      }
+    ],
+    "manualSmoke": "Source/build smoke for F20: four Tab pages and review page use AppPageHeader; body-level duplicate header/eyebrow styles were removed; today no longer links to calendar as a peer tab entry; calendar no longer links to today as a peer tab entry; profile no longer duplicates today/calendar TabBar entries; task, empty, focus, and energy shell styles are owned by shared components; no high-pressure red, large gradient, shadow, or glass style was introduced.",
+    "notes": "F20 establishes only the shared page shell and component baseline. Data, storage, planner, replanner, AI, tarot, Goal, Plan, Stage, Task, DailyReview, and UserProfile logic were not changed; F21-F23 remain responsible for page-specific information architecture."
+  },
+  "version": "v0.3-ui",
+  "sourceFeatureList": "docs/log/v0.2/feature_list_v3_v2.json"
+}

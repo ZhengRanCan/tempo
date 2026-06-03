@@ -1,0 +1,91 @@
+{
+  "id": "F01",
+  "title": "创建目标",
+  "status": "passing",
+  "dependsOn": [],
+  "behavior": "用户输入目标名称、截止日期、每日可用时间和目标说明后，可以创建并保存一个目标。",
+  "scope": {
+    "pages": [
+      "pages/goal-create/index.vue"
+    ],
+    "components": [],
+    "services": [
+      "services/storage.ts"
+    ],
+    "models": [
+      "models/goal.ts",
+      "models/common.ts"
+    ],
+    "schemas": [],
+    "tests": [
+      "tests/goal-create.test.ts"
+    ]
+  },
+  "acceptance": [
+    {
+      "id": "A01",
+      "text": "目标名称为空时阻止创建并返回提示",
+      "method": "automated"
+    },
+    {
+      "id": "A02",
+      "text": "截止日期为空时阻止创建并返回提示",
+      "method": "automated"
+    },
+    {
+      "id": "A03",
+      "text": "每日可用时间为空或无效时阻止创建并返回提示",
+      "method": "automated"
+    },
+    {
+      "id": "A04",
+      "text": "合法输入可以生成目标数据并写入统一存储入口",
+      "method": "mixed"
+    },
+    {
+      "id": "A05",
+      "text": "页面可完成一次创建目标的手动冒烟流程",
+      "method": "manual_smoke"
+    }
+  ],
+  "verify": {
+    "static": "npm run verify:static",
+    "feature": "npm run test -- goal-create",
+    "system": "npm run verify:system"
+  },
+  "outOfScope": [
+    "不生成 AI 计划",
+    "不实现任务日历页",
+    "不接入云开发",
+    "不处理自动重排"
+  ],
+  "evidence": {
+    "lastVerifiedAt": "2026-05-21",
+    "commands": [
+      {
+        "command": "npm.cmd run test -- goal-create",
+        "result": "passed",
+        "notes": "6 tests passed; covers A01-A04 validation, past deadline rejection, today deadline allowance and storage save path."
+      },
+      {
+        "command": "npm.cmd run verify:static",
+        "result": "passed",
+        "notes": "lint and vue-tsc passed."
+      },
+      {
+        "command": "npm.cmd run verify:system",
+        "result": "passed",
+        "notes": "mp-weixin build completed; existing os alias and Sass deprecation warnings remain non-blocking."
+      },
+      {
+        "command": "npm.cmd run check",
+        "result": "passed",
+        "notes": "full static, feature and system verification passed after past-deadline and design-token fixes."
+      }
+    ],
+    "manualSmoke": "2026-05-23: User confirmed final manual smoke passed in Weixin DevTools. Goal creation page can complete the create-goal flow after the post-feedback fixes.",
+    "notes": "F01 implementation is complete. Automated coverage passes, deadline picker starts from today, model validation rejects dates before today, page styling follows design guidance, and final manual smoke passed. Feature can be treated as passing."
+  },
+  "version": "v0.1",
+  "sourceFeatureList": "docs/log/v0.1/feature_list_v0.1.json"
+}

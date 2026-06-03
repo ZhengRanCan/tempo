@@ -265,11 +265,10 @@ function formatDateLabel(date: string): string {
 </template>
 
 <style scoped lang="scss">
+@use "../../styles/ui" as ui;
+
 .page {
-  min-height: 100vh;
-  box-sizing: border-box;
-  padding: 32rpx 32rpx 48rpx;
-  background: #faf8f3;
+  @include ui.page-shell;
 }
 
 .goal-plan-card,
@@ -278,11 +277,9 @@ function formatDateLabel(date: string): string {
 .selected-day-card,
 .stage-panel,
 .advice-card {
+  @include ui.card;
+
   margin-top: 24rpx;
-  padding: 24rpx;
-  border: 2rpx solid #e5ded2;
-  border-radius: 24rpx;
-  background: #ffffff;
 }
 
 .goal-plan-card {
@@ -323,30 +320,19 @@ function formatDateLabel(date: string): string {
 .day-status,
 .empty-day,
 .stage-meta {
-  color: #7c7568;
-  font-size: 24rpx;
-  line-height: 1.5;
+  @include ui.helper-text;
 }
 
 .goal-title {
   margin-top: 8rpx;
-  color: #24211c;
-  font-size: 40rpx;
+  color: ui.$ink;
+  font-size: 36rpx;
   font-weight: 600;
   line-height: 1.35;
 }
 
 .text-button {
-  min-width: 132rpx;
-  height: 56rpx;
-  padding: 0 18rpx;
-  border: 0;
-  border-radius: 999rpx;
-  background: #ececff;
-  color: #555ac0;
-  font-size: 24rpx;
-  font-weight: 500;
-  line-height: 56rpx;
+  @include ui.text-button;
 }
 
 .metric-grid,
@@ -359,49 +345,36 @@ function formatDateLabel(date: string): string {
 
 .metric-item {
   min-width: 0;
-  padding: 18rpx 14rpx;
-  border-radius: 18rpx;
-  background: #f3efe7;
+  @include ui.soft-block(18rpx 14rpx, 20rpx);
 }
 
 .metric-value {
   margin-top: 6rpx;
-  color: #24211c;
+  color: ui.$ink;
   font-size: 26rpx;
   font-weight: 600;
   line-height: 1.35;
 }
 
 .section-title {
-  color: #24211c;
-  font-size: 30rpx;
-  font-weight: 600;
-  line-height: 1.35;
+  @include ui.section-title;
 }
 
 .pressure-tag,
 .today-tag,
 .stage-tag {
-  display: inline-block;
-  flex: 0 0 auto;
-  padding: 8rpx 16rpx;
-  border-radius: 999rpx;
-  background: #f3efe7;
-  color: #7c7568;
-  font-size: 24rpx;
-  font-weight: 500;
-  line-height: 1.4;
+  @include ui.status-tag;
 }
 
 .pressure-steady,
 .pressure-done {
-  background: #eaf6ee;
-  color: #4f9d69;
+  background: ui.$success-soft;
+  color: ui.$success;
 }
 
 .pressure-tight,
 .pressure-overdue {
-  background: #fff5da;
+  background: ui.$warning-soft;
   color: #9a6b1e;
 }
 
@@ -410,17 +383,17 @@ function formatDateLabel(date: string): string {
   margin-top: 22rpx;
   overflow: hidden;
   border-radius: 999rpx;
-  background: #f3efe7;
+  background: ui.$surface-soft;
 }
 
 .progress-bar {
   height: 100%;
   border-radius: 999rpx;
-  background: #6b6fd6;
+  background: ui.$accent;
 }
 
 .progress-grid {
-  color: #4b463d;
+  color: ui.$body;
   font-size: 24rpx;
   line-height: 1.5;
 }
@@ -437,27 +410,28 @@ function formatDateLabel(date: string): string {
 }
 
 .day-chip {
+  @include ui.button-reset;
+
   min-height: 156rpx;
-  margin: 0;
   padding: 18rpx;
-  border: 2rpx solid #e5ded2;
+  border: 2rpx solid ui.$border;
   border-radius: 20rpx;
-  background: #ffffff;
+  background: ui.$surface;
   text-align: left;
   line-height: 1.4;
 }
 
 .day-chip.selected {
-  border-color: #6b6fd6;
-  background: #ececff;
+  border-color: ui.$accent;
+  background: ui.$accent-soft;
 }
 
 .day-chip.today .date-label {
-  color: #555ac0;
+  color: ui.$accent-pressed;
 }
 
 .date-label {
-  color: #24211c;
+  color: ui.$ink;
   font-size: 30rpx;
   font-weight: 600;
   line-height: 1.35;
@@ -469,8 +443,8 @@ function formatDateLabel(date: string): string {
 }
 
 .today-tag {
-  background: #ececff;
-  color: #555ac0;
+  background: ui.$accent-soft;
+  color: ui.$accent-pressed;
 }
 
 .task-list,
@@ -489,11 +463,11 @@ function formatDateLabel(date: string): string {
 
 .stage-row {
   padding-top: 18rpx;
-  border-top: 2rpx solid #f3efe7;
+  border-top: 2rpx solid ui.$surface-soft;
 }
 
 .stage-title {
-  color: #24211c;
+  color: ui.$ink;
   font-size: 28rpx;
   font-weight: 600;
   line-height: 1.4;
@@ -504,12 +478,12 @@ function formatDateLabel(date: string): string {
 }
 
 .stage-tag {
-  background: #fff2e8;
-  color: #d68a5a;
+  background: ui.$warm-soft;
+  color: ui.$warm;
 }
 
 .advice-tip {
-  color: #4b463d;
+  color: ui.$body;
   font-size: 26rpx;
   line-height: 1.5;
 }

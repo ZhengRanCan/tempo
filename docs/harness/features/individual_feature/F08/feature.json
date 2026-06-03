@@ -1,0 +1,116 @@
+{
+  "id": "F08",
+  "title": "v0.2 数据层整理与兼容边界",
+  "status": "passing",
+  "dependsOn": [],
+  "behavior": "整理 v0.1 的核心数据模型和本地存储边界，明确持久化计划、今日建议视图和未来 AI/塔罗扩展数据之间的关系，保证旧数据可继续被安全读取。",
+  "scope": {
+    "pages": [],
+    "components": [],
+    "services": [
+      "services/storage.ts",
+      "services/today-suggestion.ts"
+    ],
+    "models": [
+      "models/common.ts",
+      "models/goal.ts",
+      "models/task.ts",
+      "models/plan.ts",
+      "models/review.ts",
+      "models/user-profile.ts"
+    ],
+    "schemas": [],
+    "tests": [
+      "tests/data-layer.test.ts",
+      "tests/storage.test.ts"
+    ]
+  },
+  "acceptance": [
+    {
+      "id": "A01",
+      "text": "v0.1 已保存的 Goal、UserProfile、Task、DailyPlan、DailyReview 数据可以继续读取，缺失字段有明确默认值或兼容处理",
+      "method": "automated"
+    },
+    {
+      "id": "A02",
+      "text": "持久化 DailyPlan/Task 与计算得到的今日建议视图有清晰类型边界，不把 AI 或塔罗建议直接写回原始任务状态",
+      "method": "automated"
+    },
+    {
+      "id": "A03",
+      "text": "storage 读取空数据、旧数据或异常数据时有明确返回结果，不出现页面不可处理的 silent failure",
+      "method": "automated"
+    },
+    {
+      "id": "A04",
+      "text": "用户状态默认值稳定，low 状态仍优先保留最低完成线，不产生心理诊断、健康判断或命运预测",
+      "method": "automated"
+    },
+    {
+      "id": "A05",
+      "text": "数据层整理不引入真实 Deepseek 调用、塔罗抽牌 UI 或云端存储",
+      "method": "automated"
+    }
+  ],
+  "verify": {
+    "static": "npm run verify:static",
+    "feature": "npm run test -- data-layer storage",
+    "system": "npm run verify:system"
+  },
+  "outOfScope": [
+    "不重做页面 UI",
+    "不实现底部 tab",
+    "不接入真实 Deepseek API",
+    "不实现塔罗抽牌交互",
+    "不迁移到云端存储"
+  ],
+  "completionGate": {
+    "version": "v0.2",
+    "l3": "required",
+    "userPath": [
+      "创建目标 -> 生成计划 -> 打开今日任务，确认 v0.1 数据结构仍能支撑主路径",
+      "无本地数据 -> 打开今日任务或日历，确认空状态可控"
+    ],
+    "integrationEvidence": [
+      "tests/data-layer.test.ts 覆盖 goal -> stored DailyPlan -> today suggestion 的集成路径，以及无本地数据时的空结果路径",
+      "tests/storage.test.ts 覆盖旧 Goal/UserProfile 兼容、空数据、异常数据和 storage 读取失败的明确结果",
+      "npm.cmd run verify:system 通过，mp-weixin 构建产物生成成功"
+    ],
+    "knownUnverified": [],
+    "humanReviewRequired": []
+  },
+  "evidence": {
+    "lastVerifiedAt": "2026-05-24T22:13:40+08:00",
+    "commands": [
+      {
+        "command": "npm.cmd run test -- data-layer storage",
+        "result": "passed",
+        "summary": "2 个测试文件、10 个测试通过"
+      },
+      {
+        "command": "npm.cmd run verify:static",
+        "result": "passed",
+        "summary": "lint 和 vue-tsc --noEmit 通过"
+      },
+      {
+        "command": "npm.cmd run verify:system",
+        "result": "passed",
+        "summary": "build:mp-weixin 构建成功"
+      },
+      {
+        "command": "npm.cmd run check",
+        "result": "passed",
+        "summary": "10 个测试文件、49 个测试通过，harness gate 0 warning / 0 error（状态改为 passing 前执行）"
+      },
+      {
+        "command": "npm.cmd run verify:harness",
+        "result": "passed",
+        "summary": "F08 passing 状态通过，4 个 feature，0 warning，0 error"
+      }
+    ],
+    "manualSmoke": "L3b 采用自动化集成测试记录：tests/data-layer.test.ts 覆盖“创建目标 -> 保存计划 -> 打开今日任务生成建议视图”和“无本地数据 -> 明确空结果”两条用户路径。",
+    "notes": "已完成 v0.2 数据层整理：旧数据通过 normalize* 兼容读取，storage 提供 read* 明确状态结果，today-suggestion 作为计算视图边界，不引入真实 Deepseek、塔罗 UI 或云端存储。"
+  },
+  "version": "v0.2",
+  "sourceFeatureList": "docs/log/v0.2/feature_list_v0.2.json"
+}

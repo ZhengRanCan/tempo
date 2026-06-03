@@ -1,0 +1,85 @@
+{
+  "id": "F02",
+  "title": "用户状态与偏好输入",
+  "status": "passing",
+  "dependsOn": [],
+  "behavior": "用户可以输入 MBTI、偏好工作时段和当前能量状态，并保存为用户偏好。",
+  "scope": {
+    "pages": [
+      "pages/goal-create/index.vue"
+    ],
+    "components": [],
+    "services": [
+      "services/storage.ts"
+    ],
+    "models": [
+      "models/user-profile.ts"
+    ],
+    "schemas": [],
+    "tests": [
+      "tests/user-profile.test.ts"
+    ]
+  },
+  "acceptance": [
+    {
+      "id": "A01",
+      "text": "可以保存用户偏好",
+      "method": "mixed"
+    },
+    {
+      "id": "A02",
+      "text": "能量状态字段存在默认值",
+      "method": "automated"
+    },
+    {
+      "id": "A03",
+      "text": "偏好只影响任务表达和排序",
+      "method": "automated"
+    },
+    {
+      "id": "A04",
+      "text": "不输出严肃心理判断或预测结论",
+      "method": "automated"
+    }
+  ],
+  "verify": {
+    "static": "npm run verify:static",
+    "feature": "npm run test -- user-profile",
+    "system": "npm run verify:system"
+  },
+  "outOfScope": [
+    "不做心理测评",
+    "不生成健康或命运预测",
+    "不改变计划生成算法",
+    "不接入云端用户画像"
+  ],
+  "evidence": {
+    "lastVerifiedAt": "2026-05-23",
+    "commands": [
+      {
+        "command": "npm.cmd run test -- user-profile",
+        "result": "passed",
+        "notes": "4 tests passed; covers A01 storage save, A02 default energy level, A03 expression/ordering-only boundary, and A04 forbidden serious psychology/health/fate claims."
+      },
+      {
+        "command": "npm.cmd run verify:static",
+        "result": "passed",
+        "notes": "lint and vue-tsc passed after adding the user preference model and goal-create preference UI."
+      },
+      {
+        "command": "npm.cmd run verify:system",
+        "result": "passed",
+        "notes": "mp-weixin build completed; existing os alias and Sass deprecation warnings remain non-blocking."
+      },
+      {
+        "command": "npm.cmd run check",
+        "result": "passed",
+        "notes": "full static, feature and system verification passed; 3 test files and 11 tests passed."
+      }
+    ],
+    "manualSmoke": "Mixed verification note: goal-create now exposes a low-pressure preference section with work-style selection, energy selection, optional MBTI input, and a secondary save-preference action. Final Weixin DevTools click-through can still be used as a product smoke check if desired.",
+    "notes": "F02 implementation is complete. UserProfile now includes default energyLevel normal, optional MBTI, preferred work style, preferred focus minutes and a boundary that limits preferences to task expression and light ordering. Preference data is saved through services/storage.ts and the page avoids psychological diagnosis or prediction wording."
+  },
+  "version": "v0.1",
+  "sourceFeatureList": "docs/log/v0.1/feature_list_v0.1.json"
+}

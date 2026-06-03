@@ -41,35 +41,35 @@ const priorityLabels: Record<Task['priority'], string> = {
 </template>
 
 <style scoped lang="scss">
+@use "../styles/ui" as ui;
+
 .task-card {
+  @include ui.card(28rpx, 28rpx);
+
   position: relative;
   display: flex;
   flex-direction: column;
   gap: 14rpx;
-  padding: 24rpx;
-  border: 2rpx solid #e5ded2;
-  border-radius: 24rpx;
-  background: #ffffff;
 }
 
 .task-card.priority {
-  border-left: 6rpx solid #6b6fd6;
+  border-left: 6rpx solid ui.$accent;
 }
 
 .status-todo {
-  background: #ffffff;
+  background: ui.$surface;
 }
 
 .status-done {
-  background: #eaf6ee;
+  background: ui.$surface;
 }
 
 .status-partial {
-  background: #fff5da;
+  background: ui.$surface;
 }
 
 .status-skipped {
-  background: #f3efe7;
+  background: ui.$surface;
 }
 
 .meta-row {
@@ -89,41 +89,42 @@ const priorityLabels: Record<Task['priority'], string> = {
 
 .status-label {
   padding: 6rpx 14rpx;
-  background: #f3efe7;
-  color: #4b463d;
+  background: ui.$surface-soft;
+  color: ui.$body;
   font-weight: 500;
 }
 
 .status-done .status-label {
-  background: #eaf6ee;
-  color: #4f9d69;
+  background: ui.$success-soft;
+  color: ui.$success;
 }
 
 .status-partial .status-label {
-  background: #fff5da;
+  background: ui.$warning-soft;
   color: #8a6727;
 }
 
 .status-skipped .status-label {
-  background: #ece6da;
-  color: #7c7568;
+  background: ui.$surface-muted;
+  color: ui.$muted;
 }
 
 .meta-label {
-  color: #7c7568;
+  color: ui.$muted;
 }
 
 .task-title {
-  color: #24211c;
+  color: ui.$ink;
   font-size: 30rpx;
   font-weight: 600;
   line-height: 1.35;
 }
 
 .minimum-box {
+  @include ui.soft-block(18rpx, 20rpx);
+
   padding: 18rpx;
-  border-radius: 18rpx;
-  background: #ececff;
+  background: ui.$accent-soft;
 }
 
 .minimum-label,
@@ -132,7 +133,7 @@ const priorityLabels: Record<Task['priority'], string> = {
 }
 
 .minimum-label {
-  color: #555ac0;
+  color: ui.$accent-pressed;
   font-size: 24rpx;
   font-weight: 600;
   line-height: 1.4;
@@ -140,7 +141,7 @@ const priorityLabels: Record<Task['priority'], string> = {
 
 .minimum-text {
   margin-top: 6rpx;
-  color: #4b463d;
+  color: ui.$body;
   font-size: 26rpx;
   line-height: 1.5;
 }

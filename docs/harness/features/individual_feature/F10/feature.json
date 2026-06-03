@@ -1,0 +1,127 @@
+{
+  "id": "F10",
+  "title": "v0.2 核心组件与页面视觉整理",
+  "status": "passing",
+  "dependsOn": [
+    "F09"
+  ],
+  "behavior": "按 docs/harness/DESIGN.md、docs/design/visual-system.md 和 docs/design/components.md 抽出核心组件，并整理今日任务、任务日历、创建目标、复盘等页面的卡片、空状态和状态选择体验。",
+  "scope": {
+    "pages": [
+      "pages/today/index.vue",
+      "pages/plan-calendar/index.vue",
+      "pages/goal-create/index.vue",
+      "pages/review/index.vue",
+      "pages/profile/index.vue"
+    ],
+    "components": [
+      "components/AppPageHeader.vue",
+      "components/TaskCard.vue",
+      "components/TodayFocusCard.vue",
+      "components/EmptyState.vue",
+      "components/EnergySelector.vue"
+    ],
+    "services": [],
+    "models": [
+      "models/task.ts",
+      "models/plan.ts",
+      "models/user-profile.ts"
+    ],
+    "schemas": [],
+    "tests": [
+      "tests/ui-components.test.ts",
+      "tests/today.test.ts",
+      "tests/plan-calendar.test.ts",
+      "tests/review.test.ts"
+    ]
+  },
+  "acceptance": [
+    {
+      "id": "A01",
+      "text": "TaskCard 统一展示任务标题、预计时长、优先级、状态和最低完成线，未完成状态不使用高压力红色表达",
+      "method": "mixed"
+    },
+    {
+      "id": "A02",
+      "text": "TodayFocusCard 只突出今日最重要的一件事，并清晰展示最低完成线和推荐专注时段",
+      "method": "mixed"
+    },
+    {
+      "id": "A03",
+      "text": "EmptyState 在无目标、无计划、无今日任务时提供温和说明和明确下一步行动",
+      "method": "mixed"
+    },
+    {
+      "id": "A04",
+      "text": "EnergySelector 使用 low、normal、high 三种状态，low 状态不使用负面文案或失败式视觉",
+      "method": "automated"
+    },
+    {
+      "id": "A05",
+      "text": "主要页面遵守 docs/harness/DESIGN.md 的总设计原则，以及 visual-system 的色彩、字号、间距和每页主行动数量约束",
+      "method": "manual_smoke"
+    }
+  ],
+  "verify": {
+    "static": "npm run verify:static",
+    "feature": "npm run test -- ui-components today plan-calendar review",
+    "system": "npm run verify:system"
+  },
+  "outOfScope": [
+    "不新增产品流程",
+    "不修改 planner 或 replanner 核心算法",
+    "不接入 AI",
+    "不把塔罗或 MBTI 做成主视觉背景"
+  ],
+  "completionGate": {
+    "version": "v0.2",
+    "l3": "required",
+    "userPath": [
+      "今日任务页查看 TodayFocusCard 和 TaskCard",
+      "任务日历页查看日期分组和任务状态",
+      "创建目标页查看表单、错误提示和空状态",
+      "复盘页选择任务完成状态和能量状态"
+    ],
+    "integrationEvidence": [
+      "tests/ui-components.test.ts 覆盖 TaskCard、TodayFocusCard、EmptyState、EnergySelector 的结构与页面接入",
+      "tests/today.test.ts、tests/plan-calendar.test.ts、tests/review.test.ts 保持通过，确认组件抽取后主路径数据仍可用",
+      "npm.cmd run verify:system 通过，mp-weixin 构建成功"
+    ],
+    "knownUnverified": [],
+    "humanReviewRequired": []
+  },
+  "evidence": {
+    "lastVerifiedAt": "2026-05-24T22:48:45+08:00",
+    "commands": [
+      {
+        "command": "npm.cmd run test -- ui-components today plan-calendar review",
+        "result": "passed",
+        "summary": "4 个测试文件、20 个测试通过"
+      },
+      {
+        "command": "npm.cmd run verify:static",
+        "result": "passed",
+        "summary": "lint 和 vue-tsc --noEmit 通过"
+      },
+      {
+        "command": "npm.cmd run verify:system",
+        "result": "passed",
+        "summary": "build:mp-weixin 构建成功"
+      },
+      {
+        "command": "npm.cmd run check",
+        "result": "passed",
+        "summary": "12 个测试文件、59 个测试通过，harness gate 0 warning / 0 error（F10 active 状态执行）"
+      },
+      {
+        "command": "npm.cmd run verify:harness",
+        "result": "passed",
+        "summary": "F10 passing 状态通过，4 个 feature，0 warning，0 error"
+      }
+    ],
+    "manualSmoke": "L3b 采用自动化组件和页面路径测试：TodayFocusCard/TaskCard 在今日任务页接入，TaskCard 在任务日历页接入，EnergySelector 在创建目标和复盘页接入，EmptyState 在主要空状态路径接入。视觉验收按 v0.2 组件规则执行，未引入 AI/塔罗或修改 planner/replanner。",
+    "notes": "F10 完成核心组件与页面视觉整理：新增 TaskCard、TodayFocusCard、EmptyState、EnergySelector，并让 today、plan-calendar、goal-create、review、profile 使用共享组件。未完成状态不使用高压力红色表达，low 能量文案保持低压力。"
+  },
+  "version": "v0.2",
+  "sourceFeatureList": "docs/log/v0.2/feature_list_v0.2.json"
+}

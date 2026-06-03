@@ -8,15 +8,13 @@
 </template>
 
 <style lang="scss">
+@use "./styles/ui" as ui;
+
 page {
   min-height: 100%;
-  background: #f8f4ec;
-  color: #28312f;
-  font-family:
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    sans-serif;
+  background: ui.$canvas;
+  color: ui.$ink;
+  font-family: ui.$font-family;
 }
 
 .app-shell {

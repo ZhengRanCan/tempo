@@ -409,11 +409,10 @@ async function handleSubmit(): Promise<void> {
 </template>
 
 <style scoped lang="scss">
+@use "../../styles/ui" as ui;
+
 .page {
-  min-height: 100vh;
-  box-sizing: border-box;
-  padding: 32rpx 32rpx 48rpx;
-  background: #faf8f3;
+  @include ui.page-shell;
 }
 
 .step-list {
@@ -423,13 +422,11 @@ async function handleSubmit(): Promise<void> {
 }
 
 .step-card {
+  @include ui.card;
+
   display: flex;
   flex-direction: column;
   gap: 18rpx;
-  padding: 32rpx;
-  border: 2rpx solid #e5ded2;
-  border-radius: 28rpx;
-  background: #ffffff;
 }
 
 .preference-step {
@@ -444,21 +441,18 @@ async function handleSubmit(): Promise<void> {
 }
 
 .step-index {
-  color: #6b6fd6;
+  color: ui.$accent;
   font-size: 24rpx;
   font-weight: 700;
   line-height: 1.2;
 }
 
 .step-title {
-  color: #24211c;
-  font-size: 32rpx;
-  font-weight: 600;
-  line-height: 1.35;
+  @include ui.section-title;
 }
 
 .label {
-  color: #24211c;
+  color: ui.$ink;
   font-size: 28rpx;
   font-weight: 600;
   line-height: 1.35;
@@ -469,10 +463,10 @@ async function handleSubmit(): Promise<void> {
 .textarea {
   box-sizing: border-box;
   width: 100%;
-  border: 2rpx solid #e5ded2;
+  border: 2rpx solid ui.$border;
   border-radius: 20rpx;
-  background: #faf8f3;
-  color: #24211c;
+  background: ui.$surface-soft;
+  color: ui.$ink;
   font-size: 30rpx;
 }
 
@@ -502,7 +496,7 @@ async function handleSubmit(): Promise<void> {
 
 .helper,
 .section-helper {
-  color: #7c7568;
+  color: ui.$muted;
 }
 
 .error {
@@ -516,20 +510,19 @@ async function handleSubmit(): Promise<void> {
 }
 
 .time-option {
+  @include ui.option-chip;
+
   height: 72rpx;
   padding: 0;
-  border: 2rpx solid #e5ded2;
   border-radius: 999rpx;
-  background: #f3efe7;
-  color: #4b463d;
   font-size: 24rpx;
   line-height: 72rpx;
 }
 
 .time-option.active {
-  border-color: #6b6fd6;
-  background: #ececff;
-  color: #555ac0;
+  border-color: ui.$accent;
+  background: ui.$accent-soft;
+  color: ui.$accent-pressed;
 }
 
 .work-style-options,
@@ -544,20 +537,18 @@ async function handleSubmit(): Promise<void> {
 }
 
 .option-button {
+  @include ui.option-chip;
+
   min-height: 112rpx;
   padding: 18rpx 16rpx;
-  border: 2rpx solid #e5ded2;
-  border-radius: 20rpx;
-  background: #f3efe7;
-  color: #4b463d;
   text-align: left;
   line-height: 1.4;
 }
 
 .option-button.active {
-  border-color: #6b6fd6;
-  background: #ececff;
-  color: #555ac0;
+  border-color: ui.$accent;
+  background: ui.$accent-soft;
+  color: ui.$accent-pressed;
 }
 
 .option-title,
@@ -572,27 +563,23 @@ async function handleSubmit(): Promise<void> {
 
 .option-helper {
   margin-top: 6rpx;
-  color: #7c7568;
+  color: ui.$muted;
   font-size: 22rpx;
 }
 
 .option-button.active .option-helper {
-  color: #555ac0;
+  color: ui.$accent-pressed;
 }
 
 .primary-button {
-  height: 88rpx;
+  @include ui.primary-button;
+
   margin-top: 32rpx;
-  border-radius: 20rpx;
-  background: #6b6fd6;
-  color: #ffffff;
   font-size: 32rpx;
-  font-weight: 500;
-  line-height: 88rpx;
 }
 
 .primary-button.disabled {
-  background: #ece6da;
-  color: #7c7568;
+  background: ui.$surface-muted;
+  color: ui.$muted;
 }
 </style>

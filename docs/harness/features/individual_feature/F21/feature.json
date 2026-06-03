@@ -1,0 +1,126 @@
+{
+  "id": "F21",
+  "title": "v0.3 UI 改造：今日任务执行台",
+  "status": "passing",
+  "dependsOn": [
+    "F20"
+  ],
+  "behavior": "按 docs/design/page/pages/today-page.md 重做今日任务页首屏信息层级，把今日页定位为执行台：突出一个今日重点任务、今日状态、短 AI 建议和轻量复盘入口。",
+  "scope": {
+    "pages": [
+      "pages/today/index.vue",
+      "pages/review/index.vue"
+    ],
+    "components": [
+      "components/TodayFocusCard.vue",
+      "components/TaskCard.vue",
+      "components/EmptyState.vue",
+      "components/EnergySelector.vue"
+    ],
+    "services": [
+      "services/today-suggestion.ts",
+      "services/plan-view.ts"
+    ],
+    "models": [],
+    "schemas": [],
+    "tests": [
+      "tests/today.test.ts",
+      "tests/today-suggestion.test.ts",
+      "tests/review.test.ts",
+      "tests/ui-components.test.ts"
+    ],
+    "docs": [
+      "docs/harness/DESIGN.md",
+      "docs/design/page/pages/today-page.md",
+      "docs/design/page/01-page-layout-contract.md",
+      "docs/design/visual-system.md",
+      "docs/design/components.md",
+      "docs/design/content-rules.md",
+      "docs/progress.md"
+    ]
+  },
+  "acceptance": [
+    {
+      "id": "A01",
+      "text": "今日任务页第一张核心卡片是今日重点任务，展示任务标题、最低完成线、预计时长、推荐专注时段和注意事项",
+      "method": "mixed"
+    },
+    {
+      "id": "A02",
+      "text": "今日任务可能有多个，但首页只突出一个主任务；多任务时显示“今日共 N 个任务 · 查看全部”或等价轻量入口",
+      "method": "mixed"
+    },
+    {
+      "id": "A03",
+      "text": "今日状态卡展示当前能量、可用时间或当前状态，并提供管理入口；AI 今日建议保持短句，不出现大段解释",
+      "method": "manual_smoke"
+    },
+    {
+      "id": "A04",
+      "text": "晚间复盘入口轻量展示；今日页不展示完整目标计划，不承担日历页职责",
+      "method": "mixed"
+    },
+    {
+      "id": "A05",
+      "text": "今日页继续通过 PlanBundle/DailyTaskView/TodaySuggestion 读取数据，不直接拼装底层 storage 结构",
+      "method": "automated"
+    }
+  ],
+  "verify": {
+    "static": "npm run verify:static",
+    "feature": "npm run test -- today today-suggestion review ui-components",
+    "system": "npm run verify:system"
+  },
+  "outOfScope": [
+    "不新增完整今日全部任务页面，除非已有路由支持；可先用轻量入口或抽屉占位",
+    "不展示完整目标计划",
+    "不接入真实 Deepseek",
+    "不把塔罗、MBTI、每日关键词作为任务决策依据"
+  ],
+  "completionGate": {
+    "version": "v0.3",
+    "l3": "required",
+    "userPath": [
+      "有今日多个任务 -> 打开今日页 -> 首屏突出一个重点任务并显示查看全部入口",
+      "今日无任务或无目标 -> 打开今日页 -> 显示明确低压力空状态和创建目标入口",
+      "点击晚间复盘入口 -> 可进入复盘页，原复盘保存路径仍可用"
+    ],
+    "integrationEvidence": [
+      "tests/today.test.ts 覆盖今日页源码结构和数据读取路径",
+      "tests/today-suggestion.test.ts 覆盖 TodaySuggestionView 仍可从 PlanBundle/DailyTaskView 生成",
+      "tests/review.test.ts 保持复盘入口和保存路径通过",
+      "npm.cmd run verify:system 通过，mp-weixin 构建产物生成成功"
+    ],
+    "knownUnverified": [],
+    "humanReviewRequired": []
+  },
+  "evidence": {
+    "lastVerifiedAt": "2026-05-31T20:42:00+08:00",
+    "commands": [
+      {
+        "command": "npm.cmd run test -- today today-suggestion review ui-components",
+        "result": "passed",
+        "notes": "30 tests passed across today, today-suggestion, review, and ui-components; coverage includes today page source structure, PlanBundle/TodaySuggestion read path, short suggestions, status fields, and review entry."
+      },
+      {
+        "command": "npm.cmd run verify:static",
+        "result": "passed",
+        "notes": "eslint and vue-tsc --noEmit passed."
+      },
+      {
+        "command": "npm.cmd run verify:system",
+        "result": "passed",
+        "notes": "mp-weixin build completed successfully; Sass legacy API warnings only."
+      },
+      {
+        "command": "npm.cmd run verify:harness",
+        "result": "passed",
+        "notes": "Harness gate passed first with F21 active (4 features: 1 passing, 1 active, 2 not_started) and then after F21 was marked passing (4 features: 2 passing, 2 not_started), with 0 warnings and 0 errors."
+      }
+    ],
+    "manualSmoke": "Source/build smoke for F21: today page first shows TodayFocusCard with one focus task, minimum line, estimated minutes, recommended focus window, caution, and goal title; multiple tasks are behind a lightweight expandable entry; status card shows energy, available minutes, current state, and management entry; AI advice is limited to short tips; review entry navigates to review; no full goal plan or calendar page responsibility was added.",
+    "notes": "F21 keeps data reads on migrateLegacyDailyPlans() + buildTodaySuggestionFromPlanBundle()/TodaySuggestionView. It extends TodaySuggestionView with availableMinutes, stateLabel, and suggestionTips only; it does not write Task.status, DailyReview, PlanBundle, storage keys, planner, replanner, AI, or tarot state."
+  },
+  "version": "v0.3-ui",
+  "sourceFeatureList": "docs/log/v0.2/feature_list_v3_v2.json"
+}

@@ -1,0 +1,123 @@
+{
+  "id": "F14",
+  "title": "v0.3 planner 输出 PlanBundle",
+  "status": "passing",
+  "dependsOn": [
+    "F13"
+  ],
+  "behavior": "将初始计划生成从 DailyPlan[] 迁移为 PlanBundle，近 7 天生成具体 Task，远期生成 Stage，并通过 legacy adapter 保持旧调用方可用。",
+  "scope": {
+    "pages": [
+      "pages/goal-create/index.vue"
+    ],
+    "components": [],
+    "services": [
+      "services/planner.ts",
+      "services/storage.ts"
+    ],
+    "models": [
+      "models/goal.ts",
+      "models/plan.ts",
+      "models/task.ts",
+      "models/user-profile.ts"
+    ],
+    "schemas": [],
+    "tests": [
+      "tests/planner.test.ts",
+      "tests/planner.smoke.test.ts",
+      "tests/data-layer.test.ts"
+    ],
+    "docs": [
+      "docs/architecture/services-boundary.md",
+      "docs/progress.md"
+    ]
+  },
+  "acceptance": [
+    {
+      "id": "A01",
+      "text": "planner 新 API 输出 PlanBundle，包含 Plan、近 7 天 Task 和远期 Stage",
+      "method": "automated"
+    },
+    {
+      "id": "A02",
+      "text": "DDL 在 7 天以内时生成具体 Task；DDL 超过 7 天时远期内容进入 Stage，不一次性生成大量远期 Task",
+      "method": "automated"
+    },
+    {
+      "id": "A03",
+      "text": "每日 Task 总预计用时不超过 goal.dailyAvailableMinutes，low 状态仍优先生成最低完成线",
+      "method": "automated"
+    },
+    {
+      "id": "A04",
+      "text": "planner 不再把 dailyKeyword、recommendedFocusWindow 作为核心计划真相来源写入 PlanBundle",
+      "method": "automated"
+    },
+    {
+      "id": "A05",
+      "text": "创建目标主路径可保存新 PlanBundle，同时 legacy DailyPlan adapter 在迁移期间仍可供旧页面测试使用",
+      "method": "mixed"
+    }
+  ],
+  "verify": {
+    "static": "npm run verify:static",
+    "feature": "npm run test -- planner data-layer",
+    "system": "npm run verify:system"
+  },
+  "outOfScope": [
+    "不重构 replanner",
+    "不修改日历页 UI",
+    "不接入真实 AI",
+    "不删除旧 planner 兼容出口"
+  ],
+  "completionGate": {
+    "version": "v0.3",
+    "l3": "required",
+    "userPath": [
+      "创建目标 -> 生成 PlanBundle -> 保存 -> 通过 storage 读回 active PlanBundle",
+      "DDL 超过 7 天 -> 近 7 天是 Task，远期是 Stage"
+    ],
+    "integrationEvidence": [
+      "tests/planner.test.ts 覆盖 PlanBundle 输出、近 7 天 Task、远期 Stage、7 天内全 Task、每日时长、低能量最低完成线、infeasible 和 PlanBundle 存储",
+      "tests/data-layer.test.ts 覆盖创建目标 -> 生成 PlanBundle -> 保存 PlanBundle 和 legacy DailyPlan[] -> 读回 today-suggestion 兼容路径",
+      "tests/planner.smoke.test.ts 保持通过，证明 legacy planner 兼容出口仍可用",
+      "npm.cmd run verify:system 通过，mp-weixin 构建产物生成成功"
+    ],
+    "knownUnverified": [],
+    "humanReviewRequired": []
+  },
+  "evidence": {
+    "lastVerifiedAt": "2026-05-26T16:10:00+08:00",
+    "commands": [
+      {
+        "command": "npm.cmd run test -- planner data-layer",
+        "result": "passed",
+        "summary": "4 个测试文件、23 个测试通过"
+      },
+      {
+        "command": "npm.cmd run verify:static",
+        "result": "passed",
+        "summary": "lint 和 vue-tsc --noEmit 通过"
+      },
+      {
+        "command": "npm.cmd run verify:system",
+        "result": "passed",
+        "summary": "build:mp-weixin 构建成功"
+      },
+      {
+        "command": "npm.cmd run check",
+        "result": "passed",
+        "summary": "15 个测试文件、83 个测试通过，F14 active 状态下 harness gate 0 warning / 0 error"
+      },
+      {
+        "command": "npm.cmd run verify:harness",
+        "result": "passed",
+        "summary": "F14 passing 状态通过，6 个 feature 中 3 个 passing、3 个 not_started，0 warning / 0 error"
+      }
+    ],
+    "manualSmoke": "L3b 采用自动化集成路径测试：tests/planner.test.ts 覆盖 DDL 超过 7 天时近 7 天 Task + 远期 Stage，DDL 7 天内全 Task，并验证 PlanBundle 可保存读回；tests/data-layer.test.ts 覆盖创建目标后保存 PlanBundle 与 legacy DailyPlan[]，旧 today-suggestion 路径仍可读。",
+    "notes": "F14 完成 planner 新 API 输出 PlanBundle；旧 buildStarterPlan() 继续通过 buildLegacyDailyPlansFromBundle() 输出 DailyPlan[]。创建目标页面保存 PlanBundle，同时继续保存 legacy DailyPlan[]。未重构 replanner 或日历页面 UI。"
+  },
+  "version": "v0.3",
+  "sourceFeatureList": "docs/log/v0.3/feature_list.json"
+}

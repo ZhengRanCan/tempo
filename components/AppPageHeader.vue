@@ -20,8 +20,10 @@ defineProps<{
 </template>
 
 <style scoped lang="scss">
+@use "../styles/ui" as ui;
+
 .app-page-header {
-  margin-bottom: 24rpx;
+  margin-bottom: 20rpx;
 }
 
 .header-main {
@@ -33,8 +35,9 @@ defineProps<{
 
 .hint {
   display: block;
-  color: #4b463d;
-  font-size: 26rpx;
+  max-width: 560rpx;
+  color: ui.$muted;
+  font-size: 24rpx;
   line-height: 1.5;
 }
 </style>

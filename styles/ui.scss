@@ -1,0 +1,128 @@
+$canvas: #faf8f3;
+$surface: #ffffff;
+$surface-soft: #f3efe7;
+$surface-muted: #ece6da;
+$ink: #24211c;
+$body: #4b463d;
+$muted: #7c7568;
+$border: #e5ded2;
+$accent: #6b6fd6;
+$accent-soft: #ececff;
+$accent-pressed: #555ac0;
+$warm: #d68a5a;
+$warm-soft: #fff2e8;
+$success: #4f9d69;
+$success-soft: #eaf6ee;
+$warning: #d7a245;
+$warning-soft: #fff5da;
+$neutral: #9a9488;
+$font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+
+@mixin page-shell {
+  min-height: 100vh;
+  box-sizing: border-box;
+  padding: 32rpx 32rpx 48rpx;
+  padding-bottom: calc(48rpx + env(safe-area-inset-bottom));
+  background: $canvas;
+  color: $ink;
+  font-family: $font-family;
+}
+
+@mixin card($padding: 28rpx, $radius: 28rpx) {
+  box-sizing: border-box;
+  padding: $padding;
+  border: 2rpx solid $border;
+  border-radius: $radius;
+  background: $surface;
+  box-shadow: 0 8rpx 24rpx rgba(36, 33, 28, 0.04);
+}
+
+@mixin soft-block($padding: 18rpx, $radius: 20rpx) {
+  box-sizing: border-box;
+  padding: $padding;
+  border-radius: $radius;
+  background: $surface-soft;
+}
+
+@mixin button-reset {
+  box-sizing: border-box;
+  margin: 0;
+  border: 0;
+  text-align: center;
+
+  &::after {
+    border: 0;
+  }
+}
+
+@mixin primary-button($height: 88rpx) {
+  @include button-reset;
+
+  height: $height;
+  border-radius: 20rpx;
+  background: $accent;
+  color: $surface;
+  font-size: 30rpx;
+  font-weight: 600;
+  line-height: $height;
+}
+
+@mixin secondary-button($height: 80rpx) {
+  @include button-reset;
+
+  height: $height;
+  border: 2rpx solid $border;
+  border-radius: 20rpx;
+  background: $surface;
+  color: $ink;
+  font-size: 28rpx;
+  font-weight: 500;
+  line-height: calc($height - 4rpx);
+}
+
+@mixin text-button($height: 56rpx) {
+  @include button-reset;
+
+  min-width: 88rpx;
+  height: $height;
+  padding: 0 10rpx;
+  background: transparent;
+  color: $accent-pressed;
+  font-size: 24rpx;
+  font-weight: 600;
+  line-height: $height;
+}
+
+@mixin status-tag($background: $surface-soft, $color: $muted) {
+  display: inline-block;
+  flex: 0 0 auto;
+  padding: 6rpx 14rpx;
+  border-radius: 999rpx;
+  background: $background;
+  color: $color;
+  font-size: 24rpx;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+@mixin option-chip {
+  @include button-reset;
+
+  border: 2rpx solid $border;
+  border-radius: 20rpx;
+  background: $surface;
+  color: $body;
+}
+
+@mixin section-title($size: 30rpx) {
+  color: $ink;
+  font-size: $size;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+@mixin helper-text($size: 24rpx) {
+  color: $muted;
+  font-size: $size;
+  line-height: 1.5;
+}

@@ -1,0 +1,133 @@
+{
+  "id": "F19",
+  "title": "v0.3 审计修复：Plan 视图模型边界整理",
+  "status": "passing",
+  "dependsOn": [
+    "F18"
+  ],
+  "behavior": "整理 Plan 相关模型与页面视图构建边界，降低 models/plan.ts 同时承载领域模型、legacy adapter 和页面 view model 的维护风险；不改变持久化结构和用户可见 UI。",
+  "scope": {
+    "pages": [
+      "pages/today/index.vue",
+      "pages/plan-calendar/index.vue",
+      "pages/profile/index.vue",
+      "pages/review/index.vue"
+    ],
+    "components": [],
+    "services": [
+      "services/today-suggestion.ts",
+      "services/storage.ts",
+      "services/plan-view.ts"
+    ],
+    "models": [
+      "models/plan.ts",
+      "models/task.ts",
+      "models/index.ts"
+    ],
+    "schemas": [],
+    "tests": [
+      "tests/plan-calendar.test.ts",
+      "tests/today-suggestion.test.ts",
+      "tests/today.test.ts",
+      "tests/review.test.ts",
+      "tests/ui-components.test.ts",
+      "tests/data-layer.test.ts"
+    ],
+    "docs": [
+      "docs/architecture/services-boundary.md",
+      "docs/architecture/data-models.md",
+      "docs/progress.md"
+    ]
+  },
+  "acceptance": [
+    {
+      "id": "A01",
+      "text": "models/plan.ts 保留核心领域类型、normalize 和 legacy adapter；页面专用的 PlanCalendarDay、TodayView、PlanBundleCalendarView 构建逻辑迁移到明确的 selector/view-model 边界",
+      "method": "automated"
+    },
+    {
+      "id": "A02",
+      "text": "today、calendar、profile、review 仍通过 services 或 selector 读取页面所需视图，不在页面层直接拼装 Plan + Stage + Task 底层结构",
+      "method": "automated"
+    },
+    {
+      "id": "A03",
+      "text": "迁移后 buildPlanBundleCalendarView、buildDailyTaskViews、buildPlanProgress 等现有调用方有稳定导出或兼容重导出，避免一次性破坏旧测试",
+      "method": "automated"
+    },
+    {
+      "id": "A04",
+      "text": "PlanBundle 持久化结构、storage key、DailyPlan legacy adapter 和 replanner 业务语义保持不变",
+      "method": "automated"
+    },
+    {
+      "id": "A05",
+      "text": "文档同步说明领域模型、legacy adapter、页面视图 selector 的边界，避免后续 agent 继续把页面视图逻辑写回模型文件",
+      "method": "automated"
+    }
+  ],
+  "verify": {
+    "static": "npm run verify:static",
+    "feature": "npm run test -- plan-calendar today-suggestion today review ui-components data-layer",
+    "system": "npm run verify:system"
+  },
+  "outOfScope": [
+    "不改变小程序页面视觉",
+    "不修改 storage key",
+    "不改变 replanner 顺延策略",
+    "不删除旧导出，除非所有调用方和测试已同步迁移",
+    "不引入云端同步或真实 AI 请求"
+  ],
+  "completionGate": {
+    "version": "v0.3",
+    "l3": "required",
+    "userPath": [
+      "打开今日任务 -> 仍能显示 focus task 和今日任务列表",
+      "打开任务日历 -> 仍能显示近 7 天任务、远期 Stage 和整体进度",
+      "打开我的页 -> 仍能显示当前 Goal 和 PlanProgress",
+      "保存复盘 -> 仍能触发重排并回写 PlanBundle"
+    ],
+    "integrationEvidence": [
+      "tests/plan-calendar.test.ts 和 tests/today-suggestion.test.ts 覆盖迁移后的 selector/view-model API",
+      "tests/today.test.ts、tests/review.test.ts、tests/ui-components.test.ts 保持页面接入路径通过",
+      "tests/data-layer.test.ts 保持旧数据迁移与新 PlanBundle 主路径通过",
+      "npm.cmd run verify:system 通过，mp-weixin 构建产物生成成功"
+    ],
+    "knownUnverified": [],
+    "humanReviewRequired": []
+  },
+  "evidence": {
+    "lastVerifiedAt": "2026-05-27T15:19:32+08:00",
+    "commands": [
+      {
+        "command": "npm.cmd run test -- plan-calendar today-suggestion today review ui-components data-layer",
+        "result": "passed",
+        "summary": "6 ??????37 ???????? plan-view selector??????today/review/data-layer ?????"
+      },
+      {
+        "command": "npm.cmd run verify:static",
+        "result": "passed",
+        "summary": "lint ? vue-tsc --noEmit ???"
+      },
+      {
+        "command": "npm.cmd run verify:system",
+        "result": "passed",
+        "summary": "build:mp-weixin ?????"
+      },
+      {
+        "command": "npm.cmd run check",
+        "result": "passed",
+        "summary": "15 ??????93 ??????F19 active ??? harness gate 0 warning / 0 error?"
+      },
+      {
+        "command": "npm.cmd run verify:harness",
+        "result": "passed",
+        "summary": "F19 passing ??? 8 ? feature ?? passing?0 warning / 0 error?"
+      }
+    ],
+    "manualSmoke": "L3b ??????????tests/plan-calendar.test.ts ? tests/today-suggestion.test.ts ?????? services/plan-view selector API?tests/today.test.ts?tests/review.test.ts?tests/ui-components.test.ts ?? today/calendar/profile/review ????? service/selector ???tests/data-layer.test.ts ???????? PlanBundle ?????????????? mp-weixin ??????",
+    "notes": "F19 ????????????????? services/plan-view.ts?models/plan.ts ?????????normalize ? DailyPlan/PlanBundle legacy adapter????????? services/plan-view ???? selector?PlanBundle ??????storage key?DailyPlan adapter ? replanner ??????"
+  },
+  "version": "v0.3",
+  "sourceFeatureList": "docs/log/v0.3/feature_list.json"
+}

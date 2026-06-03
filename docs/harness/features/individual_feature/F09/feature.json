@@ -1,0 +1,116 @@
+{
+  "id": "F09",
+  "title": "v0.2 导航壳与页面顺序",
+  "status": "passing",
+  "dependsOn": [
+    "F08"
+  ],
+  "behavior": "调整小程序主入口和页面顺序，建立底部 tab 与顶部页面标题区，让用户可以稳定进入今日任务、任务日历、创建目标和个人页面。",
+  "scope": {
+    "pages": [
+      "pages.json",
+      "pages/today/index.vue",
+      "pages/plan-calendar/index.vue",
+      "pages/goal-create/index.vue",
+      "pages/review/index.vue",
+      "pages/profile/index.vue"
+    ],
+    "components": [
+      "components/AppPageHeader.vue"
+    ],
+    "services": [
+      "services/storage.ts"
+    ],
+    "models": [
+      "models/goal.ts",
+      "models/user-profile.ts"
+    ],
+    "schemas": [],
+    "tests": [
+      "tests/navigation-shell.test.ts"
+    ]
+  },
+  "acceptance": [
+    {
+      "id": "A01",
+      "text": "底部 tab 至少提供 今日、日历、创建、我的 四个主入口，今日任务是第一入口",
+      "method": "manual_smoke"
+    },
+    {
+      "id": "A02",
+      "text": "顶部区域显示当前页面标题和必要上下文，遵守 docs/harness/DESIGN.md 的今日优先、低压力、可执行原则，不承担与底部 tab 重复的主导航职责",
+      "method": "mixed"
+    },
+    {
+      "id": "A03",
+      "text": "创建目标、查看日历、查看今日任务、进入个人页的主路径均可从底部 tab 到达",
+      "method": "manual_smoke"
+    },
+    {
+      "id": "A04",
+      "text": "新增或调整页面后 mp-weixin 构建产物不缺失 wxml/json 页面文件",
+      "method": "automated"
+    }
+  ],
+  "verify": {
+    "static": "npm run verify:static",
+    "feature": "npm run test -- navigation-shell",
+    "system": "npm run verify:system"
+  },
+  "outOfScope": [
+    "不重做全部卡片组件",
+    "不实现 Deepseek 或塔罗",
+    "不修改任务拆解算法",
+    "不加入复杂顶部 tab"
+  ],
+  "completionGate": {
+    "version": "v0.2",
+    "l3": "required",
+    "userPath": [
+      "打开小程序 -> 默认进入今日任务",
+      "底部 tab 切换 今日/日历/创建/我的",
+      "从日历页进入今日任务或复盘入口时不丢失当前目标上下文"
+    ],
+    "integrationEvidence": [
+      "tests/navigation-shell.test.ts 覆盖今日作为第一入口、四个底部 tab 顺序、tab 页注册与文件存在、共享页头边界和 tab 页 switchTab 路径",
+      "dist/build/mp-weixin/pages/profile/index.wxml 与 index.json 已由 npm.cmd run verify:system 生成",
+      "dist/build/mp-weixin/pages/today、plan-calendar、goal-create、profile 均生成页面 wxml/json 产物"
+    ],
+    "knownUnverified": [],
+    "humanReviewRequired": []
+  },
+  "evidence": {
+    "lastVerifiedAt": "2026-05-24T22:36:30+08:00",
+    "commands": [
+      {
+        "command": "npm.cmd run test -- navigation-shell",
+        "result": "passed",
+        "summary": "1 个测试文件、5 个测试通过"
+      },
+      {
+        "command": "npm.cmd run verify:static",
+        "result": "passed",
+        "summary": "lint 和 vue-tsc --noEmit 通过"
+      },
+      {
+        "command": "npm.cmd run verify:system",
+        "result": "passed",
+        "summary": "build:mp-weixin 构建成功，profile/today/plan-calendar/goal-create 页面 wxml/json 产物存在"
+      },
+      {
+        "command": "npm.cmd run check",
+        "result": "passed",
+        "summary": "11 个测试文件、54 个测试通过，harness gate 0 warning / 0 error（F09 active 状态执行）"
+      },
+      {
+        "command": "npm.cmd run verify:harness",
+        "result": "passed",
+        "summary": "F09 passing 状态通过，4 个 feature，0 warning，0 error"
+      }
+    ],
+    "manualSmoke": "L3b 采用自动化导航壳测试和构建产物检查：覆盖“打开小程序默认进入今日任务”、“底部 tab 切换 今日/日历/创建/我的”和 tab 页主路径 switchTab。tab 文案和顺序按 F09 acceptance 固化为 今日、日历、创建、我的。",
+    "notes": "F09 完成导航壳与页面顺序：pages.json 将 today 设为第一入口并配置四个底部 tab，新增 profile 页面，新增 AppPageHeader，tab 页之间使用 switchTab，review 仍保持非 tab 复盘入口。"
+  },
+  "version": "v0.2",
+  "sourceFeatureList": "docs/log/v0.2/feature_list_v0.2.json"
+}

@@ -41,22 +41,16 @@ defineProps<{
 </template>
 
 <style scoped lang="scss">
+@use "../styles/ui" as ui;
+
 .focus-card {
-  padding: 40rpx 32rpx;
-  border: 2rpx solid #e5ded2;
-  border-radius: 36rpx;
-  background: #ffffff;
+  @include ui.card(32rpx, 32rpx);
+
+  border-left: 6rpx solid ui.$accent;
 }
 
 .keyword {
-  display: inline-block;
-  padding: 8rpx 18rpx;
-  border-radius: 999rpx;
-  background: #fff2e8;
-  color: #d68a5a;
-  font-size: 24rpx;
-  font-weight: 500;
-  line-height: 1.4;
+  @include ui.status-tag(ui.$warm-soft, ui.$warm);
 }
 
 .focus-label,
@@ -69,36 +63,36 @@ defineProps<{
 }
 
 .focus-label {
-  margin-top: 28rpx;
-  color: #7c7568;
+  margin-top: 24rpx;
+  color: ui.$muted;
   font-size: 24rpx;
   line-height: 1.4;
 }
 
 .focus-title {
   margin-top: 10rpx;
-  color: #24211c;
-  font-size: 40rpx;
+  color: ui.$ink;
+  font-size: 36rpx;
   font-weight: 600;
   line-height: 1.35;
 }
 
 .goal-title {
   margin-top: 8rpx;
-  color: #7c7568;
+  color: ui.$muted;
   font-size: 24rpx;
   line-height: 1.4;
 }
 
 .minimum-box {
-  margin-top: 28rpx;
-  padding: 24rpx;
-  border-radius: 24rpx;
-  background: #ececff;
+  @include ui.soft-block(22rpx, 22rpx);
+
+  margin-top: 24rpx;
+  background: ui.$accent-soft;
 }
 
 .minimum-label {
-  color: #555ac0;
+  color: ui.$accent-pressed;
   font-size: 24rpx;
   font-weight: 600;
   line-height: 1.4;
@@ -106,8 +100,8 @@ defineProps<{
 
 .minimum-text {
   margin-top: 8rpx;
-  color: #24211c;
-  font-size: 30rpx;
+  color: ui.$ink;
+  font-size: 28rpx;
   line-height: 1.5;
 }
 
@@ -116,14 +110,14 @@ defineProps<{
   flex-direction: column;
   gap: 8rpx;
   margin-top: 24rpx;
-  color: #4b463d;
+  color: ui.$body;
   font-size: 26rpx;
   line-height: 1.5;
 }
 
 .caution {
   margin-top: 18rpx;
-  color: #7c7568;
+  color: ui.$muted;
   font-size: 24rpx;
   line-height: 1.5;
 }

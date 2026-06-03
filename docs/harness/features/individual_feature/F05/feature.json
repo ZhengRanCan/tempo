@@ -1,0 +1,91 @@
+{
+  "id": "F05",
+  "title": "今日任务页",
+  "status": "passing",
+  "dependsOn": [
+    "F03",
+    "F04"
+  ],
+  "behavior": "系统根据今天日期、昨天完成情况和当天状态展示今日任务建议。",
+  "scope": {
+    "pages": [
+      "pages/"
+    ],
+    "components": [],
+    "services": [
+      "services/date.ts",
+      "services/storage.ts"
+    ],
+    "models": [
+      "models/plan.ts",
+      "models/task.ts",
+      "models/user-profile.ts"
+    ],
+    "schemas": [],
+    "tests": [
+      "tests/today.test.ts"
+    ]
+  },
+  "acceptance": [
+    {
+      "id": "A01",
+      "text": "显示今日最重要任务",
+      "method": "mixed"
+    },
+    {
+      "id": "A02",
+      "text": "显示最低完成线",
+      "method": "mixed"
+    },
+    {
+      "id": "A03",
+      "text": "显示推荐专注时段",
+      "method": "mixed"
+    },
+    {
+      "id": "A04",
+      "text": "低能量状态优先降低任务压力",
+      "method": "automated"
+    }
+  ],
+  "verify": {
+    "static": "npm run verify:static",
+    "feature": "npm run test -- today",
+    "system": "npm run verify:system"
+  },
+  "outOfScope": [
+    "不提交晚间复盘",
+    "不自动重排后续计划",
+    "不接入推送提醒",
+    "不做完整日历同步"
+  ],
+  "evidence": {
+    "lastVerifiedAt": "2026-05-23",
+    "commands": [
+      {
+        "command": "npm.cmd run test -- today",
+        "result": "passed",
+        "notes": "6 tests passed; covers A01 focus task selection, A02 minimum line display data, A03 recommended focus window, low-energy fallback focus window, A04 low-energy pressure reduction, and no-task empty state."
+      },
+      {
+        "command": "npm.cmd run verify:static",
+        "result": "passed",
+        "notes": "lint and vue-tsc passed after replacing today placeholder with the real today task view."
+      },
+      {
+        "command": "npm.cmd run verify:system",
+        "result": "passed",
+        "notes": "mp-weixin build completed; existing os alias and Sass deprecation warnings remain non-blocking."
+      },
+      {
+        "command": "npm.cmd run check",
+        "result": "passed",
+        "notes": "full static, feature and system verification passed; 6 test files and 29 tests passed."
+      }
+    ],
+    "manualSmoke": "Mixed verification note: today page now reads the current goal, DailyPlan[] and UserProfile through storage, then displays today's focus task, minimum line, recommended focus window, low-pressure energy note and today's task list. Final Weixin DevTools click-through can still be used as a product smoke check if desired.",
+    "notes": "F05 implementation is complete. buildTodayView selects today's highest-priority active task, keeps the minimum line visible, uses the daily recommended focus window or work-style fallback, and reduces pressure for low-energy users. The page does not submit reviews, trigger replanning, add reminders or perform calendar sync."
+  },
+  "version": "v0.1",
+  "sourceFeatureList": "docs/log/v0.1/feature_list_v0.1.json"
+}

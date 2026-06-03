@@ -25,11 +25,10 @@ defineEmits<{
 </template>
 
 <style scoped lang="scss">
+@use "../styles/ui" as ui;
+
 .empty-state {
-  padding: 40rpx 32rpx;
-  border: 2rpx solid #e5ded2;
-  border-radius: 28rpx;
-  background: #ffffff;
+  @include ui.card(32rpx, 28rpx);
 }
 
 .empty-title,
@@ -38,26 +37,20 @@ defineEmits<{
 }
 
 .empty-title {
-  color: #24211c;
-  font-size: 36rpx;
+  color: ui.$ink;
+  font-size: 32rpx;
   font-weight: 600;
   line-height: 1.35;
 }
 
 .empty-copy {
-  margin: 16rpx 0 28rpx;
-  color: #4b463d;
-  font-size: 28rpx;
+  margin: 14rpx 0 24rpx;
+  color: ui.$body;
+  font-size: 26rpx;
   line-height: 1.55;
 }
 
 .primary-button {
-  height: 88rpx;
-  border-radius: 20rpx;
-  background: #6b6fd6;
-  color: #ffffff;
-  font-size: 30rpx;
-  font-weight: 500;
-  line-height: 88rpx;
+  @include ui.primary-button;
 }
 </style>

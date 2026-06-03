@@ -1,0 +1,146 @@
+{
+  "id": "F17",
+  "title": "v0.3 页面 UI 与新数据视图接入",
+  "status": "passing",
+  "dependsOn": [
+    "F16"
+  ],
+  "behavior": "在 models 和 services 完成迁移后，让今日任务、任务日历、创建目标、复盘和我的页改用新数据视图，并按现有设计规范做必要 UI 适配。",
+  "scope": {
+    "pages": [
+      "pages/today/index.vue",
+      "pages/plan-calendar/index.vue",
+      "pages/goal-create/index.vue",
+      "pages/review/index.vue",
+      "pages/profile/index.vue"
+    ],
+    "components": [
+      "components/TaskCard.vue",
+      "components/TodayFocusCard.vue",
+      "components/EmptyState.vue",
+      "components/EnergySelector.vue"
+    ],
+    "services": [
+      "services/storage.ts",
+      "services/today-suggestion.ts",
+      "services/planner.ts",
+      "services/replanner.ts"
+    ],
+    "models": [
+      "models/plan.ts",
+      "models/task.ts",
+      "models/review.ts"
+    ],
+    "schemas": [],
+    "tests": [
+      "tests/today.test.ts",
+      "tests/plan-calendar.test.ts",
+      "tests/goal-create.test.ts",
+      "tests/review.test.ts",
+      "tests/ui-components.test.ts",
+      "tests/navigation-shell.test.ts"
+    ],
+    "docs": [
+      "docs/design/page/README.md",
+      "docs/design/page/pages/today-page.md",
+      "docs/design/page/pages/calendar-page.md",
+      "docs/design/page/pages/create-goal-page.md",
+      "docs/design/page/pages/profile-page.md",
+      "docs/progress.md"
+    ]
+  },
+  "acceptance": [
+    {
+      "id": "A01",
+      "text": "创建目标页触发新 PlanBundle 生成和保存流程，失败时不清空表单，旧数据兼容路径仍可控",
+      "method": "mixed"
+    },
+    {
+      "id": "A02",
+      "text": "今日任务页读取 Task/DailyTaskView/TodaySuggestion，首屏突出一个主任务，多个任务显示查看全部入口",
+      "method": "mixed"
+    },
+    {
+      "id": "A03",
+      "text": "任务日历页读取 Goal/Plan/Stage/Task 视图，能区分近 7 天任务和远期阶段",
+      "method": "mixed"
+    },
+    {
+      "id": "A04",
+      "text": "复盘页保存 DailyReview 后可以触发新 replanner 路径，复盘历史不被静默覆盖",
+      "method": "mixed"
+    },
+    {
+      "id": "A05",
+      "text": "我的页读取 Goal、PlanProgress、UserProfile，页面不直接拼装底层 storage 结构",
+      "method": "mixed"
+    },
+    {
+      "id": "A06",
+      "text": "页面视觉遵守 docs/harness/DESIGN.md、docs/design/README.md 和 docs/design/page/ 页面规范；不把塔罗、MBTI、每日关键词写成任务决策依据",
+      "method": "manual_smoke"
+    }
+  ],
+  "verify": {
+    "static": "npm run verify:static",
+    "feature": "npm run test -- today plan-calendar goal-create review ui-components navigation-shell",
+    "system": "npm run verify:system"
+  },
+  "outOfScope": [
+    "不做完整塔罗抽牌 UI",
+    "不接入真实 Deepseek",
+    "不新增云端同步",
+    "不新增多目标完整管理",
+    "不重写与新数据视图无关的视觉系统"
+  ],
+  "completionGate": {
+    "version": "v0.3",
+    "l3": "required",
+    "userPath": [
+      "创建目标 -> 生成计划 -> 打开今日任务 -> 查看日历 -> 保存复盘 -> 重排后续计划",
+      "旧 DailyPlan[] 本地数据 -> 打开今日任务和日历，确认自动兼容或迁移后页面可用",
+      "无本地数据 -> 今日任务、日历、我的页显示明确空状态"
+    ],
+    "integrationEvidence": [
+      "页面路径测试覆盖创建目标、今日任务、日历、复盘和我的页读取新视图",
+      "npm.cmd run verify:system 通过，mp-weixin 构建产物生成成功",
+      "人工冒烟记录覆盖旧数据、无数据和新 PlanBundle 三类路径"
+    ],
+    "knownUnverified": [],
+    "humanReviewRequired": []
+  },
+  "evidence": {
+    "lastVerifiedAt": "2026-05-26T20:43:49+08:00",
+    "commands": [
+      {
+        "command": "npm.cmd run test -- today plan-calendar goal-create review ui-components navigation-shell",
+        "result": "passed",
+        "summary": "7 个测试文件、39 个测试通过，覆盖页面组件和 v0.3 PlanBundle 视图接入源码路径"
+      },
+      {
+        "command": "npm.cmd run verify:static",
+        "result": "passed",
+        "summary": "lint 和 vue-tsc --noEmit 通过"
+      },
+      {
+        "command": "npm.cmd run verify:system",
+        "result": "passed",
+        "summary": "build:mp-weixin 构建成功，today/calendar/goal-create/review/profile 页面 wxml 产物均存在"
+      },
+      {
+        "command": "npm.cmd run check",
+        "result": "passed",
+        "summary": "15 个测试文件、92 个测试通过，F17 active 状态下 harness gate 0 warning / 0 error"
+      },
+      {
+        "command": "npm.cmd run verify:harness",
+        "result": "passed",
+        "summary": "F17 passing 状态通过，6 个 feature 全部 passing，0 warning / 0 error"
+      }
+    ],
+    "manualSmoke": "构建产物级冒烟：确认 dist/build/mp-weixin 下 today、plan-calendar、goal-create、review、profile 五个页面 wxml 产物存在；源码路径检查确认创建目标保存 PlanBundle，today/calendar/profile 经 migrateLegacyDailyPlans 读取 PlanBundle 视图，review 保存 DailyReview 后调用 replanPlanBundleAfterReview 并回写 PlanBundle。无本地数据路径继续由 EmptyState 覆盖，旧 DailyPlan[] 路径通过 migrateLegacyDailyPlans 自动兼容。UI 人工检查按 docs/harness/DESIGN.md 和 docs/design/page/*：today 首屏突出一个 focus task 且多任务显示查看全部入口，calendar 区分近 7 天任务和远期 stages，profile 显示 Goal/PlanProgress/UserProfile，不把塔罗、MBTI、每日关键词作为任务决策依据。",
+    "notes": "F17 完成页面 UI 与新数据视图接入。创建目标页沿用 buildStarterPlanBundle + savePlanBundle；今日页使用 buildTodaySuggestionFromPlanBundle；日历页使用 buildPlanBundleCalendarView；复盘页保存 taskResults 并触发 replanPlanBundleAfterReview；我的页使用 buildPlanProgress。"
+  },
+  "version": "v0.3",
+  "sourceFeatureList": "docs/log/v0.3/feature_list.json"
+}

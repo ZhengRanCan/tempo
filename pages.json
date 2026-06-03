@@ -34,13 +34,13 @@
   "globalStyle": {
     "navigationBarTextStyle": "black",
     "navigationBarTitleText": "Tempo",
-    "navigationBarBackgroundColor": "#f8f4ec",
-    "backgroundColor": "#f8f4ec"
+    "navigationBarBackgroundColor": "#faf8f3",
+    "backgroundColor": "#faf8f3"
   },
   "tabBar": {
     "color": "#7c7568",
     "selectedColor": "#555ac0",
-    "backgroundColor": "#fffdf8",
+    "backgroundColor": "#ffffff",
     "borderStyle": "black",
     "list": [
       {

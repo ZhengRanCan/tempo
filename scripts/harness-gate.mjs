@@ -1,9 +1,12 @@
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const rootDir = resolve(dirname(fileURLToPath(import.meta.url)), '..')
-const featureListPath = resolve(rootDir, 'docs/harness/feature_list_v0.3.json')
+const featureListPath = resolve(
+  rootDir,
+  process.env.HARNESS_FEATURE_LIST ?? 'docs/harness/features/feature-index.json'
+)
 
 const ALLOWED_STATUSES = new Set(['not_started', 'active', 'blocked', 'passing'])
 const COMPLETION_GATE_VERSION_PATTERN = /^v\d+\.\d+$/
@@ -25,15 +28,228 @@ function readFeatureList() {
     const parsed = JSON.parse(raw)
 
     if (!Array.isArray(parsed)) {
-      errors.push('docs/harness/feature_list_v0.3.json must be a JSON array.')
+      errors.push(`${featureListPath} must be a JSON array.`)
       return []
+    }
+
+    if (isFeatureIndex(parsed)) {
+      return readFeaturesFromIndex(parsed)
     }
 
     return parsed
   } catch (error) {
-    errors.push(`Unable to read or parse feature_list_v0.3.json: ${error.message}`)
+    errors.push(`Unable to read or parse ${featureListPath}: ${error.message}`)
     return []
   }
+}
+
+function isFeatureIndex(entries) {
+  return entries.every(
+    (entry) =>
+      entry &&
+      typeof entry === 'object' &&
+      typeof entry.feature_folder === 'string' &&
+      !('acceptance' in entry)
+  )
+}
+
+function readFeaturesFromIndex(entries) {
+  const features = []
+
+  for (const entry of entries) {
+    const label = entry?.id ?? 'unknown feature'
+
+    if (typeof entry.id !== 'string' || entry.id.length === 0) {
+      errors.push(`${label}: feature-index entry must include id.`)
+      continue
+    }
+
+    if (typeof entry.title !== 'string' || entry.title.length === 0) {
+      errors.push(`${label}: feature-index entry must include title.`)
+    }
+
+    if (!ALLOWED_STATUSES.has(entry.status)) {
+      errors.push(`${label}: feature-index entry has invalid status "${entry.status}".`)
+    }
+
+    if (typeof entry.version !== 'string' || entry.version.length === 0) {
+      errors.push(`${label}: feature-index entry must include version.`)
+    }
+
+    if (typeof entry.feature_folder !== 'string' || entry.feature_folder.length === 0) {
+      errors.push(`${label}: feature-index entry must include feature_folder.`)
+      continue
+    }
+
+    try {
+      const featureFolder = resolve(rootDir, entry.feature_folder)
+      const jsonFeaturePath = resolve(featureFolder, 'feature.json')
+      const mdFeaturePath = resolve(featureFolder, 'feature.md')
+      const verificationPath = resolve(featureFolder, 'verification.md')
+      const feature = existsSync(jsonFeaturePath)
+        ? JSON.parse(readFileSync(jsonFeaturePath, 'utf8'))
+        : readMarkdownFeature(entry, mdFeaturePath, verificationPath)
+
+      if (feature.id !== entry.id) {
+        errors.push(`${label}: feature-index id does not match ${entry.feature_folder}.`)
+      }
+
+      if (feature.status !== entry.status) {
+        errors.push(`${label}: feature-index status does not match ${entry.feature_folder}.`)
+      }
+
+      features.push(feature)
+    } catch (error) {
+      errors.push(`${label}: unable to read feature contract from ${entry.feature_folder}: ${error.message}`)
+    }
+  }
+
+  return features
+}
+
+function readMarkdownFeature(entry, featurePath, verificationPath) {
+  if (!existsSync(featurePath)) {
+    throw new Error('missing feature.json or feature.md')
+  }
+
+  if (!existsSync(verificationPath)) {
+    throw new Error('markdown feature must include verification.md')
+  }
+
+  const markdown = readFileSync(featurePath, 'utf8')
+  const verification = readFileSync(verificationPath, 'utf8')
+  const frontmatter = parseFrontmatter(markdown)
+
+  return {
+    id: entry.id,
+    title: entry.title,
+    status: entry.status,
+    version: entry.version,
+    dependsOn: asArray(frontmatter.dependsOn),
+    acceptance: extractAcceptanceChecklist(markdown),
+    verify: {
+      static: extractCommand(verification, 'static') ?? 'npm run verify:static',
+      feature: extractCommand(verification, 'feature') ?? '',
+      system: extractCommand(verification, 'system') ?? 'npm run verify:system'
+    },
+    scope: frontmatter.scope ?? { pages: [], components: [], services: [], models: [], schemas: [] },
+    evidence: frontmatter.evidence ?? {},
+    completionGate: frontmatter.completionGate ?? markdownCompletionGate(frontmatter)
+  }
+}
+
+function parseFrontmatter(markdown) {
+  const match = markdown.match(/^---\n([\s\S]*?)\n---/)
+
+  if (!match) {
+    return {}
+  }
+
+  const result = {}
+
+  for (const line of match[1].split('\n')) {
+    const separatorIndex = line.indexOf(':')
+
+    if (separatorIndex === -1) {
+      continue
+    }
+
+    const key = line.slice(0, separatorIndex).trim()
+    const rawValue = line.slice(separatorIndex + 1).trim()
+
+    if (!key || rawValue.length === 0) {
+      continue
+    }
+
+    result[key] = parseFrontmatterValue(rawValue)
+  }
+
+  return result
+}
+
+function parseFrontmatterValue(rawValue) {
+  try {
+    return JSON.parse(rawValue)
+  } catch {
+    const yamlArray = rawValue.match(/^\[(.*)\]$/)
+
+    if (yamlArray) {
+      const content = yamlArray[1].trim()
+      return content.length === 0
+        ? []
+        : content.split(',').map((item) => item.trim().replace(/^["']|["']$/g, ''))
+    }
+
+    return rawValue.replace(/^["']|["']$/g, '')
+  }
+}
+
+function markdownCompletionGate(frontmatter) {
+  if (!frontmatter.l3) {
+    return undefined
+  }
+
+  return {
+    version: frontmatter.version,
+    l3: frontmatter.l3,
+    userPath: [],
+    integrationEvidence: [],
+    knownUnverified: [],
+    humanReviewRequired: []
+  }
+}
+
+function extractChecklist(markdown, heading) {
+  const headingPattern = new RegExp(`^## ${heading}\\s*$`, 'm')
+  const headingMatch = markdown.match(headingPattern)
+
+  if (!headingMatch || headingMatch.index === undefined) {
+    return []
+  }
+
+  const section = markdown
+    .slice(headingMatch.index + headingMatch[0].length)
+    .split(/\n## /)[0]
+
+  return section
+    .split('\n')
+    .map((line) => line.match(/^-\s+\[[ x]\]\s+(.*)$/i)?.[1]?.trim())
+    .filter(Boolean)
+    .map((text, index) => ({
+      id: `A${String(index + 1).padStart(2, '0')}`,
+      text,
+      method: text.includes('截图') || text.includes('人工') ? 'manual_smoke' : 'mixed'
+    }))
+}
+
+function extractAcceptanceChecklist(markdown) {
+  const explicitChecklist = extractChecklist(markdown, 'Acceptance Criteria')
+
+  if (explicitChecklist.length > 0) {
+    return explicitChecklist
+  }
+
+  const numberedHeading = markdown.match(/^## \d+\.\s+Acceptance\s*$/m)?.[0]
+  return numberedHeading ? extractChecklist(markdown, numberedHeading.replace(/^## /, '')) : []
+}
+
+function extractCommand(markdown, key) {
+  const bulletMatch = markdown.match(new RegExp(`^-\\s+${key}:\\s+\`([^\`]+)\``, 'm'))
+
+  if (bulletMatch) {
+    return bulletMatch[1]
+  }
+
+  const tableLabels = {
+    static: 'L1 static',
+    feature: 'L2 feature',
+    system: 'L3 system'
+  }
+  const tableMatch = markdown.match(
+    new RegExp(`\\|\\s*${tableLabels[key]}\\s*\\|\\s*\`([^\`]+)\`\\s*\\|`, 'm')
+  )
+
+  return tableMatch?.[1]
 }
 
 function asArray(value) {

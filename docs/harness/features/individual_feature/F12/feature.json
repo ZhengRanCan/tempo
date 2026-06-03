@@ -1,0 +1,118 @@
+{
+  "id": "F12",
+  "title": "v0.3 目标数据模型与 legacy adapter",
+  "status": "passing",
+  "dependsOn": [],
+  "behavior": "在不改变运行时主路径的前提下，新增 Goal/Plan/Stage/Task 目标模型、状态枚举、PlanBundle 和旧 DailyPlan 兼容 adapter，为后续 services 迁移提供稳定类型合同。",
+  "scope": {
+    "pages": [],
+    "components": [],
+    "services": [],
+    "models": [
+      "models/common.ts",
+      "models/goal.ts",
+      "models/plan.ts",
+      "models/task.ts",
+      "models/review.ts",
+      "models/index.ts"
+    ],
+    "schemas": [],
+    "tests": [
+      "tests/data-models-v0.3.test.ts",
+      "tests/data-layer.test.ts"
+    ],
+    "docs": [
+      "docs/architecture/goal-plan-task-state-model.md",
+      "docs/architecture/data-models.md",
+      "docs/progress.md"
+    ]
+  },
+  "acceptance": [
+    {
+      "id": "A01",
+      "text": "新增 GoalStatus、PlanStatus、StageStatus、TaskType、Plan、Stage、PlanBundle、DailyTaskView、PlanProgress 类型，且不删除现有 DailyPlan 类型",
+      "method": "automated"
+    },
+    {
+      "id": "A02",
+      "text": "Task 目标模型支持 scheduledDate，旧 Task.date 可以通过 normalize 或 adapter 兼容映射",
+      "method": "automated"
+    },
+    {
+      "id": "A03",
+      "text": "DailyReview 支持目标 taskResults 结构，同时旧 completedTaskIds、partialTaskIds、skippedTaskIds 继续可读",
+      "method": "automated"
+    },
+    {
+      "id": "A04",
+      "text": "提供 DailyPlan[] 与 PlanBundle 之间的 legacy adapter，迁移不丢失 task status、minimumLine、estimatedMinutes、priority 和日期信息",
+      "method": "automated"
+    },
+    {
+      "id": "A05",
+      "text": "本 feature 不修改 storage、planner、replanner、today-suggestion 或页面运行时主路径",
+      "method": "automated"
+    }
+  ],
+  "verify": {
+    "static": "npm run verify:static",
+    "feature": "npm run test -- data-models-v0.3 data-layer",
+    "system": "npm run verify:system"
+  },
+  "outOfScope": [
+    "不修改 storage key",
+    "不让 planner 输出 PlanBundle",
+    "不修改页面 UI",
+    "不删除 DailyPlan",
+    "不接入真实 Deepseek 或塔罗 UI"
+  ],
+  "completionGate": {
+    "version": "v0.3",
+    "l3": "required",
+    "userPath": [
+      "读取旧 DailyPlan[] 测试数据 -> 转换为 PlanBundle -> 再转换回 DailyPlan[]，确认关键字段和状态不丢失",
+      "读取旧 Task.date 和旧 DailyReview 三组 task id 数据，确认 normalize 结果可供新模型使用"
+    ],
+    "integrationEvidence": [
+      "tests/data-models-v0.3.test.ts 覆盖 GoalStatus/PlanStatus/StageStatus/TaskType、scheduledDate、DailyReview taskResults、DailyPlan/PlanBundle 双向 adapter、DailyTaskView 和 PlanProgress",
+      "tests/data-layer.test.ts 保持通过，证明现有 DailyPlan[] 主路径和 today-suggestion 计算视图未被模型扩展破坏",
+      "npm.cmd run verify:system 通过，mp-weixin 构建产物生成成功"
+    ],
+    "knownUnverified": [],
+    "humanReviewRequired": []
+  },
+  "evidence": {
+    "lastVerifiedAt": "2026-05-26T15:52:30+08:00",
+    "commands": [
+      {
+        "command": "npm.cmd run test -- data-models-v0.3 data-layer",
+        "result": "passed",
+        "summary": "2 个测试文件、11 个测试通过"
+      },
+      {
+        "command": "npm.cmd run verify:static",
+        "result": "passed",
+        "summary": "lint 和 vue-tsc --noEmit 通过"
+      },
+      {
+        "command": "npm.cmd run verify:system",
+        "result": "passed",
+        "summary": "build:mp-weixin 构建成功"
+      },
+      {
+        "command": "npm.cmd run check",
+        "result": "passed",
+        "summary": "15 个测试文件、75 个测试通过，F12 active 状态下 harness gate 0 warning / 0 error"
+      },
+      {
+        "command": "npm.cmd run verify:harness",
+        "result": "passed",
+        "summary": "F12 passing 状态通过，6 个 feature 中 1 个 passing、5 个 not_started，0 warning / 0 error"
+      }
+    ],
+    "manualSmoke": "L3b 采用自动化模型迁移路径测试：tests/data-models-v0.3.test.ts 覆盖旧 DailyPlan[] -> PlanBundle -> DailyPlan[] 的双向转换、旧 Task.date 到 scheduledDate 的 adapter 映射、旧 DailyReview 三组 task id 与新 taskResults 结构兼容；tests/data-layer.test.ts 证明旧主路径仍可运行。用户已提供 v0.3 清单和架构方向，本 feature 按该方向将 DailyPlan 定位为 legacy adapter / 每日视图。",
+    "notes": "F12 只新增模型类型和 legacy adapter：GoalStatus、PlanStatus、StageStatus、TaskType、Plan、Stage、PlanBundle、DailyTaskView、PlanProgress、DailyReview.taskResults。未修改 storage、planner、replanner、today-suggestion 或页面运行主路。"
+  },
+  "version": "v0.3",
+  "sourceFeatureList": "docs/log/v0.3/feature_list.json"
+}

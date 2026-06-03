@@ -1,0 +1,117 @@
+{
+  "id": "F13",
+  "title": "v0.3 storage PlanBundle 读写与旧数据迁移",
+  "status": "passing",
+  "dependsOn": [
+    "F12"
+  ],
+  "behavior": "在 storage 层新增 PlanBundle 读写、schema version 或等价迁移标识，并保留旧 daily-plans:{goalId} 读取能力，使旧数据可以安全迁移到新模型。",
+  "scope": {
+    "pages": [],
+    "components": [],
+    "services": [
+      "services/storage.ts"
+    ],
+    "models": [
+      "models/plan.ts",
+      "models/task.ts",
+      "models/review.ts"
+    ],
+    "schemas": [],
+    "tests": [
+      "tests/storage.test.ts",
+      "tests/data-layer.test.ts"
+    ],
+    "docs": [
+      "docs/architecture/storage-strategy.md",
+      "docs/progress.md"
+    ]
+  },
+  "acceptance": [
+    {
+      "id": "A01",
+      "text": "storage 可以保存和读取 PlanBundle，且读取结果包含 Plan、Stage[]、Task[] 和必要状态",
+      "method": "automated"
+    },
+    {
+      "id": "A02",
+      "text": "旧 daily-plans:{goalId} 数据仍可通过旧接口读取，也可通过迁移接口转换为 PlanBundle",
+      "method": "automated"
+    },
+    {
+      "id": "A03",
+      "text": "迁移函数可重复执行，不重复生成任务，不覆盖 done、partial、skipped 状态",
+      "method": "automated"
+    },
+    {
+      "id": "A04",
+      "text": "storage 读取空数据、坏数据、读写异常时仍返回明确状态和 issue，不出现 silent failure",
+      "method": "automated"
+    },
+    {
+      "id": "A05",
+      "text": "本 feature 不修改 planner、replanner 和页面 UI",
+      "method": "automated"
+    }
+  ],
+  "verify": {
+    "static": "npm run verify:static",
+    "feature": "npm run test -- storage data-layer",
+    "system": "npm run verify:system"
+  },
+  "outOfScope": [
+    "不删除 daily-plans:{goalId}",
+    "不迁移到云端存储",
+    "不修改页面 UI",
+    "不改变 planner 输出"
+  ],
+  "completionGate": {
+    "version": "v0.3",
+    "l3": "required",
+    "userPath": [
+      "模拟旧 daily-plans:{goalId} 本地数据 -> 读取当前目标计划 -> 迁移为 PlanBundle -> 再读取确认状态稳定",
+      "无本地数据 -> 读取 PlanBundle 和旧 DailyPlan，确认页面可处理空结果"
+    ],
+    "integrationEvidence": [
+      "tests/storage.test.ts 覆盖 PlanBundle 读写、旧 daily-plans:{goalId} 兼容、幂等迁移、坏 PlanBundle、读取异常和迁移写入异常",
+      "tests/data-layer.test.ts 保持通过，证明旧 DailyPlan[] 主路径仍可读取并支撑 today-suggestion",
+      "npm.cmd run verify:system 通过，mp-weixin 构建产物生成成功"
+    ],
+    "knownUnverified": [],
+    "humanReviewRequired": []
+  },
+  "evidence": {
+    "lastVerifiedAt": "2026-05-26T16:00:00+08:00",
+    "commands": [
+      {
+        "command": "npm.cmd run test -- storage data-layer",
+        "result": "passed",
+        "summary": "2 个测试文件、15 个测试通过"
+      },
+      {
+        "command": "npm.cmd run verify:static",
+        "result": "passed",
+        "summary": "lint 和 vue-tsc --noEmit 通过"
+      },
+      {
+        "command": "npm.cmd run verify:system",
+        "result": "passed",
+        "summary": "build:mp-weixin 构建成功"
+      },
+      {
+        "command": "npm.cmd run check",
+        "result": "passed",
+        "summary": "15 个测试文件、80 个测试通过，F13 active 状态下 harness gate 0 warning / 0 error"
+      },
+      {
+        "command": "npm.cmd run verify:harness",
+        "result": "passed",
+        "summary": "F13 passing 状态通过，6 个 feature 中 2 个 passing、4 个 not_started，0 warning / 0 error"
+      }
+    ],
+    "manualSmoke": "L3b 采用自动化 storage 迁移路径测试：tests/storage.test.ts 模拟旧 daily-plans:{goalId} 本地数据 -> migrateLegacyDailyPlans() -> 写入 plan-bundle:{goalId} -> 再读回确认状态稳定；同时覆盖无 PlanBundle、坏 PlanBundle、读取异常和迁移写入异常。tests/data-layer.test.ts 证明旧 DailyPlan[] 页面主路径仍可读取。",
+    "notes": "F13 完成 storage PlanBundle 读写与旧数据迁移：新增 plan-bundle:{goalId} active bundle key，保留 daily-plans:{goalId} 旧 key；迁移函数可重复执行且不覆盖已有 PlanBundle 中的 done/partial/skipped 状态。planner 仍输出 DailyPlan[]，该迁移将在 F14 继续处理。"
+  },
+  "version": "v0.3",
+  "sourceFeatureList": "docs/log/v0.3/feature_list.json"
+}

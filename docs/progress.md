@@ -1,5 +1,34 @@
 # progress.md
 
+## F24 passing 2026-06-03
+
+- `F24` UI 统一样式基线已完成并置为 `passing`。
+- 新增 `styles/ui.scss` 作为共享 Sass 基线，统一 canvas/surface/accent token、page-shell、card、primary/secondary/text button、status-tag、option-chip、soft-block 等规则；`App.vue`、四个主 Tab 页和 `AppPageHeader`、`TaskCard`、`TodayFocusCard`、`EmptyState`、`EnergySelector` 已接入该基线。
+- `pages.json` 仅调整原生视觉色值：navigation/background 对齐 `#faf8f3`，TabBar background 对齐 `#ffffff`；未修改页面顺序、TabBar list 或路由。
+- 相对 F20-F23 的可见变化：今日页的重点任务卡、状态卡、AI 建议和复盘入口统一为同一套卡片外壳，文本按钮降级为透明入口；日历页的目标计划、进度、7 天选择、远期阶段和建议卡统一圆角/边框/阴影；创建目标页的步骤卡、输入框、时间选项和偏好选项使用统一卡片与 option chip；我的页的目标、偏好、表达、最近推进和设置入口统一 panel、按钮和状态标签层级。
+- 视觉检查矩阵：Today 有任务状态检查 `<TodayFocusCard>` 仍为首个业务焦点；Today 无目标/无任务状态检查 `EmptyState` 动作入口；Calendar DDL 7 天内状态由 `tests/plan-calendar.test.ts` 的 tight pressure case 和 `progress-card` 产物覆盖；Calendar DDL 超过 7 天/远期阶段由 long bundle case 与 `stage-panel` 产物覆盖；Create Goal 初始输入状态检查 `step-list`、输入框和禁用主按钮；Create Goal 偏好展开状态检查 `preference-step`、`EnergySelector` 和 option chip；Profile 有目标状态检查 `goal-card`、进度和主/次按钮；Profile 无目标状态检查 `profile-empty` + `EmptyState`。
+- 构建入口检查：`project.config.json.miniprogramRoot` 当前为 `dist/dev/mp-weixin/`，现有 dev watcher 已在 `2026-06-03 19:26:12` 刷新 dev 产物；`npm.cmd run verify:system` 已在 `2026-06-03 19:26:35` 刷新 `dist/build/mp-weixin`。两边 `app.json` 均包含 `navigationBarBackgroundColor: "#faf8f3"`、`backgroundColor: "#faf8f3"` 和 TabBar `backgroundColor: "#ffffff"`，四个主 Tab WXSS 均包含 F24 page/card 基线。
+- 自动化结果：`npm.cmd run test -- ui-components navigation-shell today plan-calendar goal-create user-profile` 通过，54 个测试通过；`npm.cmd run verify:static` 通过；`npm.cmd run verify:system` 通过，仅有 Sass legacy JS API warning；`npm.cmd run verify:harness` 通过，仍有 F01-F07 legacy `completionGate` warning。
+- 本轮没有使用微信开发者工具截图；按 F24 `verification.md` 允许的“人工记录”方式，用源码、测试和 dev/build mp-weixin 产物完成视觉矩阵检查。所有矩阵状态均可构造，未记录无法验证状态。
+- 已确认未修改 `models/`、`services/`、`schemas/`、storage key、planner、replanner、AI/tarot 业务逻辑。当前工作树中 `docs/harness/verification-policy.md` 与 `docs/harness/instrumentation.md` 已不存在，F24 本轮按 feature 自带 `verification.md` 执行门禁。
+
+## F24 feature design 2026-06-03
+
+- ??? F24?`docs/harness/features/individual_feature/F24-ui-overall-design/feature.md`?
+- F24 ?? Markdown feature ?????`feature.md` ????????????? acceptance?`verification.md` ????????????? passing ?????`ref/image/README.md` ???????????
+- `docs/harness/features/feature-index.json` ??? F24???? `not_started`???? `v0.3`?
+- F24 ???? UI ?????????? UI ???????????????????? F24 ?? `active`??? `verification.md` ?????????
+- `scripts/harness-gate.mjs` ??? feature registry ????? legacy `feature.json` ??? Markdown feature ???
+
+## Feature registry migration 2026-06-01
+
+- 已创建 `docs/harness/features/feature-index.json` 作为当前 feature 轻量索引。
+- 已将 F01-F23 拆分到 `docs/harness/features/individual_feature/<feature-id>/feature.json`。
+- 来源映射：F01-F07 来自 `docs/log/v0.1/feature_list_v0.1.json`；F08-F11 来自 `docs/log/v0.2/feature_list_v0.2.json`；F12-F19 来自 `docs/log/v0.3/feature_list.json`；F20-F23 来自 `docs/log/v0.2/feature_list_v3_v2.json`。
+- `docs/log/v0.1/feature_list.json` 当前不包含 F01-F07，因此 v0.1 迁移源以 `docs/log/v0.1/feature_list_v0.1.json` 为准。
+- `AGENTS.md` 已切换为先读 feature index，再读取当前 feature 的 `feature.json`。
+- `scripts/harness-gate.mjs` 已支持 feature index 并展开单个 feature 合同；`npm.cmd run verify:harness` 默认校验新 registry。
+
 ## UI visibility fix 2026-06-01
 
 - 发现微信开发者工具入口 `project.config.json.miniprogramRoot` 指向 `dist/dev/mp-weixin/`，而当前系统验证和实际构建命令 `npm.cmd run verify:system` / `build:mp-weixin` 生成的是 `dist/build/mp-weixin/`。
@@ -40,24 +69,24 @@
 ## Current handoff 2026-05-31
 
 - `2026-05-31` 新增 `docs/design/page/02-f20-page-shell-component-baseline.md`，用于把 F20 的页面壳、TabBar 协同、组件基线、禁止项和验收点写成执行级设计合约。
-- `F20` 的 behavior 与 docs 引用已同步更新到 `docs/harness/feature_list_v3_v2.json` 和 `docs/harness/feature_list_v0.3.json`。
+- `F20` 的 behavior 与 docs 引用已同步更新到 `docs/log/v0.2/feature_list_v3_v2.json` 和 `docs/log/v0.3/feature_list_v0.3.json`。
 
-- 当前 UI 改造入口已切换为 `docs/harness/feature_list_v3_v2.json`。
-- `docs/harness/feature_list_v3_v2.json` 只保留 F20-F23，用于降低后续 UI 任务的上下文占用。
-- `docs/harness/feature_list_v0.3.json` 保留为 F12-F23 的完整历史清单，不再作为默认任务入口。
+- 当前 UI 改造入口已切换为 `docs/harness/features/feature-index.json`。
+- `docs/log/v0.2/feature_list_v3_v2.json` 只保留 F20-F23，用于降低后续 UI 任务的上下文占用。
+- `docs/log/v0.3/feature_list_v0.3.json` 保留为 F12-F23 的完整历史清单，不再作为默认任务入口。
 - 当前 `active` feature：无。
-- `npm.cmd run verify:harness` 默认校验轻量清单；如需校验完整历史清单，可设置 `HARNESS_FEATURE_LIST=docs/harness/feature_list_v0.3.json` 后运行。
+- `npm.cmd run verify:harness` 默认校验轻量清单；如需校验完整历史清单，可设置 `HARNESS_FEATURE_LIST=docs/log/v0.3/feature_list_v0.3.json` 后运行。
 
 ## 当前 feature
 
 - 当前 `active` feature：无
-- 状态：F20-F23 均为 `passing`
+- 状态：F20-F24 均为 `passing`
 
 ## 当前状态
 
-- 项目阶段：App v0.3 数据模型与服务迁移已完成，UI 改造已完成 F20 页面壳与组件基线、F21 今日任务执行台、F22 任务日历计划板、F23 创建目标与我的页收口。
-- Harness 状态：F12-F23 已 `passing`；轻量清单 F20-F23 均为 `passing`。
-- 当前工作功能清单位置：`docs/harness/feature_list_v3_v2.json`
+- 项目阶段：App v0.3 数据模型与服务迁移已完成，UI 改造已完成 F20 页面壳与组件基线、F21 今日任务执行台、F22 任务日历计划板、F23 创建目标与我的页收口、F24 UI 统一样式基线。
+- Harness 状态：F12-F24 已 `passing`；当前 feature registry 中 F01-F24 均为 `passing`。
+- 当前工作功能清单位置：`docs/harness/features/feature-index.json`
 
 ## 功能状态摘要
 
@@ -73,7 +102,8 @@
 - `F21` passing
 - `F22` passing
 - `F23` passing
-- v0.3 版本化功能清单位置：`docs/harness/feature_list_v0.3.json`
+- `F24` passing
+- v0.3 版本化功能清单位置：`docs/log/v0.3/feature_list_v0.3.json`
 - v0.2 版本化功能清单位置：`docs/log/v0.2/feature_list_v0.2.json`
 - v0.1 归档功能清单位置：`docs/log/v0.1/feature_list.json`
 
@@ -84,7 +114,7 @@
 - `npm.cmd run verify:static` 通过。
 - `npm.cmd run verify:system` 通过，mp-weixin 构建成功，仅有 Sass legacy API warning。
 - `npm.cmd run verify:harness` 通过：4 个 feature，1 个 passing，3 个 not_started，0 warning / 0 error。
-- `2026-05-31` 已在 `docs/harness/feature_list_v0.3.json` 追加 UI 改造任务 F20-F23。
+- `2026-05-31` 已在 `docs/log/v0.3/feature_list_v0.3.json` 追加 UI 改造任务 F20-F23。
 - F20：页面壳与全局组件基线。
 - F21：今日任务执行台。
 - F22：任务日历计划板。
@@ -102,7 +132,7 @@
 
 ## 当前验证状态
 
-- `docs/harness/feature_list.json`：v0.2 当前功能清单，4 个 feature，0 个 active，1 个 passing，3 个 not_started
+- `docs/log/v0.2/feature_list_v0.2.json`：v0.2 归档功能清单，4 个 feature，0 个 active，1 个 passing，3 个 not_started
 - `npm.cmd run test -- goal-create`：通过，6 个测试通过
 - `npm.cmd run verify:static`：通过
 - `npm.cmd run verify:system`：通过，`build:mp-weixin` 构建成功
@@ -158,7 +188,7 @@
 - `2026-05-24` 调试/验证文档收敛后重新执行 `npm.cmd run check`：通过，8 个测试文件、39 个测试通过；仍只有 F01-F07 legacy `completionGate` warning
 - `2026-05-24` v0.1 功能清单已归档到 `docs/log/v0.1/feature_list_v0.1.json`
 - `2026-05-24` v0.2 工作计划已写入 `docs/log/v0.2/work-plan.md`
-- `2026-05-24` v0.2 功能清单已生成：`docs/harness/feature_list.json` 作为当前工作入口，`docs/harness/feature_list_v0.2.json` 作为版本化清单；F08 为 active，F09-F11 按依赖顺序 not_started
+- `2026-05-24` v0.2 功能清单已生成，迁移后归档为 `docs/log/v0.2/feature_list_v0.2.json`；F08 为 active，F09-F11 按依赖顺序 not_started
 - `2026-05-24` v0.2 清单生成后执行 `npm.cmd run verify:harness`：通过，4 个 feature，1 个 active，3 个 not_started，0 warning，0 error
 - `2026-05-24` v0.2 清单生成后执行 `npm.cmd run check`：通过，8 个测试文件、39 个测试通过，mp-weixin 构建通过，harness gate 通过
 - `2026-05-24` v0.2 UI 规则已补充：F09/F10 明确要求先遵守 `docs/harness/DESIGN.md`，再读取 `docs/design/visual-system.md` 和 `docs/design/components.md`；`docs/design/components.md` 与 `docs/design/pages.md` 已清理为 v0.2 口径
@@ -200,7 +230,7 @@
 - `2026-05-26` 已更新 `docs/harness/ARCHITECTURE.md` 和 `AGENTS.md`：`ARCHITECTURE.md` 作为架构 README，`AGENTS.md` 增加数据模型、storage、services 的按需读取和迁移约束。
 - `2026-05-26` 已完成 `models/` 与 `services/` 初步审计：当前主要风险是 `models/plan.ts` 混合领域模型和页面视图、`planner/replanner/storage/today-suggestion/ai-client` 仍强依赖 `DailyPlan[]`，后续应先新增目标类型和 legacy adapter，再逐步迁移服务输出。
 - `2026-05-26` 已生成 App v0.3 工作计划：`docs/log/v0.3/work-plan.md`。
-- `2026-05-26` 已生成 App v0.3 功能清单：`docs/harness/feature_list_v0.3.json`；F12 为 `active`，F13-F17 按依赖顺序 `not_started`。
+- `2026-05-26` 已生成 App v0.3 功能清单：`docs/log/v0.3/feature_list_v0.3.json`；F12 为 `active`，F13-F17 按依赖顺序 `not_started`。
 - `2026-05-26` `scripts/harness-gate.mjs` 已从固定要求 `completionGate.version: "v0.2"` 调整为接受 `v0.x` 版本格式，`docs/harness/verification-policy.md` 已同步说明。
 
 - `2026-05-26` F12 已完成目标数据模型与 legacy adapter：新增 `GoalStatus`、`PlanStatus`、`StageStatus`、`TaskType`、`Plan`、`Stage`、`PlanBundle`、`DailyTaskView`、`PlanProgress`，并提供 `dailyPlansToPlanBundle()` / `planBundleToDailyPlans()` 双向 adapter。
@@ -281,6 +311,6 @@
 
 ## 交接说明
 
-- 任务开始先读 `docs/harness/feature_list_v3_v2.json` 和本文件
+- 任务开始先读 `docs/harness/features/feature-index.json`、本文件，再读取当前 feature 的 `feature_folder/feature.json`
 - 完成判断按 `docs/harness/verification-policy.md`
 - 失败详情或手动冒烟详情写入 `docs/log/`

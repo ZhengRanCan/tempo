@@ -1,0 +1,121 @@
+{
+  "id": "F16",
+  "title": "v0.3 replanner 基于 Plan/Task 重排",
+  "status": "passing",
+  "dependsOn": [
+    "F15"
+  ],
+  "behavior": "将重排逻辑从 DailyPlan[] 迁移到 Plan/Task/DailyReview，明确任务顺延策略、历史保留和不可行状态，完成 services 层对新模型的核心迁移。",
+  "scope": {
+    "pages": [],
+    "components": [],
+    "services": [
+      "services/replanner.ts",
+      "services/storage.ts"
+    ],
+    "models": [
+      "models/plan.ts",
+      "models/task.ts",
+      "models/review.ts",
+      "models/goal.ts",
+      "models/user-profile.ts"
+    ],
+    "schemas": [],
+    "tests": [
+      "tests/replanner.test.ts",
+      "tests/data-layer.test.ts",
+      "tests/storage.test.ts"
+    ],
+    "docs": [
+      "docs/architecture/goal-plan-task-state-model.md",
+      "docs/architecture/services-boundary.md",
+      "docs/progress.md"
+    ]
+  },
+  "acceptance": [
+    {
+      "id": "A01",
+      "text": "replanner 新 API 基于 PlanBundle、DailyReview 和 UserProfile 生成更新后的 PlanBundle 或明确 infeasible 状态",
+      "method": "automated"
+    },
+    {
+      "id": "A02",
+      "text": "done 任务不被重排，partial 和 skipped 不会静默丢失",
+      "method": "automated"
+    },
+    {
+      "id": "A03",
+      "text": "任务顺延策略可追踪来源关系，并明确是更新 scheduledDate 还是生成补做 Task",
+      "method": "mixed"
+    },
+    {
+      "id": "A04",
+      "text": "重排不超过 DDL 和每日可用时间；无法安排时返回 infeasible 和调整建议",
+      "method": "automated"
+    },
+    {
+      "id": "A05",
+      "text": "DailyReview 作为历史事实保留，replanner 不静默改写复盘记录",
+      "method": "automated"
+    }
+  ],
+  "verify": {
+    "static": "npm run verify:static",
+    "feature": "npm run test -- replanner data-layer storage",
+    "system": "npm run verify:system"
+  },
+  "outOfScope": [
+    "不修改页面 UI",
+    "不引入云端同步",
+    "不删除旧重排兼容测试，除非已有新路径覆盖"
+  ],
+  "completionGate": {
+    "version": "v0.3",
+    "l3": "required",
+    "userPath": [
+      "PlanBundle + 当日 Review -> 重排后续任务 -> done 保留，partial/skipped 进入后续安排",
+      "后续日期容量不足 -> 返回 infeasible，不覆盖原 Plan 和 Review"
+    ],
+    "integrationEvidence": [
+      "tests/replanner.test.ts 覆盖 PlanBundle 重排、任务历史、不可行状态和低能量压力控制",
+      "tests/data-layer.test.ts 覆盖保存 PlanBundle -> 复盘 -> 重排 -> 再读取的集成路径",
+      "npm.cmd run verify:system 通过，mp-weixin 构建产物生成成功"
+    ],
+    "knownUnverified": [],
+    "humanReviewRequired": []
+  },
+  "evidence": {
+    "lastVerifiedAt": "2026-05-26T20:25:28+08:00",
+    "commands": [
+      {
+        "command": "npm.cmd run test -- replanner data-layer storage",
+        "result": "passed",
+        "summary": "3 个测试文件、25 个测试通过"
+      },
+      {
+        "command": "npm.cmd run verify:static",
+        "result": "passed",
+        "summary": "lint 和 vue-tsc --noEmit 通过"
+      },
+      {
+        "command": "npm.cmd run verify:system",
+        "result": "passed",
+        "summary": "build:mp-weixin 构建成功"
+      },
+      {
+        "command": "npm.cmd run check",
+        "result": "passed",
+        "summary": "15 个测试文件、91 个测试通过，F16 active 状态下 harness gate 0 warning / 0 error"
+      },
+      {
+        "command": "npm.cmd run verify:harness",
+        "result": "passed",
+        "summary": "F16 passing 状态通过，6 个 feature 中 5 个 passing、1 个 not_started，0 warning / 0 error"
+      }
+    ],
+    "manualSmoke": "L3b 采用自动化集成路径测试：tests/replanner.test.ts 覆盖 PlanBundle + DailyReview -> 重排，done 保留，partial/skipped 更新 scheduledDate 并记录 rescheduledFromDate/rescheduledFromStatus/rescheduleReason；tests/data-layer.test.ts 覆盖保存 PlanBundle -> 保存 DailyReview -> 重排 -> 保存并读回 PlanBundle，Review 原样保留；容量不足路径返回 infeasible，不覆盖原 PlanBundle 或 Review。",
+    "notes": "F16 顺延策略已明确：不生成补做 Task，保留原 Task id 并更新 scheduledDate；通过 rescheduledFromDate、rescheduledFromStatus、rescheduleReason 追踪来源。旧 replanAfterReview(DailyPlan[]) 兼容入口保留。"
+  },
+  "version": "v0.3",
+  "sourceFeatureList": "docs/log/v0.3/feature_list.json"
+}
