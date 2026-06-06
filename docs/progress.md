@@ -1,5 +1,16 @@
 # progress.md
 
+## F25 passing 2026-06-06
+
+- `F25` 今日任务页重设计已完成并置为 `passing`。
+- 用户人工视觉确认原文：`不赖，当前界面看着还可以。标记完成吧，F25`。该确认满足 F25 `verification.md` 对参考图人工视觉对照的硬门禁。
+- 最终可见结果：今日页作为执行台，首屏突出今日重点任务卡；主卡包含目标上下文、任务标题、预计时间、优先级、最低完成线、今日任务数量入口、开始专注和标记完成；状态卡、AI 今日建议和晚间复盘入口均使用 `static/icons/page/today/` 下的正式 PNG 图标作为扫描锚点。
+- 图标资源修复：今日页图标已从运行时 `:src` 对象绑定改为静态 `src="/static/icons/page/today/*.png"`，避免微信渲染层出现 `/pages/today/[object Object]...` 本地图片加载错误；相关回归测试已覆盖 `todayIconPaths` 和 `:src="` 不得重新出现。
+- 构建入口确认：`project.config.json.miniprogramRoot` 指向 `dist/dev/mp-weixin/`；本轮已刷新 `dist/dev/mp-weixin`，并确认 `dist/dev/mp-weixin/static/icons/page/today/` 存在 `star.png`、`clock.png`、`flag.png`、`list.png`、`status-wave.png`、`sparkle.png`、`moon.png`。
+- 自动化验证：`npm.cmd run test -- today today-suggestion review ui-components navigation-shell`、`npm.cmd run verify:static`、`npm.cmd run verify:system`、`npm.cmd run verify:harness` 均通过。
+- 边界确认：未修改 models、services、storage key、planner、replanner、AI/tarot 业务逻辑；未修改任务日历、创建目标、我的页页面结构；无 knownUnverified。
+- 当前 `active` feature：无。状态：F20-F25 均为 `passing`。
+
 ## F24 passing 2026-06-03
 
 - `F24` UI 统一样式基线已完成并置为 `passing`。

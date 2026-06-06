@@ -1,0 +1,113 @@
+{
+  "scope": "page/today",
+  "directory": "static/icons/page/today",
+  "format": "png",
+  "background": "transparent",
+  "canvasPx": {
+    "width": 64,
+    "height": 64
+  },
+  "visualGlyphPx": {
+    "min": 40,
+    "max": 48
+  },
+  "glyphTargetPx": 48,
+  "runtimeTargetPx": {
+    "min": 16,
+    "max": 22
+  },
+  "palette": {
+    "warmAccent": "#F47A3D",
+    "primaryAccent": "#6B5BEA",
+    "neutral": "#77716A",
+    "muted": "#B8B0A6"
+  },
+  "naming": [
+    {
+      "name": "star.png",
+      "semantic": "today focus task",
+      "color": "#F47A3D"
+    },
+    {
+      "name": "clock.png",
+      "semantic": "estimated time",
+      "color": "#77716A"
+    },
+    {
+      "name": "flag.png",
+      "semantic": "priority",
+      "color": "#77716A"
+    },
+    {
+      "name": "list.png",
+      "semantic": "today task count",
+      "color": "#6B5BEA"
+    },
+    {
+      "name": "status-wave.png",
+      "semantic": "today status",
+      "color": "#6B5BEA"
+    },
+    {
+      "name": "sparkle.png",
+      "semantic": "AI suggestion",
+      "color": "#6B5BEA"
+    },
+    {
+      "name": "moon.png",
+      "semantic": "evening review",
+      "color": "#6B5BEA"
+    }
+  ],
+  "icons": [
+    {
+      "source": "star.svg",
+      "name": "star.png",
+      "semantic": "today focus task",
+      "paletteRef": "warmAccent"
+    },
+    {
+      "source": "clock.svg",
+      "name": "clock.png",
+      "semantic": "estimated time",
+      "paletteRef": "neutral"
+    },
+    {
+      "source": "flag.svg",
+      "name": "flag.png",
+      "semantic": "priority",
+      "paletteRef": "neutral"
+    },
+    {
+      "source": "list.svg",
+      "name": "list.png",
+      "semantic": "today task count",
+      "paletteRef": "primaryAccent"
+    },
+    {
+      "source": "status-wave.svg",
+      "name": "status-wave.png",
+      "semantic": "today status",
+      "paletteRef": "primaryAccent"
+    },
+    {
+      "source": "sparkle.svg",
+      "name": "sparkle.png",
+      "semantic": "AI suggestion",
+      "paletteRef": "primaryAccent"
+    },
+    {
+      "source": "moon.svg",
+      "name": "moon.png",
+      "semantic": "evening review",
+      "paletteRef": "primaryAccent"
+    }
+  ],
+  "styleRules": [
+    "Use one icon family for all today-page icons.",
+    "Prefer simple line icons or lightly filled icons.",
+    "Keep stroke width consistent.",
+    "Use icons as scanning anchors, not decorative clutter.",
+    "Do not use emoji or colorful illustration assets as final icons."
+  ]
+}

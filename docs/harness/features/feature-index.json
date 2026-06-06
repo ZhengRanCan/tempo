@@ -166,5 +166,12 @@
     "status": "passing",
     "feature_folder": "docs/harness/features/individual_feature/F24-ui-overall-design",
     "version": "v0.3"
+  },
+  {
+    "id": "F25",
+    "title": "v0.3 今日任务页重设计",
+    "status": "passing",
+    "feature_folder": "docs/harness/features/individual_feature/F25-today-page-redesign",
+    "version": "v0.3"
   }
 ]

@@ -138,9 +138,9 @@ describe('navigation shell', () => {
     const review = readProjectFile('pages/review/index.vue')
 
     expect(today).toContain("uni.switchTab({\n    url: '/pages/goal-create/index'")
+    expect(today).toContain("uni.switchTab({\n    url: '/pages/plan-calendar/index'")
     expect(createGoal).toContain("uni.switchTab({\n      url: '/pages/plan-calendar/index'")
     expect(review).toContain("uni.switchTab({\n    url: '/pages/goal-create/index'")
-    expect(today).not.toContain("url: '/pages/plan-calendar/index'")
     expect(calendar).not.toContain("url: '/pages/today/index'")
     expect(profile).not.toContain("url: '/pages/today/index'")
     expect(profile).toContain("uni.switchTab({\n    url: '/pages/plan-calendar/index'")
