@@ -101,6 +101,16 @@ describe('navigation shell', () => {
     }
   })
 
+  it('registers calendar date detail as a native non-tab subpage', () => {
+    const pagesJson = readPagesJson()
+    const pagePaths = new Set(pagesJson.pages.map((page) => page.path))
+    const tabPaths = new Set((pagesJson.tabBar?.list ?? []).map((tab) => tab.pagePath))
+
+    expect(pagePaths.has('pages/plan-calendar/detail')).toBe(true)
+    expect(tabPaths.has('pages/plan-calendar/detail')).toBe(false)
+    expect(existsSync(resolve(rootDir, 'pages/plan-calendar/detail.vue'))).toBe(true)
+  })
+
   it('points WeChat DevTools at the same mp-weixin output used by local dev', () => {
     const projectConfig = readProjectConfig()
     const packageJson = readPackageJson()

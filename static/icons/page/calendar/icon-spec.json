@@ -1,0 +1,81 @@
+{
+  "scope": "page/calendar",
+  "directory": "static/icons/page/calendar",
+  "format": "png",
+  "background": "transparent",
+  "canvasPx": {
+    "width": 64,
+    "height": 64
+  },
+  "glyphTargetPx": 48,
+  "runtimeTargetPx": {
+    "min": 16,
+    "max": 22
+  },
+  "palette": {
+    "primaryAccent": "#6B5BEA",
+    "neutral": "#77716A",
+    "muted": "#B8B0A6"
+  },
+  "icons": [
+    {
+      "source": "target.svg",
+      "name": "target.png",
+      "semantic": "current goal plan",
+      "paletteRef": "primaryAccent"
+    },
+    {
+      "source": "calendar.svg",
+      "name": "calendar.png",
+      "semantic": "deadline and selected date",
+      "paletteRef": "neutral"
+    },
+    {
+      "source": "week.svg",
+      "name": "week.png",
+      "semantic": "future seven-day overview",
+      "paletteRef": "primaryAccent"
+    },
+    {
+      "source": "adjust.svg",
+      "name": "adjust.png",
+      "semantic": "adjust plan entry",
+      "paletteRef": "primaryAccent"
+    },
+    {
+      "source": "sparkle.svg",
+      "name": "sparkle.png",
+      "semantic": "AI plan suggestion",
+      "paletteRef": "primaryAccent"
+    },
+    {
+      "source": "clock.svg",
+      "name": "clock.png",
+      "semantic": "estimated minutes and remaining time",
+      "paletteRef": "neutral"
+    },
+    {
+      "source": "priority.svg",
+      "name": "priority.png",
+      "semantic": "task priority",
+      "paletteRef": "neutral"
+    }
+  ],
+  "cssOwnedStates": [
+    "overall progress",
+    "time pressure severity",
+    "completed state",
+    "no-task or buffer day state",
+    "overdue risk or overloaded day",
+    "long-term stage grouping",
+    "selected-date task-list container marker"
+  ],
+  "styleRules": [
+    "Use one icon family for all calendar page icons.",
+    "Keep stroke width and visual weight consistent.",
+    "Use icons as scanning anchors, not decorative clutter.",
+    "Use CSS badges, dots, progress bars, chips, borders, or text for states that do not need SVG assets.",
+    "Do not use emoji, multi-color, gradient, or illustration-style icons as final assets.",
+    "Agent-created placeholders cannot be treated as final passing evidence without user confirmation."
+  ]
+}

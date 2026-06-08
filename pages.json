@@ -13,6 +13,12 @@
       }
     },
     {
+      "path": "pages/plan-calendar/detail",
+      "style": {
+        "navigationBarTitleText": "日期详情"
+      }
+    },
+    {
       "path": "pages/goal-create/index",
       "style": {
         "navigationBarTitleText": "创建目标"

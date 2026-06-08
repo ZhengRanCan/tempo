@@ -3,11 +3,11 @@ import { readFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import type { DailyPlan, Goal, PlanBundle } from '../models'
+import { buildCalendarWeekDays } from '../pages/plan-calendar/calendar-helpers'
 import {
   buildPlanBundleCalendarView,
   buildPlanCalendarDays,
   getPlanStatusLabel,
-  getStageStatusLabel,
   getTaskStatusLabel
 } from '../services/plan-view'
 import {
@@ -221,7 +221,6 @@ describe('plan calendar', () => {
     expect(getTaskStatusLabel('skipped')).toBe('已跳过')
     expect(getPlanStatusLabel('active')).toBe('进行中')
     expect(getPlanStatusLabel('needs_adjustment')).toBe('需要调整')
-    expect(getStageStatusLabel('planned')).toBe('计划中')
 
     const days = buildPlanCalendarDays(createPlans(), {
       today: '2026-06-01'
@@ -237,6 +236,36 @@ describe('plan calendar', () => {
     })
 
     expect(days).toEqual([])
+  })
+
+  it('expands the calendar board to a continuous 7 day overview including empty days', () => {
+    const sourceDays = buildPlanCalendarDays(createPlans(), {
+      today: '2026-06-01',
+      limit: 7
+    })
+    const weekDays = buildCalendarWeekDays(sourceDays, {
+      today: '2026-06-01',
+      limit: 7
+    })
+
+    expect(weekDays).toHaveLength(7)
+    expect(weekDays.map((day) => day.date)).toEqual([
+      '2026-06-01',
+      '2026-06-02',
+      '2026-06-03',
+      '2026-06-04',
+      '2026-06-05',
+      '2026-06-06',
+      '2026-06-07'
+    ])
+    expect(weekDays[0]?.taskCount).toBe(2)
+    expect(weekDays[1]?.taskCount).toBe(1)
+    expect(weekDays[2]).toMatchObject({
+      taskCount: 0,
+      totalMinutes: 0,
+      statusSummary: '缓冲日',
+      tasks: []
+    })
   })
 
   it('summarizes PlanBundle calendar data with near tasks, far stages, progress, and plan status', () => {
@@ -311,27 +340,83 @@ describe('plan calendar', () => {
     })
   })
 
-  it('keeps the page source as a goal plan board with selectable day details', () => {
+  it('keeps the overview page as a goal plan board and opens native date detail page', () => {
     const source = readProjectFile('pages/plan-calendar/index.vue')
+    const detail = readProjectFile('pages/plan-calendar/detail.vue')
+    const pagesJson = readProjectFile('pages.json')
     const goalIndex = source.indexOf('class="goal-plan-card"')
     const progressIndex = source.indexOf('class="progress-card"')
     const weekIndex = source.indexOf('class="week-board"')
     const selectedDayIndex = source.indexOf('class="selected-day-card"')
-    const stageIndex = source.indexOf('class="stage-panel"')
-    const adviceIndex = source.indexOf('class="advice-card"')
+    const adjustIndex = source.indexOf('class="adjust-card"')
 
     expect(goalIndex).toBeGreaterThan(-1)
     expect(progressIndex).toBeGreaterThan(goalIndex)
     expect(weekIndex).toBeGreaterThan(progressIndex)
     expect(selectedDayIndex).toBeGreaterThan(weekIndex)
-    expect(stageIndex).toBeGreaterThan(selectedDayIndex)
-    expect(adviceIndex).toBeGreaterThan(stageIndex)
+    expect(adjustIndex).toBeGreaterThan(selectedDayIndex)
     expect(source).toContain('buildPlanBundleCalendarView')
     expect(source).toContain('migrateLegacyDailyPlans')
-    expect(source).toContain('selectedDate')
-    expect(source).toContain('selectDate(day.date)')
+    expect(source).toContain('weekDays')
+    expect(source).toContain('buildCalendarWeekDays')
+    expect(source).toContain('todayDayId')
+    expect(source).toContain('getDayId(day.date)')
+    expect(source).toContain('scroll-view')
+    expect(source).toContain('scroll-x')
+    expect(source).toContain(':scroll-into-view="todayDayId"')
+    expect(source).toContain('openDateDetail(day.date)')
+    expect(source).toContain('/pages/plan-calendar/detail?date=')
     expect(source).toContain('selectedTasks')
+    expect(source).toContain('getDayTone')
+    expect(source).toContain('getDayStateLabel')
+    expect(source).toContain('未来 7 天计划概览')
+    expect(source).toContain('调整计划')
+    expect(source).not.toContain('远期阶段')
+    expect(source).not.toContain('stage-panel')
+    expect(source).not.toContain('getStageStatusLabel')
+    expect(source).not.toContain('v-for="stage in stages"')
+    expect(source).not.toContain('isDateDetailMode')
+    expect(source).not.toContain('返回概览')
+    expect(source).not.toContain('.weekday-label,\n.date-label,\n.day-state')
+    expect(detail).toContain('onLoad')
+    expect(detail).toContain('setNavigationBarTitle')
+    expect(detail).toContain('class="date-detail-card"')
+    expect(detail).toContain('class="task-list-panel"')
+    expect(detail).toContain('任务列表')
+    expect(pagesJson).toContain('"path": "pages/plan-calendar/detail"')
     expect(source).not.toContain('getDailyPlans')
     expect(source).not.toContain('buildTodaySuggestion')
+  })
+
+  it('uses final calendar page icons as static mini-program image resources', () => {
+    const source = readProjectFile('pages/plan-calendar/index.vue')
+    const detail = readProjectFile('pages/plan-calendar/detail.vue')
+    const combinedSource = `${source}\n${detail}`
+    const compactTaskMarkup = source.slice(
+      source.indexOf('class="compact-task-list"'),
+      source.indexOf('<text\n          v-else', source.indexOf('class="compact-task-list"'))
+    )
+    const detailTaskMarkup = detail.slice(
+      detail.indexOf('class="task-list"'),
+      detail.indexOf('class="task-actions"', detail.indexOf('class="task-list"'))
+    )
+
+    expect(combinedSource).toContain('/static/icons/page/calendar/target.png')
+    expect(combinedSource).toContain('/static/icons/page/calendar/calendar.png')
+    expect(combinedSource).toContain('/static/icons/page/calendar/week.png')
+    expect(combinedSource).toContain('/static/icons/page/calendar/adjust.png')
+    expect(combinedSource).toContain('/static/icons/page/calendar/sparkle.png')
+    expect(combinedSource).toContain('/static/icons/page/calendar/clock.png')
+    expect(combinedSource).toContain('/static/icons/page/calendar/priority.png')
+    expect(combinedSource).not.toContain('calendarIconPaths')
+    expect(combinedSource).not.toContain(':src="')
+    expect(combinedSource).toContain('getTaskTitle(task)')
+    expect(combinedSource).toContain('getTaskMinimumLine(task)')
+    expect(combinedSource).toContain('getTaskMinutes(task)')
+    expect(combinedSource).toContain('getTaskPriorityLabel(task)')
+    expect(compactTaskMarkup).toContain('class="meta-dot"')
+    expect(detailTaskMarkup).toContain('class="meta-dot"')
+    expect(compactTaskMarkup).not.toContain('<image')
+    expect(detailTaskMarkup).not.toContain('<image')
   })
 })

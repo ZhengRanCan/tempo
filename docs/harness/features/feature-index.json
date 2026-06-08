@@ -173,5 +173,12 @@
     "status": "passing",
     "feature_folder": "docs/harness/features/individual_feature/F25-today-page-redesign",
     "version": "v0.3"
+  },
+  {
+    "id": "F26",
+    "title": "v0.3 任务日历页重设计",
+    "status": "passing",
+    "feature_folder": "docs/harness/features/individual_feature/F26-calendar-page-redesign",
+    "version": "v0.3"
   }
 ]

@@ -1,5 +1,40 @@
 # progress.md
 
+## F26 passing 2026-06-08
+
+- `F26` 任务日历页重设计已完成并置为 `passing`。
+- 用户人工视觉确认原文：`ok，就当F26完成了吧。` 该确认满足 F26 `verification.md` 对参考图人工视觉对照的硬门禁。
+- 本轮只修改日历页 UI 结构、日历页局部样式、必要的日历页相关测试和进度记录。
+- 目标：把默认状态改成目标计划板首屏，突出当前目标、整体进度 / 时间压力、未来 7 天概览；点击日期后明确切换到单日任务查看。
+- 图标使用 `static/icons/page/calendar/` 下的正式 PNG 资源，避免小程序运行时动态 `:src` 对象绑定导致本地图片路径错误。
+- 不修改 models、services、storage key、planner、replanner、AI/tarot 业务逻辑；不修改今日、创建目标、我的页页面结构。
+- F26 参考图对照是硬门禁：实现和自动化验证完成后，需要用户在微信开发者工具中人工确认参考图对照，确认前不能置为 `passing`。
+- 当前实现已改动 `pages/plan-calendar/index.vue` 和 `tests/plan-calendar.test.ts`：默认界面拆成当前目标计划卡、整体进度卡、未来 7 天计划概览、选中日期任务摘要和调整计划入口；点击日期后进入日期详情状态，突出日期、预计用时、任务数量、当日建议、任务列表、添加临时任务入口、AI 计划建议和调整计划入口。
+- 相对 F24 的可见变化：日历页不再是普通任务卡长列表，首屏重心转为目标计划板；日期卡横向展示近 7 天并用 CSS dot/chip/border 区分有任务、已完成、缓冲日、无任务和延期风险；日期详情页明显弱化整体概览并展开单日任务。
+- 图标接入验证：日历页源码使用 `src="/static/icons/page/calendar/*.png"` 静态路径，未使用 `:src` 或 `calendarIconPaths`；`dist/dev/mp-weixin/common/assets.js` 中存在 calendar 图标字符串常量。
+- 构建入口确认：`project.config.json.miniprogramRoot` 指向 `dist/dev/mp-weixin/`；已刷新 `dist/dev/mp-weixin/pages/plan-calendar/index.wxml` 和 `index.wxss`，时间戳为 `2026-06-08 15:15:23`；`dist/build/mp-weixin/pages/plan-calendar/index.wxml` 和 `index.wxss` 由 `verify:system` 刷新，时间戳为 `2026-06-08 15:14:37`。
+- 自动化验证通过：`npm.cmd run test -- plan-calendar ui-components data-layer navigation-shell`、`npm.cmd run verify:static`、`npm.cmd run verify:system`、`npm.cmd run verify:harness`。
+- 已确认没有残留 `uni-run.mjs` / `dev:mp-weixin` watcher 进程。
+- 当前 knownUnverified：无。F26 参考图人工对照已由用户确认，状态可置为 `passing`。
+- 视觉返工记录：用户指出当前页面与参考图仍有差距，主要是文本换行导致页面臃肿、未来 7 天概览没有补齐无任务日期、点击日期后的详情不应在内容区放“返回概览”按钮。
+- 已按反馈返工：`pages/plan-calendar/index.vue` 改为只负责概览页；新增页面局部 helper `pages/plan-calendar/calendar-helpers.ts`，从今天开始补齐连续 7 天，缺任务日期显示为无任务 / 休息日；新增 `pages/plan-calendar/detail.vue` 作为日期详情页，点击日期后通过 `uni.navigateTo` 进入二级页，由小程序原生顶部导航提供返回。
+- 本轮边界扩展说明：用户明确允许为了实现顶部原生返回而新建页面，因此仅在 `pages.json` 注册非 TabBar 页面 `pages/plan-calendar/detail`；未修改 TabBar list、底部导航顺序或其他 Tab 页面结构。
+- 单行文本处理：概览页和详情页中的目标标题、日期卡、指标、任务标题、最低完成线、建议和操作入口均设置为单行省略，避免文字分成两行造成卡片高度膨胀。
+- 返工后验证通过：`npm.cmd run test -- plan-calendar ui-components data-layer navigation-shell`、`npm.cmd run verify:static`、`npm.cmd run verify:system`、`npm.cmd run verify:harness`。
+- 返工后构建入口确认：`dist/dev/mp-weixin/pages/plan-calendar/index.*` 与 `detail.*` 已刷新到 `2026-06-08 20:49:17`；`dist/build/mp-weixin/pages/plan-calendar/index.wxml` 与 `detail.wxml` 已刷新到 `2026-06-08 20:48:42`；`dist/dev/mp-weixin/app.json` 与 `dist/build/mp-weixin/app.json` 均包含 `pages/plan-calendar/detail`，TabBar 仍指向 `pages/plan-calendar/index`。
+- 未来 7 天概览细化：用户指出该组件本身可以横向滑动，因此日期卡内文字不应为了卡宽被省略；同时今天的日期必须默认可见。
+- 已将未来 7 天容器改为小程序原生 `scroll-view scroll-x`，日期卡加宽到适合展示完整日期 / 状态 / 分钟数，日期卡内的星期、日期、状态、任务数和分钟数不再走 `text-overflow: ellipsis`；今天作为连续 7 天列表第一项，并通过 `scroll-into-view="todayDayId"` 绑定 `calendar-day-<today>` 作为默认可见兜底。
+- 本轮细化后验证通过：`npm.cmd run test -- plan-calendar ui-components data-layer navigation-shell`、`npm.cmd run verify:static`、`npm.cmd run verify:system`、`npm.cmd run verify:harness`。
+- 本轮细化后构建入口确认：`dist/dev/mp-weixin/pages/plan-calendar/index.wxml` 和 `index.wxss` 已刷新到 `2026-06-08 21:02:02`；`dist/build/mp-weixin/pages/plan-calendar/index.wxml` 已刷新到 `2026-06-08 21:01:31`；产物中已包含 `scroll-view`、`scroll-into-view` 和 `calendar-day-*` 日期卡 id。
+- 运行时图片错误修复：用户在添加任务后报告微信渲染层请求 `/pages/plan-calendar/false` 和 `/pages/plan-calendar/e9_fd`，并伴随任务卡标题 / 最低完成线空白。定位为任务循环内的静态 `<image>` 在 mp-weixin 编译后被提升为短变量，运行时可能与循环字段串位。
+- 已移除概览页任务预览和日期详情页任务列表循环内的 `<image>` 节点，改用 CSS `meta-dot` 和文本分隔符展示分钟数 / 优先级；正式 `clock.png` 和 `priority.png` 仅保留在循环外静态资源位置。
+- 新增 `pages/plan-calendar/calendar-helpers.ts` 任务展示兜底：标题、最低完成线、分钟数和优先级统一走 helper，异常或存量不完整字段会降级为可读文本，不再渲染空白任务卡。
+- 本轮图片错误修复验证通过：`npm.cmd run test -- plan-calendar ui-components data-layer navigation-shell`、`npm.cmd run verify:static`、`npm.cmd run verify:system`、`npm.cmd run verify:harness`。
+- 本轮图片错误修复后已刷新 `dist/dev/mp-weixin/pages/plan-calendar/index.*` 与 `detail.*` 到 `2026-06-08 21:15:43`；产物中任务循环只包含 `meta-dot` 文本节点，不再包含循环内 image `src` 短变量；已确认没有残留 `uni-run.mjs` / `dev:mp-weixin` watcher 进程。
+- 远期阶段组件删除：用户指出“远期阶段”不是 F26 文档中需要的默认页面组件，并且当前渲染出大量空白阶段行。已删除 `pages/plan-calendar/index.vue` 中的 `stage-panel`、`stages` 计算属性和 `getStageStatusLabel` 页面引用；F26 文档同步改为“远期 Stage 属于后续扩展，不作为 F26 默认页面组件展示”。本轮仍未修改 models、services、storage key、planner、replanner 或 Stage 数据模型。
+- 本轮删除远期阶段组件后验证通过：`npm.cmd run test -- plan-calendar ui-components data-layer navigation-shell`、`npm.cmd run verify:static`、`npm.cmd run verify:system`、`npm.cmd run verify:harness`。已刷新 `dist/dev/mp-weixin/pages/plan-calendar/index.*` 到 `2026-06-08 21:46:17`，并确认 dev/build 产物中不再包含 `stage-panel`、`stage-row` 或“远期阶段”。
+- 当前 `active` feature：无。状态：F20-F26 均为 `passing`；F27-F29 保持 `not_started`。
+
 ## F25 passing 2026-06-06
 
 - `F25` 今日任务页重设计已完成并置为 `passing`。
