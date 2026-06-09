@@ -248,8 +248,11 @@ describe('goal create', () => {
   it('keeps the create page as step cards that trigger plan generation without task views', () => {
     const source = readProjectFile('pages/goal-create/index.vue')
 
+    expect(source).toContain('create-hero')
     expect(source).toContain('step-card')
+    expect(source).toContain('core-step')
     expect(source).toContain('preference-step')
+    expect(source).toContain('isPreferenceOpen')
     expect(source).toContain('ritualOptions')
     expect(source).toContain('ritualPreference')
     expect(source).toContain('EnergySelector')
@@ -260,5 +263,51 @@ describe('goal create', () => {
     expect(source).not.toContain('TodayFocusCard')
     expect(source).not.toContain('buildPlanBundleCalendarView')
     expect(source).not.toContain("/pages/today/index")
+  })
+
+  it('keeps the F27 reference-image-first create flow and runtime-safe CSS marks', () => {
+    const source = readProjectFile('pages/goal-create/index.vue')
+    const heroIndex = source.indexOf('先设定一个目标')
+    const titleStepIndex = source.indexOf('你想完成什么？')
+    const deadlineStepIndex = source.indexOf('什么时候完成？')
+    const timeStepIndex = source.indexOf('每天大概能投入多久？')
+    const noteIndex = source.indexOf('补充说明')
+    const preferenceIndex = source.indexOf('个性化安排偏好')
+    const submitIndex = source.indexOf('生成计划')
+
+    expect(heroIndex).toBeGreaterThan(-1)
+    expect(heroIndex).toBeLessThan(titleStepIndex)
+    expect(titleStepIndex).toBeLessThan(deadlineStepIndex)
+    expect(deadlineStepIndex).toBeLessThan(timeStepIndex)
+    expect(timeStepIndex).toBeLessThan(noteIndex)
+    expect(noteIndex).toBeLessThan(preferenceIndex)
+    expect(preferenceIndex).toBeLessThan(submitIndex)
+    expect(source).toContain('const timeOptions = [15, 30, 45, 60]')
+    expect(source).toContain("dailyAvailableMinutes: '30'")
+    expect(source).toContain('自定义分钟数')
+    expect(source).not.toContain('90 分钟')
+
+    for (const marker of [
+      'hero-mark',
+      'field-mark-calendar',
+      'heading-mark-clock',
+      'field-mark-edit',
+      'section-mark-note',
+      'section-mark-preference',
+      'safe-mark'
+    ]) {
+      expect(source).toContain(marker)
+    }
+
+    expect(source).not.toContain('<image')
+    expect(source).not.toContain('createIconPaths')
+    expect(source).not.toContain('src="/static/icons/page/create/')
+    expect(source).not.toContain('url("/static/icons/page/create/')
+    expect(source).not.toContain('background-image: url(')
+    expect(source).not.toContain('create-icon')
+    expect(source).not.toContain(':src="')
+    expect(source).not.toContain('mode="aspectFit"')
+    expect(source).toContain('塔罗、MBTI、每日关键词只影响提醒文案，不作为任务安排依据。')
+    expect(source).toContain('生成后可随时调整')
   })
 })

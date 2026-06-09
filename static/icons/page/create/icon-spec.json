@@ -1,0 +1,81 @@
+{
+  "scope": "page/create",
+  "directory": "static/icons/page/create",
+  "format": "png",
+  "background": "transparent",
+  "canvasPx": {
+    "width": 64,
+    "height": 64
+  },
+  "glyphTargetPx": 48,
+  "runtimeTargetPx": {
+    "min": 14,
+    "max": 22
+  },
+  "palette": {
+    "primaryAccent": "#6B5BEA",
+    "neutral": "#77716A",
+    "muted": "#B8B0A6"
+  },
+  "icons": [
+    {
+      "source": "sparkle.svg",
+      "name": "sparkle.png",
+      "semantic": "top lightweight guide",
+      "paletteRef": "primaryAccent"
+    },
+    {
+      "source": "calendar.svg",
+      "name": "calendar.png",
+      "semantic": "deadline input",
+      "paletteRef": "neutral"
+    },
+    {
+      "source": "clock.svg",
+      "name": "clock.png",
+      "semantic": "daily available time input",
+      "paletteRef": "neutral"
+    },
+    {
+      "source": "编辑.svg",
+      "name": "edit.png",
+      "semantic": "custom minutes edit entry",
+      "paletteRef": "neutral"
+    },
+    {
+      "source": "补充说明.svg",
+      "name": "note.png",
+      "semantic": "optional note input",
+      "paletteRef": "neutral"
+    },
+    {
+      "source": "preference.svg",
+      "name": "preference.png",
+      "semantic": "personalized arrangement preferences",
+      "paletteRef": "primaryAccent"
+    },
+    {
+      "source": "lock.svg",
+      "name": "lock.png",
+      "semantic": "bottom safety note",
+      "paletteRef": "muted"
+    }
+  ],
+  "cssOwnedStates": [
+    "step number badges",
+    "selected chip state",
+    "default chip state",
+    "disabled chip state",
+    "input border and focus state",
+    "primary button gradient",
+    "card border and shadow",
+    "required or optional label"
+  ],
+  "styleRules": [
+    "Use one icon family for all create-goal page icons.",
+    "Use icons as scanning anchors, not decorative clutter.",
+    "Do not use emoji, multi-color, gradient, or illustration-style icons as final assets.",
+    "Use CSS for step numbers, selected states, disabled states, card borders, and button gradients.",
+    "Agent-created placeholders cannot be treated as final passing evidence without user confirmation."
+  ]
+}

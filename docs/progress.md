@@ -1,5 +1,62 @@
 # progress.md
 
+## F27 passing 2026-06-09
+
+- `F27` 创建目标页重设计已完成并置为 `passing`。
+- 用户人工视觉确认原文：`勉强还可以，标记完成吧。` 该确认满足 F27 `verification.md` 对参考图人工视觉对照的硬门禁。
+- 本轮只修改创建目标页 UI 结构、创建页局部样式、F27 相关图标接入、F27 相关测试和验证记录。
+- 参考图 `docs/design/page/reference_image/创建目标.jpeg` 是主要视觉约束；页面需要从旧表单转为目标创建流程：轻量引导、前三个核心步骤卡、补充说明、默认展开的偏好区域、强主按钮和底部安全提示。
+- 不修改 models、services、storage key、planner、replanner、AI/tarot 业务逻辑；不修改今日页、任务日历页、我的页结构；不修改 TabBar 路由配置。
+- F27 `passing` 需要自动化命令通过，并记录当前构建入口、参考图对照结果、截图或用户人工视觉确认。
+- 当前实现已完成创建页参考图对齐：首屏使用“先设定一个目标”轻量引导；前三个核心步骤依次为“你想完成什么？”、“什么时候完成？”、“每天大概能投入多久？”；时间选项改为 `15/30/45/60`，默认选中 `30`，自定义分钟数独立输入；补充说明和偏好区域视觉层级低于核心步骤；底部保留强主按钮和“生成后可随时调整”安全提示。
+- 创建页正式 PNG 图标已通过静态路径接入：`sparkle.png`、`calendar.png`、`clock.png`、`edit.png`、`note.png`、`preference.png`、`lock.png`；源码不使用 `:src` 或运行时 icon object。
+- 参考图对照结果：信息顺序、步骤卡结构、卡片密度、选中 chip、默认展开偏好区和主按钮层级已明显接近 `docs/design/page/reference_image/创建目标.jpeg`；当前结果不再像旧纵向设置表单。差异：计划强度未新增为可保存字段，因为 F27 明确不允许修改 models/services/planner，偏好区继续使用现有 UserProfile 字段。
+- 自动化验证通过：`npm.cmd run test -- goal-create user-profile ui-components data-layer navigation-shell`、`npm.cmd run verify:static`、`npm.cmd run verify:system`、`npm.cmd run verify:harness`。
+- 构建入口确认：`project.config.json.miniprogramRoot` 指向 `dist/dev/mp-weixin/`；`dist/dev/mp-weixin/pages/goal-create/index.*` 已刷新到 `2026-06-09 09:20:33`；`dist/build/mp-weixin/pages/goal-create/index.*` 已刷新到 `2026-06-09 09:19:56`；dev/build `common/assets.js` 均包含 `/static/icons/page/create/*.png` 字符串常量。
+- `npm.cmd run dev:mp-weixin` 用于刷新 dev 产物后进入 watch 状态并由工具超时终止；已确认并结束本次残留的 `npm run dev:mp-weixin`、`scripts/uni-run.mjs -p mp-weixin` 和 `vite-plugin-uni ... -p mp-weixin` 进程，未结束微信开发者工具自身进程。
+- 运行时图片错误修复：用户报告微信渲染层请求 `/pages/goal-create/2026-06-09`、`/pages/goal-create/[object Object],[object Object],[object Object]` 和 `/pages/goal-create/1`。定位为创建页 `<image src>` 在 mp-weixin 编译后被提升为短变量，热更新或运行时数据串位后会把日期、选项数组或布尔值当作图片路径。
+- 第一轮运行时图片错误修复曾将 `pages/goal-create/index.vue` 中的 `<image>` 节点改为 `view.create-icon-*` + CSS `background-image: url("/static/icons/page/create/*.png")`。后续用户反馈证明 CSS `url(...)` 仍可能在 mp-weixin 热更新 / 短变量映射中污染输入框和按钮文本，该方案已被二次修复取代。
+- 新增/更新 F27 回归测试：创建页源码不得包含 `<image`、`src="/static/icons/page/create/`、`:src="` 或 `mode="aspectFit"`；二次修复后源码还不得包含 `url("/static/icons/page/create/`、`background-image: url(` 或 `create-icon`。
+- 图片错误修复后验证通过：`npm.cmd run test -- goal-create user-profile ui-components data-layer navigation-shell`、`npm.cmd run verify:static`、`npm.cmd run verify:system`、`npm.cmd run verify:harness`。
+- 图片错误修复后构建入口确认：`dist/dev/mp-weixin/pages/goal-create/index.*` 已刷新到 `2026-06-09 09:32:39`；`dist/build/mp-weixin/pages/goal-create/index.*` 已刷新到 `2026-06-09 09:32:21`；dev/build 的 `goal-create/index.wxml` 不再包含 `<image>`、`src="{{...}}"` 或 `/pages/goal-create/`，`goal-create/index.wxss` 中图标为 `data:image/png;base64,...`。
+- 二次运行时资源串位修复：用户反馈目标名称输入框出现 `/static/icons/page/create/sparkle.png`，自定义分钟数区域出现 `/static/icons/page/create/edit.png`，主按钮出现 `[object Object],[object Object],[object Object]`。定位为创建页运行时资源引用仍可能与表单 / 按钮绑定串位。
+- 已将创建页所有图标锚点改为纯 CSS 形状：`hero-mark`、`field-mark-calendar`、`heading-mark-clock`、`field-mark-edit`、`section-mark-note`、`section-mark-preference`、`safe-mark`。`pages/goal-create/index.vue` 当前不再引用 `static/icons/page/create/`，也不再包含 `<image>`、`:src`、`background-image: url(` 或 `create-icon`。
+- 正式 PNG 资源仍保留在 `static/icons/page/create/` 作为资源准备结果，但当前创建页运行时代码不再直接引用这些 PNG，以避免 mp-weixin 资源编译 / 热更新串位再次把路径或对象渲染进输入框。
+- 二次修复后验证通过：`npm.cmd run test -- goal-create user-profile ui-components data-layer navigation-shell`、`npm.cmd run verify:static`、`npm.cmd run verify:system`、`npm.cmd run verify:harness`。
+- F27 标记完成前最终验证通过：`npm.cmd run test -- goal-create user-profile ui-components data-layer navigation-shell`、`npm.cmd run verify:static`、`npm.cmd run verify:system`、`npm.cmd run verify:harness`。
+- 二次修复后构建入口确认：`project.config.json.miniprogramRoot` 指向 `dist/dev/mp-weixin/`；`dist/dev/mp-weixin/pages/goal-create/index.*` 已刷新到 `2026-06-09 10:43:17`；`dist/build/mp-weixin/pages/goal-create/index.*` 已刷新到 `2026-06-09 10:42:56`。
+- 二次修复后产物检查：dev/build 的 `goal-create/index.wxml`、`index.js`、`index.wxss` 均未检出 `<image`、`src="{{`、`/static/icons/page/create`、`common_assets`、`data:image/png`、`background-image` 或 `[object Object]`；dev/build 的 `common/assets.js` 也未检出 `/static/icons/page/create`。已结束本次残留的 `npm run dev:mp-weixin` 和 `vite-plugin-uni ... -p mp-weixin` Node watcher。
+- 当前 knownUnverified：无。F27 参考图人工对照已由用户确认，状态可置为 `passing`。
+- 当前 `active` feature：无。状态：F20-F27 均为 `passing`。
+
+## F27 create lock icon restored 2026-06-09
+
+- F27 remains `not_started`; this round only restores the forgotten `lock.svg` create-goal page icon and cleans related resource docs. No page code or business logic was changed.
+- Rewrote `static/icons/page/create/icon-spec.json` and `static/icons/page/create/README.md` with clean UTF-8 content after detecting mojibake in the Chinese source SVG names.
+- Rewrote F27 `feature.md` with clean UTF-8 content and restored the icon contract entry `lock.svg` -> `lock.png`.
+- Final create-page PNG outputs are now `sparkle.png`, `calendar.png`, `clock.png`, `edit.png`, `note.png`, `preference.png`, and `lock.png`.
+- Verified: `python tools/icon-export/export_icons.py validate --group page/create`, `python tools/icon-export/export_icons.py export --group page/create --dry-run`, and real export with GTK/Cairo runtime on PATH all passed.
+
+## F27 create icon resources normalized 2026-06-09
+
+- F27 remains `not_started`; this round only normalizes create-goal page icon resources and docs. No page code, business logic, models, services, storage, planner, replanner, AI/tarot, or TabBar config was changed.
+- Updated `static/icons/page/create/icon-spec.json` to match the actual source SVG files now present in `tools/icon-export/source/page/create/`.
+- Source SVG filenames can keep provider-exported names, including Chinese filenames; output PNG names are normalized to stable ASCII paths for page code.
+- Final create-page PNG outputs are `sparkle.png`, `calendar.png`, `clock.png`, `edit.png`, `note.png`, and `preference.png`.
+- Mapping: `编辑.svg` -> `edit.png`; `补充说明.svg` -> `note.png`; `clock.svg` was added for daily available time; the earlier planned `lock.svg` was removed from the required list and the bottom safety note should use CSS/text unless a later feature explicitly needs a dedicated icon.
+- Updated `static/icons/page/create/README.md` and F27 `feature.md` icon resource section to reflect the normalized mapping.
+- Verified: `python tools/icon-export/export_icons.py validate --group page/create`, `python tools/icon-export/export_icons.py export --group page/create --dry-run`, and real export with GTK/Cairo runtime on PATH all passed.
+
+## F27 reference-image-first setup 2026-06-09
+
+- F27 remains `not_started`; this round only prepares the feature contract, verification rule, and create-goal page icon resource specification. No mini-program page code or business logic was changed.
+- Reworked `docs/harness/features/individual_feature/F27-create-goal-page-redesign/feature.md` into a reference-image-first contract. F27 now intentionally uses fewer written design details than F25/F26 and treats `docs/design/page/reference_image/创建目标.jpeg` as the main visual source.
+- Reworked `docs/harness/features/individual_feature/F27-create-goal-page-redesign/verification.md` to require reference-image comparison evidence, build entry confirmation, and manual visual confirmation or screenshot evidence before passing.
+- Added create-goal icon resource docs: `static/icons/page/create/README.md` and `static/icons/page/create/icon-spec.json`.
+- Prepared source directory `tools/icon-export/source/page/create/`. Required SVGs are not present yet: `sparkle.svg`, `calendar.svg`, `edit.svg`, `preference.svg`, and `lock.svg`.
+- Icon scope decision: step number badges, selected/default/disabled states, input borders, primary button gradient, card hierarchy, and required/optional labels should use CSS rather than separate SVG assets.
+- Verified: `static/icons/page/create/icon-spec.json` parses as JSON and `npm.cmd run verify:harness` passes with 29 features, 26 passing, 3 not_started, 0 warnings, and 0 errors.
+
 ## F26 passing 2026-06-08
 
 - `F26` 任务日历页重设计已完成并置为 `passing`。
