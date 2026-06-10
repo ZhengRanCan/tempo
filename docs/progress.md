@@ -1,5 +1,24 @@
 # progress.md
 
+## F28 passing 2026-06-10
+
+- `F28` 我的页重设计已完成并置为 `passing`。
+- 用户人工视觉确认原文：`还算可以，标记完成`。该确认满足 F28 `verification.md` 对参考图 / 组件排布人工视觉对照的硬门禁。
+- 本轮只修改我的页 UI 结构、我的页局部样式和局部 helper、F28 相关测试、F28 图标资源接入与验证记录。
+- 主要实现依据：`docs/design/page/reference_image/我的.png` 和 `docs/harness/features/individual_feature/F28-profile-page-redesign/details/component-layout.md`。
+- 当前实现把我的页从旧的入口集合页改成“目标与偏好管理页”：问候条、当前目标 / 无目标卡、默认安排偏好、AI 表达与仪式感偏好、最近推进、底部管理列表。
+- 参考图 / 组件排布对照结果：首屏信息顺序、卡片密度、轻量问候条、当前目标优先级、偏好分组、最近推进摘要和底部管理入口已与 F28 组件排布要求对齐；页面不再是旧的大入口集合页。
+- 有目标状态下，当前目标卡是第一个业务卡；无目标状态下，创建目标入口是第一个业务动作。
+- 默认安排偏好与 AI 表达 / 仪式感偏好已拆成两个不同区域；MBTI、塔罗和每日关键词只作为表达风格 / 仪式感偏好展示，不作为任务决策依据。
+- 最近推进只作为紧凑状态摘要，不抢占当前目标卡主视觉；底部管理入口不重复今日、日历、创建这些 TabBar 已有入口。
+- F28 profile PNG 图标已通过静态路径接入，源码不使用运行时 icon object 或 `:src` 图标绑定；编译后的 `dist/dev/mp-weixin/common/assets.js` 将 profile 图标短变量映射为普通 `/static/icons/page/profile/*.png` 字符串，未发现 `[object Object]` 或 `false` 图片路径。
+- 数据缺口按 F28 边界保持 UI-only fallback：计划强度显示 `均衡`；最近专注时间按完成任务数乘以偏好专注分钟数估算；连续推进天数是保守本地摘要，未新增持久化字段。
+- 自动化验证通过：`npm.cmd run test -- user-profile ui-components navigation-shell data-layer`、`npm.cmd run verify:static`、`npm.cmd run verify:system`、`npm.cmd run verify:harness`。
+- 构建入口确认：`project.config.json.miniprogramRoot` 指向 `dist/dev/mp-weixin/`；`dist/dev/mp-weixin/pages/profile/index.*` 已刷新到当前实现；`dist/build/mp-weixin/pages/profile/index.*` 已由 `verify:system` 刷新；`dist/dev/mp-weixin/static/icons/page/profile/` 包含导出的 profile PNG。
+- 边界确认：未修改 models、services、storage key、planner、replanner、AI/tarot 业务逻辑；未修改 TabBar 路由配置；未修改今日页、任务日历页、创建目标页结构。
+- 当前 knownUnverified：无。F28 参考图 / 组件排布人工对照已由用户确认，状态可置为 `passing`。
+- 当前 `active` feature：无。状态：F20-F28 均为 `passing`。
+
 ## F27 passing 2026-06-09
 
 - `F27` 创建目标页重设计已完成并置为 `passing`。

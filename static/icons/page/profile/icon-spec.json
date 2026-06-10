@@ -1,0 +1,157 @@
+{
+  "scope": "page/profile",
+  "directory": "static/icons/page/profile",
+  "format": "png",
+  "background": "transparent",
+  "canvasPx": {
+    "width": 64,
+    "height": 64
+  },
+  "glyphTargetPx": 48,
+  "runtimeTargetPx": {
+    "min": 14,
+    "max": 24
+  },
+  "palette": {
+    "primaryAccent": "#6B5BEA",
+    "warmAccent": "#F47A3D",
+    "greenAccent": "#4BAE69",
+    "neutral": "#77716A",
+    "muted": "#B8B0A6"
+  },
+  "icons": [
+    {
+      "source": "grass.svg",
+      "name": "grass.png",
+      "semantic": "avatar greeting strip",
+      "paletteRef": "greenAccent"
+    },
+    {
+      "source": "goal.svg",
+      "name": "goal.png",
+      "semantic": "current goal section marker",
+      "paletteRef": "primaryAccent"
+    },
+    {
+      "source": "goal-hero.svg",
+      "name": "goal-hero.png",
+      "semantic": "larger current goal card visual",
+      "paletteRef": "primaryAccent"
+    },
+    {
+      "source": "calendar.svg",
+      "name": "calendar.png",
+      "semantic": "deadline and remaining days",
+      "paletteRef": "neutral"
+    },
+    {
+      "source": "suggestion.svg",
+      "name": "suggestion.png",
+      "semantic": "default planning preference marker and bottom suggestion entry",
+      "paletteRef": "warmAccent"
+    },
+    {
+      "source": "clock.svg",
+      "name": "clock.png",
+      "semantic": "daily available time",
+      "paletteRef": "neutral"
+    },
+    {
+      "source": "sun.svg",
+      "name": "sun.png",
+      "semantic": "preferred working time",
+      "paletteRef": "warmAccent"
+    },
+    {
+      "source": "bar-chart.svg",
+      "name": "bar-chart.png",
+      "semantic": "plan intensity",
+      "paletteRef": "primaryAccent"
+    },
+    {
+      "source": "smile.svg",
+      "name": "smile.png",
+      "semantic": "energy state",
+      "paletteRef": "primaryAccent"
+    },
+    {
+      "source": "sparkle.svg",
+      "name": "sparkle.png",
+      "semantic": "AI expression and ritual section marker",
+      "paletteRef": "primaryAccent"
+    },
+    {
+      "source": "chat.svg",
+      "name": "chat.png",
+      "semantic": "suggestion style",
+      "paletteRef": "neutral"
+    },
+    {
+      "source": "star.svg",
+      "name": "star.png",
+      "semantic": "daily keyword",
+      "paletteRef": "warmAccent"
+    },
+    {
+      "source": "tarot.svg",
+      "name": "tarot.png",
+      "semantic": "tarot inspiration",
+      "paletteRef": "primaryAccent"
+    },
+    {
+      "source": "mbti.svg",
+      "name": "mbti.png",
+      "semantic": "MBTI expression preference",
+      "paletteRef": "greenAccent"
+    },
+    {
+      "source": "progress-chart.svg",
+      "name": "progress-chart.png",
+      "semantic": "recent progress section marker",
+      "paletteRef": "primaryAccent"
+    },
+    {
+      "source": "folder.svg",
+      "name": "folder.png",
+      "semantic": "goal management",
+      "paletteRef": "neutral"
+    },
+    {
+      "source": "document.svg",
+      "name": "document.png",
+      "semantic": "review records",
+      "paletteRef": "neutral"
+    },
+    {
+      "source": "setting.svg",
+      "name": "setting.png",
+      "semantic": "preference settings",
+      "paletteRef": "neutral"
+    },
+    {
+      "source": "preference.svg",
+      "name": "preference.png",
+      "semantic": "reserved preference marker; not required by F28 six-layer layout",
+      "paletteRef": "primaryAccent"
+    }
+  ],
+  "cssOwnedStates": [
+    "avatar placeholder",
+    "status chip",
+    "progress bar",
+    "preference tile selected state",
+    "preference tile default state",
+    "recent progress inner stat markers",
+    "right chevrons",
+    "card border and shadow",
+    "bottom TabBar icons"
+  ],
+  "styleRules": [
+    "Use one icon family for all profile page icons.",
+    "Use icons as scanning anchors, not decorative clutter.",
+    "Do not use emoji, multi-color, gradient, or illustration-style icons as final assets.",
+    "Use CSS for avatar placeholders, status chips, progress bars, selected states, chevrons, and recent-progress inner stat markers.",
+    "Bottom TabBar icons are handled by F29, not F28.",
+    "Agent-created placeholders cannot be treated as final passing evidence without user confirmation."
+  ]
+}

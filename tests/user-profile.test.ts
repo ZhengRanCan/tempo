@@ -121,19 +121,79 @@ describe('user profile preferences', () => {
   it('keeps the profile page focused on goal, preferences, expression, progress and settings', () => {
     const source = readProjectFile('pages/profile/index.vue')
 
+    expect(source).toContain('greeting-strip')
     expect(source).toContain('goal-card')
+    expect(source).toContain('no-goal-card')
     expect(source).toContain('schedule-card')
     expect(source).toContain('expression-card')
     expect(source).toContain('recent-card')
+    expect(source).toContain('settings-card')
     expect(source).toContain('settings-list')
     expect(source).toContain('goPlanCalendar')
+    expect(source).toContain('goCreateGoal')
     expect(source).toContain('manageGoal')
     expect(source).toContain('ritualText')
     expect(source).toContain('mbtiText')
+    expect(source).toContain('planIntensityText')
+    expect(source).toContain('streakDaysText')
     expect(source).not.toContain("/pages/today/index")
     expect(source).not.toContain('TodayFocusCard')
     expect(source).not.toContain('TaskCard')
     expect(source).not.toContain('任务日历')
     expect(source).not.toContain('今日任务')
+  })
+
+  it('keeps the F28 profile reference layout order and static profile icons', () => {
+    const source = readProjectFile('pages/profile/index.vue')
+    const greetingIndex = source.indexOf('greeting-strip')
+    const goalIndex = source.indexOf('goal-card')
+    const scheduleIndex = source.indexOf('schedule-card')
+    const expressionIndex = source.indexOf('expression-card')
+    const recentIndex = source.indexOf('recent-card')
+    const settingsIndex = source.indexOf('settings-card')
+
+    expect(greetingIndex).toBeGreaterThan(-1)
+    expect(greetingIndex).toBeLessThan(goalIndex)
+    expect(goalIndex).toBeLessThan(scheduleIndex)
+    expect(scheduleIndex).toBeLessThan(expressionIndex)
+    expect(expressionIndex).toBeLessThan(recentIndex)
+    expect(recentIndex).toBeLessThan(settingsIndex)
+    expect(source).toContain('嗨，今天也要好好推进目标哦')
+    expect(source).toContain('当前目标')
+    expect(source).toContain('默认安排偏好')
+    expect(source).toContain('AI 表达与仪式感偏好')
+    expect(source).toContain('最近推进')
+    expect(source).toContain('目标管理')
+    expect(source).toContain('复盘记录')
+    expect(source).toContain('偏好设置')
+    expect(source).toContain('关于与反馈')
+    expect(source).toContain('以上内容仅用于表达风格和仪式感，不作为科学预测依据。')
+
+    for (const icon of [
+      'grass.png',
+      'goal.png',
+      'goal-hero.png',
+      'calendar.png',
+      'suggestion.png',
+      'clock.png',
+      'sun.png',
+      'bar-chart.png',
+      'smile.png',
+      'sparkle.png',
+      'chat.png',
+      'star.png',
+      'tarot.png',
+      'mbti.png',
+      'progress-chart.png',
+      'folder.png',
+      'document.png',
+      'setting.png'
+    ]) {
+      expect(source).toContain(`src="/static/icons/page/profile/${icon}"`)
+    }
+
+    expect(source).not.toContain('profileIconPaths')
+    expect(source).not.toContain(':src="')
+    expect(source).not.toContain('src="/static/icons/tab/')
   })
 })

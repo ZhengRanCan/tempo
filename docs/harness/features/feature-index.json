@@ -187,5 +187,12 @@
     "status": "passing",
     "feature_folder": "docs/harness/features/individual_feature/F27-create-goal-page-redesign",
     "version": "v0.3"
+  },
+  {
+    "id": "F28",
+    "title": "v0.3 我的页重设计",
+    "status": "passing",
+    "feature_folder": "docs/harness/features/individual_feature/F28-profile-page-redesign",
+    "version": "v0.3"
   }
 ]
