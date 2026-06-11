@@ -51,19 +51,27 @@
     "list": [
       {
         "pagePath": "pages/today/index",
-        "text": "今日"
+        "text": "今日",
+        "iconPath": "static/icons/tab/today.png",
+        "selectedIconPath": "static/icons/tab/today-active.png"
       },
       {
         "pagePath": "pages/plan-calendar/index",
-        "text": "日历"
+        "text": "日历",
+        "iconPath": "static/icons/tab/calendar.png",
+        "selectedIconPath": "static/icons/tab/calendar-active.png"
       },
       {
         "pagePath": "pages/goal-create/index",
-        "text": "创建"
+        "text": "创建",
+        "iconPath": "static/icons/tab/create.png",
+        "selectedIconPath": "static/icons/tab/create-active.png"
       },
       {
         "pagePath": "pages/profile/index",
-        "text": "我的"
+        "text": "我的",
+        "iconPath": "static/icons/tab/profile.png",
+        "selectedIconPath": "static/icons/tab/profile-active.png"
       }
     ]
   }

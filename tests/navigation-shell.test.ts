@@ -19,6 +19,8 @@ interface PagesJson {
     list?: Array<{
       pagePath: string
       text: string
+      iconPath?: string
+      selectedIconPath?: string
     }>
   }
 }
@@ -32,6 +34,32 @@ interface PackageJson {
 }
 
 const rootDir = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+const expectedTabEntries = [
+  {
+    pagePath: 'pages/today/index',
+    text: '\u4eca\u65e5',
+    iconPath: 'static/icons/tab/today.png',
+    selectedIconPath: 'static/icons/tab/today-active.png'
+  },
+  {
+    pagePath: 'pages/plan-calendar/index',
+    text: '\u65e5\u5386',
+    iconPath: 'static/icons/tab/calendar.png',
+    selectedIconPath: 'static/icons/tab/calendar-active.png'
+  },
+  {
+    pagePath: 'pages/goal-create/index',
+    text: '\u521b\u5efa',
+    iconPath: 'static/icons/tab/create.png',
+    selectedIconPath: 'static/icons/tab/create-active.png'
+  },
+  {
+    pagePath: 'pages/profile/index',
+    text: '\u6211\u7684',
+    iconPath: 'static/icons/tab/profile.png',
+    selectedIconPath: 'static/icons/tab/profile-active.png'
+  }
+]
 
 function readPagesJson(): PagesJson {
   return JSON.parse(readFileSync(resolve(rootDir, 'pages.json'), 'utf8')) as PagesJson
@@ -49,38 +77,40 @@ function readProjectFile(path: string): string {
   return readFileSync(resolve(rootDir, path), 'utf8')
 }
 
+function readPngSize(path: string): { width: number; height: number } {
+  const png = readFileSync(resolve(rootDir, path))
+
+  return {
+    width: png.readUInt32BE(16),
+    height: png.readUInt32BE(20)
+  }
+}
+
 describe('navigation shell', () => {
   it('uses today as the first mini-program entry and first bottom tab', () => {
     const pagesJson = readPagesJson()
 
     expect(pagesJson.pages[0]?.path).toBe('pages/today/index')
-    expect(pagesJson.tabBar?.list?.[0]).toEqual({
-      pagePath: 'pages/today/index',
-      text: '今日'
-    })
+    expect(pagesJson.tabBar?.list?.[0]).toEqual(expectedTabEntries[0])
   })
 
   it('provides the four required bottom tab entries in order', () => {
     const pagesJson = readPagesJson()
 
-    expect(pagesJson.tabBar?.list).toEqual([
-      {
-        pagePath: 'pages/today/index',
-        text: '今日'
-      },
-      {
-        pagePath: 'pages/plan-calendar/index',
-        text: '日历'
-      },
-      {
-        pagePath: 'pages/goal-create/index',
-        text: '创建'
-      },
-      {
-        pagePath: 'pages/profile/index',
-        text: '我的'
-      }
-    ])
+    expect(pagesJson.tabBar?.list).toEqual(expectedTabEntries)
+  })
+
+  it('wires the four bottom tab icons to existing static assets', () => {
+    const pagesJson = readPagesJson()
+
+    for (const tab of pagesJson.tabBar?.list ?? []) {
+      expect(tab.iconPath).toMatch(/^static\/icons\/tab\/.+\.png$/)
+      expect(tab.selectedIconPath).toMatch(/^static\/icons\/tab\/.+-active\.png$/)
+      expect(existsSync(resolve(rootDir, tab.iconPath ?? ''))).toBe(true)
+      expect(existsSync(resolve(rootDir, tab.selectedIconPath ?? ''))).toBe(true)
+      expect(readPngSize(tab.iconPath ?? '')).toEqual({ width: 81, height: 81 })
+      expect(readPngSize(tab.selectedIconPath ?? '')).toEqual({ width: 81, height: 81 })
+    }
   })
 
   it('aligns native chrome colors with the F24 page style baseline', () => {

@@ -663,7 +663,7 @@ function getDayId(date: string): string {
   overflow: visible;
   margin-top: 8rpx;
   color: ui.$ink;
-  font-size: 25rpx;
+  font-size: 26rpx;
   font-weight: 600;
   line-height: 1.3;
   white-space: nowrap;
@@ -702,7 +702,7 @@ function getDayId(date: string): string {
   display: block;
   overflow: visible;
   margin-top: 10rpx;
-  font-size: 21rpx;
+  font-size: 22rpx;
   white-space: nowrap;
 }
 
@@ -739,7 +739,7 @@ function getDayId(date: string): string {
   flex: 0 0 auto;
   padding-left: 18rpx;
   color: ui.$body;
-  font-size: 21rpx;
+  font-size: 22rpx;
   line-height: 1.4;
 }
 
@@ -833,7 +833,7 @@ function getDayId(date: string): string {
 .task-meta-row {
   flex-wrap: nowrap;
   color: ui.$muted;
-  font-size: 23rpx;
+  font-size: 24rpx;
   line-height: 1.4;
 }
 

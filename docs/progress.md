@@ -1,5 +1,18 @@
 # progress.md
 
+## F29 passing 2026-06-11
+
+- `F29` TabBar icon integration is now `passing`.
+- User manual visual confirmation recorded: `F29ok\u4e86\uff0cpassing\u8fc7`.
+- Implemented TabBar icon config in `pages.json` for Today, Calendar, Create, and Profile using `static/icons/tab/*.png` and `*-active.png`.
+- Confirmed all eight TabBar PNGs exist in `static/icons/tab/` and are 81x81 PNG files.
+- Added navigation tests for icon paths, asset existence, PNG dimensions, and unchanged tab order/routes.
+- Fixed the reported calendar font blur as a minimal out-of-scope visual defect: `pages/plan-calendar/index.vue` no longer uses odd `rpx` font sizes, avoiding half-pixel text rendering in mp-weixin.
+- Verified: `npm.cmd run test -- navigation-shell ui-components`, `npm.cmd run verify:static`, `npm.cmd run verify:system`, and `npm.cmd run verify:harness` all passed.
+- Build entry check: `dist/dev/mp-weixin/app.json` and `dist/build/mp-weixin/app.json` both contain the four TabBar `iconPath` / `selectedIconPath` pairs; `dist/dev/mp-weixin/pages/plan-calendar/index.wxss` contains the even `rpx` font sizes.
+- Boundary check: TabBar page order and routes were unchanged; no four-page body structure, models, services, storage keys, planner/replanner, AI, or tarot logic was changed.
+- Current active feature: none. Status: F20-F29 are `passing`.
+
 ## F28 passing 2026-06-10
 
 - `F28` 我的页重设计已完成并置为 `passing`。

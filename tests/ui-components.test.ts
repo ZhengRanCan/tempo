@@ -141,6 +141,15 @@ describe('core UI components', () => {
     }
   })
 
+  it('calendar page avoids odd rpx font sizes that render blurry in mp-weixin', () => {
+    const calendar = readProjectFile('pages/plan-calendar/index.vue')
+    const calendarDetail = readProjectFile('pages/plan-calendar/detail.vue')
+    const oddRpxFontSize = /font-size:\s*\d*[13579]rpx/g
+
+    expect(calendar.match(oddRpxFontSize)).toBeNull()
+    expect(calendarDetail.match(oddRpxFontSize)).toBeNull()
+  })
+
   it('F24 main tab pages and shared components use the unified style baseline', () => {
     const baseline = readProjectFile('styles/ui.scss')
     const app = readProjectFile('App.vue')

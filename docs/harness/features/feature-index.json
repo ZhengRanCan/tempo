@@ -194,5 +194,12 @@
     "status": "passing",
     "feature_folder": "docs/harness/features/individual_feature/F28-profile-page-redesign",
     "version": "v0.3"
+  },
+  {
+    "id": "F29",
+    "title": "v0.3 底部 TabBar 图标接入",
+    "status": "passing",
+    "feature_folder": "docs/harness/features/individual_feature/F29-tabbar-icons",
+    "version": "v0.3"
   }
 ]

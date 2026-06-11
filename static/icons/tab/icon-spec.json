@@ -1,0 +1,100 @@
+{
+  "scope": "tab",
+  "directory": "static/icons/tab",
+  "format": "png",
+  "background": "transparent",
+  "canvasPx": {
+    "width": 81,
+    "height": 81
+  },
+  "visualGlyphPx": {
+    "min": 54,
+    "max": 60
+  },
+  "glyphTargetPx": 60,
+  "runtimeTargetPx": {
+    "width": 27,
+    "height": 27
+  },
+  "palette": {
+    "default": "#8A8176",
+    "active": "#6B5BEA"
+  },
+  "stateVariantRule": {
+    "level": "should",
+    "rule": "Default and active states should differ by color only, not by shape.",
+    "exception": "If an active icon must change shape, record the reason and get user confirmation before treating it as final."
+  },
+  "naming": [
+    {
+      "tab": "today",
+      "default": "today.png",
+      "active": "today-active.png"
+    },
+    {
+      "tab": "calendar",
+      "default": "calendar.png",
+      "active": "calendar-active.png"
+    },
+    {
+      "tab": "create",
+      "default": "create.png",
+      "active": "create-active.png"
+    },
+    {
+      "tab": "profile",
+      "default": "profile.png",
+      "active": "profile-active.png"
+    }
+  ],
+  "icons": [
+    {
+      "source": "today.svg",
+      "name": "today.png",
+      "semantic": "tab today",
+      "variants": {
+        "default": "default",
+        "active": "active"
+      },
+      "activeSuffix": "-active"
+    },
+    {
+      "source": "calendar.svg",
+      "name": "calendar.png",
+      "semantic": "tab calendar",
+      "variants": {
+        "default": "default",
+        "active": "active"
+      },
+      "activeSuffix": "-active"
+    },
+    {
+      "source": "create.svg",
+      "name": "create.png",
+      "semantic": "tab create goal",
+      "variants": {
+        "default": "default",
+        "active": "active"
+      },
+      "activeSuffix": "-active"
+    },
+    {
+      "source": "profile.svg",
+      "name": "profile.png",
+      "semantic": "tab profile",
+      "variants": {
+        "default": "default",
+        "active": "active"
+      },
+      "activeSuffix": "-active"
+    }
+  ],
+  "styleRules": [
+    "Use one icon family for all tab icons.",
+    "Keep stroke width and visual weight consistent.",
+    "Use transparent PNG files.",
+    "Default and active states should differ by color only unless user-confirmed otherwise.",
+    "Do not use emoji, multi-color, gradient, or illustration-style icons as final assets.",
+    "Agent-created placeholders cannot be treated as final passing evidence without user confirmation."
+  ]
+}
