@@ -173,7 +173,6 @@ function goCreateGoal(): void {
   <view class="page">
     <AppPageHeader
       title="晚间复盘"
-      hint="记录今天推进到哪里，明天再继续"
     />
 
     <EmptyState

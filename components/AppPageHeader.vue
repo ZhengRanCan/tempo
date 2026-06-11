@@ -10,12 +10,6 @@ defineProps<{
     <view class="header-main">
       <slot name="action" />
     </view>
-    <text
-      v-if="hint"
-      class="hint"
-    >
-      {{ hint }}
-    </text>
   </view>
 </template>
 
@@ -33,11 +27,4 @@ defineProps<{
   gap: 16rpx;
 }
 
-.hint {
-  display: block;
-  max-width: 560rpx;
-  color: ui.$muted;
-  font-size: 24rpx;
-  line-height: 1.5;
-}
 </style>

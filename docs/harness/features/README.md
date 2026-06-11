@@ -1,5 +1,19 @@
 # Feature Registry
 
+新 feature 的 Markdown 编写模板见：
+
+```text
+docs/harness/features/feature-template.md
+```
+
+UI feature 的推荐写法见：
+
+```text
+docs/harness/features/ui-feature-workflow.md
+```
+
+后续页面级 UI 修改默认优先采用“参考图 + 分层组件说明 + 图标 manifest + 人工视觉确认”的方式。除非页面业务状态非常复杂，否则不要默认把完整页面设计规范复制进 feature 合同。
+
 ## 1. 作用
 
 本目录是当前 harness 驱动开发的 feature registry。

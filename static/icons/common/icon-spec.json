@@ -1,0 +1,39 @@
+{
+  "scope": "common",
+  "directory": "static/icons/common",
+  "format": "png",
+  "background": "transparent",
+  "canvasPx": {
+    "width": 64,
+    "height": 64
+  },
+  "visualGlyphPx": {
+    "min": 40,
+    "max": 48
+  },
+  "glyphTargetPx": 48,
+  "runtimeTargetPx": {
+    "min": 16,
+    "max": 24
+  },
+  "palette": {
+    "neutral": "#77716A",
+    "primary": "#6B5BEA",
+    "muted": "#B8B0A6",
+    "warning": "#D97706",
+    "error": "#DC2626"
+  },
+  "icons": [],
+  "namingRules": [
+    "Use semantic lowercase kebab-case names.",
+    "Use names such as chevron-right.png, info.png, close.png, check.png, warning.png, settings.png.",
+    "Only place icons here after they are reused by more than one page or component.",
+    "Keep page-specific icons under static/icons/page/<page-name>/."
+  ],
+  "styleRules": [
+    "Shared icons should be plain and reusable.",
+    "Use one icon family where possible.",
+    "Keep stroke width, corner radius, and visual weight consistent.",
+    "Do not put page-specific meaning into common icons."
+  ]
+}

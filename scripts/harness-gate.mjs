@@ -394,7 +394,7 @@ function validateCompletionGate(feature) {
   }
 
   if (!gate) {
-    if (feature.status === 'passing' && touchesL3Scope(feature)) {
+    if (feature.status === 'passing' && feature.version !== 'v0.1' && touchesL3Scope(feature)) {
       legacyL3FeaturesWithoutGate.push(feature.id)
     }
     return

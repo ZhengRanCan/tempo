@@ -11,7 +11,37 @@
 - Verified: `npm.cmd run test -- navigation-shell ui-components`, `npm.cmd run verify:static`, `npm.cmd run verify:system`, and `npm.cmd run verify:harness` all passed.
 - Build entry check: `dist/dev/mp-weixin/app.json` and `dist/build/mp-weixin/app.json` both contain the four TabBar `iconPath` / `selectedIconPath` pairs; `dist/dev/mp-weixin/pages/plan-calendar/index.wxss` contains the even `rpx` font sizes.
 - Boundary check: TabBar page order and routes were unchanged; no four-page body structure, models, services, storage keys, planner/replanner, AI, or tarot logic was changed.
-- Current active feature: none. Status: F20-F29 are `passing`.
+- Current active feature: none. Status: F20-F29 are `passing`; F30 remains `not_started`.
+
+## F30 documentation setup 2026-06-11
+
+- F30 was added as `not_started`; F29 has since been accepted by user manual visual confirmation and marked `passing`.
+- Added `docs/harness/features/ui-feature-workflow.md` to solidify the UI feature workflow. It records three tried approaches: complex UI specification, reference-image-first, and reference image plus layered component layout.
+- The recommended default UI approach is now “reference image + layered component layout + icon manifest + manual visual confirmation”, because it keeps the visual target concrete while giving the agent an executable component structure and icon contract.
+- Added F30 feature docs under `docs/harness/features/individual_feature/F30-ui-method-review-and-functional-audit/`: `feature.md`, `verification.md`, `evidence/ui-method-review.md`, and `evidence/manual-functional-audit.md`.
+- F30 is scoped as a documentation and user-led manual audit feature. It should record four-page functional problems after the UI redesign, then help split F31+ logic-fix features. It must not modify mini-program page code, components, models, services, routes, storage, planner/replanner, or AI/tarot logic.
+- Updated `docs/harness/features/README.md` with a direct link to the UI feature workflow.
+
+## F29 implementation evidence 2026-06-11
+
+- Superseded by `F29 passing 2026-06-11`: the user has now confirmed the TabBar icons are acceptable in WeChat DevTools.
+- Implemented TabBar icon config in `pages.json` for Today, Calendar, Create, and Profile using `static/icons/tab/*.png` and `*-active.png`.
+- Confirmed all eight TabBar PNGs exist in `static/icons/tab/` and are 81x81 PNG files.
+- Added navigation tests for icon paths, asset existence, PNG dimensions, and unchanged tab order/routes.
+- Fixed the reported calendar font blur as a minimal out-of-scope visual defect: `pages/plan-calendar/index.vue` no longer uses odd `rpx` font sizes, avoiding half-pixel text rendering in mp-weixin.
+- Added a UI regression test that rejects odd `rpx` font sizes in calendar overview/detail pages.
+- Verified: `npm.cmd run test -- navigation-shell ui-components`, `npm.cmd run verify:static`, `npm.cmd run verify:system`, and `npm.cmd run verify:harness` all passed.
+- Build entry check: `dist/dev/mp-weixin/app.json` and `dist/build/mp-weixin/app.json` both contain the four TabBar `iconPath` / `selectedIconPath` pairs; `dist/dev/mp-weixin/pages/plan-calendar/index.wxss` was refreshed and contains the even `rpx` font sizes.
+- Dev output refreshed with `npm.cmd run dev:mp-weixin`; the resulting watcher processes were stopped.
+- KnownUnverified: none. User manual visual confirmation has now been recorded in `F29 passing 2026-06-11`.
+
+## F29 active 2026-06-11
+
+- 当前 `active` feature：`F29` 底部 TabBar 图标接入。
+- 本轮默认 scope：`pages.json`、`static/icons/tab/`、TabBar 配置直接相关测试、`docs/progress.md`。
+- 用户同时报告“日历界面的字体好糊，其他界面字体清晰”。定位方向是日历页存在多个奇数 `rpx` 字号，可能在微信渲染中落到半像素导致文字抗锯齿发糊。
+- 日历字体修复属于 F29 scope 外的最小视觉缺陷修复；本轮如修改 `pages/plan-calendar/index.vue` / `detail.vue`，只允许调整字号清晰度相关 CSS，不改页面结构、数据流、models、services、storage key、planner/replanner 或 AI/tarot 逻辑。
+- F29 `passing` 仍需要自动化命令通过、构建入口确认、TabBar 图标路径产物检查，并等待用户确认 TabBar 图标视觉效果可作为最终图标使用。
 
 ## F28 passing 2026-06-10
 
@@ -30,7 +60,51 @@
 - 构建入口确认：`project.config.json.miniprogramRoot` 指向 `dist/dev/mp-weixin/`；`dist/dev/mp-weixin/pages/profile/index.*` 已刷新到当前实现；`dist/build/mp-weixin/pages/profile/index.*` 已由 `verify:system` 刷新；`dist/dev/mp-weixin/static/icons/page/profile/` 包含导出的 profile PNG。
 - 边界确认：未修改 models、services、storage key、planner、replanner、AI/tarot 业务逻辑；未修改 TabBar 路由配置；未修改今日页、任务日历页、创建目标页结构。
 - 当前 knownUnverified：无。F28 参考图 / 组件排布人工对照已由用户确认，状态可置为 `passing`。
-- 当前 `active` feature：无。状态：F20-F28 均为 `passing`。
+- 当前 `active` feature：无。状态：F20-F28 均为 `passing`；F29 保持 `not_started`。
+
+## F28 active setup 2026-06-10
+
+- 当时的 `active` feature：`F28` 我的页重设计。
+- 本轮只修改我的页 UI 结构、我的页局部样式和局部 helper、F28 相关测试、F28 图标资源接入与验证记录。
+- 主要实现依据：`docs/design/page/reference_image/我的.png` 和 `docs/harness/features/individual_feature/F28-profile-page-redesign/details/component-layout.md`。
+- 目标是把我的页从旧的入口集合页改成“目标与偏好管理页”：问候条、当前目标 / 无目标卡、默认安排偏好、AI 表达与仪式感偏好、最近推进、底部管理列表。
+- 不修改 models、services、storage key、planner、replanner、AI/tarot 业务逻辑；不修改今日页、任务日历页、创建目标页结构；不修改 TabBar 路由配置。
+- F28 `passing` 需要自动化命令通过，并记录构建入口、参考图/组件排布对照结果、截图或用户人工视觉确认。
+
+## F28 implementation evidence 2026-06-10
+
+- Superseded by `F28 passing 2026-06-10`: the page implementation was completed and later accepted by user manual visual confirmation against `docs/design/page/reference_image/我的.png`.
+- Reworked `pages/profile/index.vue` into the required six-layer profile management layout: avatar greeting strip, current goal / no-goal card, default planning preferences, AI expression and ritual preferences, recent progress summary, and bottom management icon list.
+- The page keeps F28's scope boundary: no changes to models, services, storage keys, planner/replanner, AI/tarot business logic, TabBar routes, or the today/calendar/create page structures.
+- The current-goal card is now the first business card when a goal exists; when no goal exists, the first business action is the create-goal entry. Default planning preferences and AI expression / ritual preferences are separated into different cards, and recent progress is only a compact status summary.
+- Bottom management entries are limited to goal management, review history, preference settings, and about/feedback style placeholders; they do not duplicate the Today, Calendar, or Create TabBar entries as large page shortcuts.
+- F28 profile PNGs were exported successfully with the GTK/Cairo runtime on PATH. Outputs are under `static/icons/page/profile/`, including `grass.png`, `goal.png`, `goal-hero.png`, `calendar.png`, `suggestion.png`, `clock.png`, `sun.png`, `bar-chart.png`, `smile.png`, `sparkle.png`, `chat.png`, `star.png`, `tarot.png`, `mbti.png`, `progress-chart.png`, `folder.png`, `document.png`, `setting.png`, and `preference.png`.
+- The profile page uses static source paths such as `src="/static/icons/page/profile/grass.png"` and has no runtime icon object or `:src` icon binding in source. The compiled mp-weixin WXML uses uni-app short variables, but `dist/dev/mp-weixin/common/assets.js` maps those variables to plain `/static/icons/page/profile/*.png` strings; no `[object Object]` or `false` image path was detected in the profile dev output.
+- Tests updated in `tests/user-profile.test.ts` cover the F28 six-layer order, no-goal state, profile settings list, static profile icon paths, and avoidance of runtime `:src` icon bindings.
+- Data gaps are intentionally UI-only because F28 forbids model/service changes: plan intensity displays `均衡`; recent focus time is estimated from completed task count times preferred focus minutes; streak days is a conservative local summary instead of a persisted metric.
+- Automatic verification passed: `npm.cmd run test -- user-profile ui-components navigation-shell data-layer`, `npm.cmd run verify:static`, `npm.cmd run verify:system`, and `npm.cmd run verify:harness`.
+- Build entry confirmation: `project.config.json.miniprogramRoot` points to `dist/dev/mp-weixin/`; `dist/dev/mp-weixin/pages/profile/index.*` was refreshed at `2026-06-10 16:54:29`; `dist/build/mp-weixin/pages/profile/index.*` was refreshed at `2026-06-10 16:54:03`; `dist/dev/mp-weixin/static/icons/page/profile/` contains the exported PNGs.
+- `npm.cmd run dev:mp-weixin` was used to refresh the WeChat dev output and entered watch mode as expected; the residual `npm run dev:mp-weixin` / `uni-run.mjs -p mp-weixin` / `vite-plugin-uni ... -p mp-weixin` Node watcher processes from this run were stopped.
+- Superseded knownUnverified: user manual visual confirmation has now been recorded in `F28 passing 2026-06-10`.
+
+## F28 profile icon contract 2026-06-10
+
+- F28 remains `not_started`; this round only updates the profile-page layout detail document and profile icon resource contract. No mini-program page code, business logic, models, services, storage keys, planner/replanner, AI/tarot logic, or TabBar routes were changed.
+- Normalized profile page source SVG filenames under `tools/icon-export/source/page/profile/` to stable ASCII names: `goal-hero.svg`, `suggestion.svg`, `progress-chart.svg`, `mbti.svg`, `setting.svg`, and `preference.svg`.
+- Reworked `docs/harness/features/individual_feature/F28-profile-page-redesign/details/component-layout.md` into six layers: avatar greeting strip, current goal card, default planning preferences, AI expression and ritual preferences, recent progress, and bottom management icon list.
+- Added profile page icon resource docs: `static/icons/page/profile/README.md` and `static/icons/page/profile/icon-spec.json`.
+- The F28 profile icon manifest maps provider/source SVG names to stable PNG outputs, including `grass.png`, `goal.png`, `goal-hero.png`, `calendar.png`, `suggestion.png`, `clock.png`, `sun.png`, `bar-chart.png`, `smile.png`, `sparkle.png`, `chat.png`, `star.png`, `tarot.png`, `mbti.png`, `progress-chart.png`, `folder.png`, `document.png`, `setting.png`, and optional reserved `preference.png`.
+- CSS-owned visuals are explicitly documented: avatar placeholder, status chip, progress bar, preference tile states, recent-progress inner stat markers, chevrons, card borders/shadows, and bottom TabBar icons.
+- Verified: `python tools/icon-export/export_icons.py validate --group page/profile` and `python tools/icon-export/export_icons.py export --group page/profile --dry-run` both passed with 19 planned PNG outputs.
+
+## F28 component-layout setup 2026-06-09
+
+- F28 remains `not_started`; this round only prepares the feature contract and verification docs for the next profile-page redesign experiment. No mini-program page code or business logic was changed.
+- Reworked `docs/harness/features/individual_feature/F28-profile-page-redesign/feature.md` into a concise task-boundary contract for the “reference image + component layout document” approach.
+- Added `docs/harness/features/individual_feature/F28-profile-page-redesign/details/component-layout.md` to translate `docs/design/page/reference_image/我的.png` into implementable component order: user greeting strip, current goal/no-goal card, default planning preferences, AI expression and ritual preferences, recent progress, and settings list.
+- Reworked `docs/harness/features/individual_feature/F28-profile-page-redesign/ref/image/README.md` and `verification.md` to require both reference-image comparison and component-layout comparison before F28 can pass.
+- F28 intentionally does not use `profile-page.md` as a full construction checklist; it is only a fallback for page responsibility questions.
+- Verified: `npm.cmd run verify:harness` passes with 29 features, 27 passing, 2 not_started, 0 warnings, and 0 errors.
 
 ## F27 passing 2026-06-09
 
@@ -59,7 +133,7 @@
 - 二次修复后构建入口确认：`project.config.json.miniprogramRoot` 指向 `dist/dev/mp-weixin/`；`dist/dev/mp-weixin/pages/goal-create/index.*` 已刷新到 `2026-06-09 10:43:17`；`dist/build/mp-weixin/pages/goal-create/index.*` 已刷新到 `2026-06-09 10:42:56`。
 - 二次修复后产物检查：dev/build 的 `goal-create/index.wxml`、`index.js`、`index.wxss` 均未检出 `<image`、`src="{{`、`/static/icons/page/create`、`common_assets`、`data:image/png`、`background-image` 或 `[object Object]`；dev/build 的 `common/assets.js` 也未检出 `/static/icons/page/create`。已结束本次残留的 `npm run dev:mp-weixin` 和 `vite-plugin-uni ... -p mp-weixin` Node watcher。
 - 当前 knownUnverified：无。F27 参考图人工对照已由用户确认，状态可置为 `passing`。
-- 当前 `active` feature：无。状态：F20-F27 均为 `passing`。
+- 当前 `active` feature：无。状态：F20-F27 均为 `passing`；F28-F29 保持 `not_started`。
 
 ## F27 create lock icon restored 2026-06-09
 
@@ -124,6 +198,16 @@
 - 本轮删除远期阶段组件后验证通过：`npm.cmd run test -- plan-calendar ui-components data-layer navigation-shell`、`npm.cmd run verify:static`、`npm.cmd run verify:system`、`npm.cmd run verify:harness`。已刷新 `dist/dev/mp-weixin/pages/plan-calendar/index.*` 到 `2026-06-08 21:46:17`，并确认 dev/build 产物中不再包含 `stage-panel`、`stage-row` 或“远期阶段”。
 - 当前 `active` feature：无。状态：F20-F26 均为 `passing`；F27-F29 保持 `not_started`。
 
+## F26 calendar icon resources prepared 2026-06-08
+
+- F26 remains `not_started`; this round only prepares calendar-page icon resources and feature contract docs, with no mini-program business code changes.
+- Synced the calendar-page icon contract to the reduced final SVG set: `target.svg`, `calendar.svg`, `week.svg`, `adjust.svg`, `sparkle.svg`, `clock.svg`, and `priority.svg`.
+- Updated `static/icons/page/calendar/README.md`, `static/icons/page/calendar/icon-spec.json`, and F26 docs to clarify that progress, risk, completed, buffer, no-task, stage grouping, and task-list container states should use CSS badges/dots/progress bars/chips/borders/text instead of extra SVG assets.
+- Exported official PNG assets to `static/icons/page/calendar/`: `target.png`, `calendar.png`, `week.png`, `adjust.png`, `sparkle.png`, `clock.png`, and `priority.png`.
+- Rewrote `docs/harness/features/individual_feature/F26-calendar-page-redesign/feature.md` with valid frontmatter and parseable acceptance checklist so harness can read the feature contract.
+- Verified: `python tools/icon-export/export_icons.py validate --group page/calendar`, `python tools/icon-export/export_icons.py export --group page/calendar --dry-run`, real export with GTK/Cairo runtime on PATH, and `npm.cmd run verify:harness` all passed.
+- No feature status was changed; current active feature remains none.
+
 ## F25 passing 2026-06-06
 
 - `F25` 今日任务页重设计已完成并置为 `passing`。
@@ -133,20 +217,99 @@
 - 构建入口确认：`project.config.json.miniprogramRoot` 指向 `dist/dev/mp-weixin/`；本轮已刷新 `dist/dev/mp-weixin`，并确认 `dist/dev/mp-weixin/static/icons/page/today/` 存在 `star.png`、`clock.png`、`flag.png`、`list.png`、`status-wave.png`、`sparkle.png`、`moon.png`。
 - 自动化验证：`npm.cmd run test -- today today-suggestion review ui-components navigation-shell`、`npm.cmd run verify:static`、`npm.cmd run verify:system`、`npm.cmd run verify:harness` 均通过。
 - 边界确认：未修改 models、services、storage key、planner、replanner、AI/tarot 业务逻辑；未修改任务日历、创建目标、我的页页面结构；无 knownUnverified。
-- 当前 `active` feature：无。状态：F20-F25 均为 `passing`。
+- 当前 `active` feature：无。状态：F20-F25 均为 `passing`；F26-F29 保持 `not_started`。
 
+## F25 icon resource fix active 2026-06-06
+
+- Fixed the WeChat runtime icon loading error reported as `Failed to load local image resource /pages/today/[object Object],[object Object],[object Object],[object Object]`.
+- Root cause: F25 page icons were originally bound through runtime `:src` expressions, which could be compiled into mp-weixin short-variable image bindings and resolve to non-string values at runtime.
+- Fix: removed the `todayIconPaths` runtime objects and changed all today-page icon usages in `pages/today/index.vue` and `components/TodayFocusCard.vue` to static `src="/static/icons/page/today/*.png"` source attributes.
+- Added regression coverage in `tests/today.test.ts` and `tests/ui-components.test.ts`: today-page icons must keep the official PNG paths and must not reintroduce `todayIconPaths` or `:src="` icon bindings.
+- Verified after the fix: `npm.cmd run test -- today today-suggestion review ui-components navigation-shell`, `npm.cmd run verify:static`, `npm.cmd run verify:system`, and `npm.cmd run verify:harness` pass. Refreshed `dist/dev/mp-weixin` at `2026-06-06 08:59:28`.
+- Superseded by `F25 passing 2026-06-06`: user visual confirmation has been recorded.
+
+## F25 icon refinement active 2026-06-05
+
+- Current active feature remains `F25`; this round only changes the today page, `TodayFocusCard`, and F25-related tests. It does not modify models, services, storage keys, planner, replanner, AI/tarot logic, or other main Tab page structures.
+- Wired the official today-page PNG icons from `static/icons/page/today/`: `star.png`, `clock.png`, `flag.png`, `list.png`, `status-wave.png`, `sparkle.png`, and `moon.png`.
+- Visible change summary: the focus card now has icon anchors for the tag, metadata, minimum line, and task-count entry; the primary focus button has stronger visual weight while the secondary action stays lightweight; status, AI advice, and review cards now have consistent module icons; card padding, row spacing, and option chip height were tightened for better first-screen density.
+- Refreshed the WeChat DevTools dev output. `dist/dev/mp-weixin/pages/today/index.wxml`, `dist/dev/mp-weixin/pages/today/index.wxss`, `dist/dev/mp-weixin/components/TodayFocusCard.wxml`, and `dist/dev/mp-weixin/components/TodayFocusCard.wxss` were updated at `2026-06-05 23:27:55`.
+- Verified: `npm.cmd run test -- today today-suggestion review ui-components navigation-shell` passed with 40 tests; `npm.cmd run verify:static` passed; `npm.cmd run verify:system` passed; `npm.cmd run verify:harness` passed with 29 features, 24 passing, 1 active, 4 not_started, 0 warnings, and 0 errors.
+- Superseded by `F25 passing 2026-06-06`: user visual confirmation has been recorded.
+
+## Icon export tool 2026-06-05
+
+- 已按 `tools/icon-export/modify.md` 新一轮要求移除 `export_icons.py` 中的硬编码 group 映射；`--group <group>` 现在按 `static/icons/<group>/icon-spec.json` 自动推导，支持后续 `page/calendar`、`page/profile`、`page/create` 等新增分组，无需改脚本。
+- 已加强 manifest 校验：`format` 必须为 `png`，`background` 必须为 `transparent`；输出重复检查从文件名升级为相对 output directory 的输出路径。
+- 已更新 `tools/icon-export/README.md`：明确 `--group` 动态推导规则、group 路径安全约束、`variants` 的值必须是 `palette` key、SVG 原始颜色会被忽略且最终颜色由 `icon-spec.json` 决定。
+- 已验证：`python -m py_compile tools/icon-export/icon_converter.py tools/icon-export/export_icons.py` 通过；临时 `page/calendar` manifest 通过 `validate`、`export --dry-run` 和真实 PNG 导出；非法 `format`、非法 `background`、非法 group `../tmp-invalid` 均按预期失败。临时文件已清理。
+
+- 已按 `tools/icon-export/modify.md` 新要求完成模块化重构：`icon_converter.py` 负责单个 SVG 到 PNG 的底层转换，`export_icons.py` 负责 CLI、manifest 读取、校验和导出调度。
+- 已将主流程切换为 manifest 驱动：`static/icons/tab/icon-spec.json`、`static/icons/page/today/icon-spec.json`、`static/icons/common/icon-spec.json` 现在包含 `directory`、`glyphTargetPx`、`palette`、`icons` 等字段；旧 `icon-export.config.json` 仅保留为历史参考。
+- 已验证：`python -m py_compile tools/icon-export/icon_converter.py tools/icon-export/export_icons.py` 通过；使用临时 SVG 验证 `validate --group tab`、`export --group tab --dry-run`、`validate --group page/today`、`export --group page/today --dry-run` 通过，临时 SVG 已清理。
+- 已尝试临时 manifest 的真实 PNG 导出；当前 Windows 环境缺 Cairo 原生库，`cairosvg` 报 `no library called "cairo-2" was found`，因此实际渲染路径未能完成。已清理临时 `tools/icon-export/source/tmp` 和 `static/icons/tmp`。
+- 当前 source 目录没有正式 SVG 时，`validate --group tab` 会按预期失败并提示缺失的 SVG；无子命令运行 `export_icons.py` 会被 CLI 拒绝，避免误扫全量目录。
+- 本轮未修改页面、组件、services、models、`pages.json`、`app.json` 或当前 feature 状态。
+
+- 已在 `tools/icon-export/README.md` 顶部新增中文快速教程，说明依赖安装、SVG 放置目录、dry-run、实际导出命令、输出位置、导出规则和注意事项。
+- 已按 `tools/icon-export/modify.md` 第三轮要求修正 variant 输出命名：`default` -> `<name>.png`，`active` -> `<name>-active.png`，其他 variant -> `<name>-<variant>.png`。
+- 已在 `tools/icon-export/README.md` 明确：脚本只生成或覆盖当前 SVG 对应 PNG，不会自动删除 `static/icons/` 中源 SVG 已删除的旧 PNG。
+- 已在 README 明确：`--dry-run` 只预览输出路径和计划数量，不验证 SVG 渲染结果。
+- 已在 README 明确：脚本忽略 SVG 原始颜色，只保留形状和透明度，并按 config 重新上色。
+- 已将配置读取改为 `utf-8-sig`，兼容 Windows/PowerShell 生成的带 BOM JSON 配置。
+- 已用临时 SVG 和临时配置验证自定义 variant：`muted` 正确计划输出为 `<name>-muted.png`；验证后已删除临时文件。
+- 已按 `tools/icon-export/modify.md` 第二轮要求新增 `--group` 参数；可重复使用，例如 `--group tab --group page`。
+- 未传 `--group` 时处理配置中的全部 group；传入 `--group` 时只处理指定 group，不检查其他 group。
+- 未知 group 会返回清晰错误：`ERROR: unknown group: xxx. Available groups: tab, page, common`。
+- `requiredFiles` 只对当前正在处理的 group 生效；显式指定的无 `requiredFiles` 空 group 也会返回错误。
+- 已验证临时 page SVG 的 `--group page --dry-run`：不受 tab 缺失影响，输出 `1 PNG output(s) planned`，验证后已删除临时 SVG。
+- 已按 `tools/icon-export/modify.md` 修正图标导出工具：脚本从 `export_tab_icons.py` 重命名为 `export_icons.py`。
+- 已修复 dry-run 统计数量：dry-run 现在会统计计划输出的 PNG 数量。
+- 已在 tab 分组配置中新增 `requiredFiles`：`today.svg`、`calendar.svg`、`create.svg`、`profile.svg`；当 source/tab 部分缺失时脚本会报错。
+- 已将工具配置中的 `visualGlyphPx.min/max` 简化为 `glyphTargetPx`，避免未使用的 `min` 字段造成误导。
+- 已修复超出文件大小提示，warning 会使用配置中的 `maxFileKB`。
+- 已新增十六进制颜色校验，配置颜色错误时返回更清晰的错误信息。
+- 已在 README 中说明脚本需保留在 `tools/icon-export/` 下，并从项目根目录运行：`python tools/icon-export/export_icons.py`。
+- 已新增 `tools/icon-export/`，用于将用户从 iconfont 下载的 SVG 统一导出为小程序可用 PNG。
+- 新增源目录：`tools/icon-export/source/tab/`、`tools/icon-export/source/page/`、`tools/icon-export/source/common/`。
+- 新增脚本：`tools/icon-export/export_icons.py`，按 `tools/icon-export/icon-export.config.json` 分组导出到 `static/icons/<group>/`。
+- TabBar SVG 会生成默认态和 active 态 PNG；page/common 默认生成普通态 PNG。
+- 新增依赖说明：`tools/icon-export/requirements.txt`，需要 `cairosvg` 和 `Pillow`；当前本机 Pillow 可用，CairoSVG 未安装，因此没有实际渲染 SVG。
+- 本工具不修改页面、组件、services、models、`pages.json` 或当前 feature 状态。
+- 已重新执行 `python -m py_compile tools/icon-export/export_icons.py`：通过。
+- 已重新执行 `python tools/icon-export/export_icons.py --dry-run`：通过，当前三个 source 分组均无 SVG，脚本给出清晰提示且未生成 PNG。
+- 已执行 `npm.cmd run verify:harness`：通过。
+- 已重新生成备份包：`docs/log/artifacts/icon-export-tool-2026-06-05.zip`，大小 31730 bytes。
+
+## Icon asset specs 2026-06-05
+
+- 已按资源目录补充明确路径：`static/icons/tab/`、`static/icons/page/today/`、`static/icons/common/`，并在对应 `icon-spec.json` 中增加 `directory` 字段。
+- TabBar default/active 图标状态规则已明确为 SHOULD：默认只改颜色不改形状；如需改形状，必须记录原因并由用户确认。
+- 宸茶ˉ榻?`static/icons/tab/README.md` 鍜?`static/icons/tab/icon-spec.json`锛屾槑纭簳閮?TabBar 鍥炬爣鍛藉悕銆佸昂瀵搞€侀鑹层€侀鏍煎拰 passing 杈圭晫銆?- 宸叉柊澧?`static/icons/page/README.md`锛屾槑纭〉闈笓灞炲浘鏍囩粺涓€鏀惧湪 `static/icons/page/<page-name>/`銆?- 宸茶ˉ榻?`static/icons/page/today/README.md` 鍜?`static/icons/page/today/icon-spec.json`锛屾槑纭粖鏃ラ〉鍥炬爣鍛藉悕銆佸昂瀵搞€侀鑹插拰璇箟鏄犲皠銆?- 宸茶ˉ榻?`static/icons/common/README.md` 鍜?`static/icons/common/icon-spec.json`锛屾槑纭€氱敤鍥炬爣鍛藉悕銆佸昂瀵搞€侀鑹插拰澶嶇敤杈圭晫銆?- 宸插皢 F25 缁嗚妭鏂囨。涓殑浠婃棩椤靛浘鏍囪矾寰勪粠 `static/icons/today/` 淇涓?`static/icons/page/today/`銆?- 宸插湪 F29 鍥炬爣鍚堝悓涓紩鐢?`static/icons/tab/README.md` 鍜?`static/icons/tab/icon-spec.json`銆?
+## F25 detail doc and F29 tab icons 2026-06-05
+
+- 宸插皢 `docs/harness/features/individual_feature/F25-today-page-redesign/ref/detail/F25-ref.md` 杩佺Щ骞堕噸鍛藉悕涓?`docs/harness/features/individual_feature/F25-today-page-redesign/details/design.md`銆?- 杩佺Щ鍘熷洜锛氭寜 `docs/harness/features/feature-template.md`锛岃瑙夈€佷氦浜掑拰椤甸潰缁嗚妭鏂囨。搴旀斁鍦?feature 鐨?`details/` 涓嬶紱`ref/image/` 鍙繚鐣欏弬鑰冨浘璇存槑銆?- 宸插湪 F25 `feature.md` 鐨?Required Reading 涓姞鍏?`details/design.md`銆?- 宸叉柊澧炲浘鏍囪祫婧愮洰褰曡鏄庯細`static/icons/README.md`銆乣static/icons/tab/README.md`銆乣static/icons/page/today/README.md`銆乣static/icons/common/README.md`銆?- 宸叉柊澧?`F29`锛歚docs/harness/features/individual_feature/F29-tabbar-icons/`锛岀敤浜庡悗缁帴鍏ュ簳閮?TabBar 鍥炬爣銆?- `F29` 褰撳墠涓?`not_started`锛屼緷璧?`F28`锛岄伩鍏嶆墦鏂綋鍓?active 鐨?`F25` 椤甸潰鏀归€犮€?
+## F25 active 2026-06-04
+
+- 褰撳墠 `active` feature锛歚F25` 浠婃棩浠诲姟椤甸噸璁捐銆?- 鏈疆鍙慨鏀逛粖鏃ラ〉鍜?F25 scope 鍏佽鐨勫叡浜?UI 缁勪欢/娴嬭瘯/杩涘害璁板綍锛屼笉淇敼 models銆乻ervices銆乻torage key銆乸lanner銆乺eplanner銆丄I/tarot 涓氬姟閫昏緫锛屼笉鏀逛换鍔℃棩鍘嗐€佸垱寤虹洰鏍囥€佹垜鐨勯〉椤甸潰缁撴瀯銆?- F25 鍙傝€冨浘瀵圭収鏄‖闂ㄧ锛氬畬鎴愬疄鐜板拰鑷姩鍖栧悗锛岄渶瑕佺敤鎴锋槑纭‘璁も€淔25 鍙傝€冨浘瀵圭収閫氳繃鈥濇垨鎻愪緵鍙鏌ユ埅鍥撅紝鎵嶈兘灏?F25 缃负 `passing`銆?
+## F25-F28 visual verifier rule 2026-06-04
+
+- 宸插湪 F25-F28 鐨?`verification.md` 涓柊澧?`Visual Verifier Rule`銆?- 褰撳墠椤圭洰娌℃湁灏忕▼搴忔埅鍥?MCP 鎴栧井淇″紑鍙戣€呭伐鍏疯嚜鍔ㄥ寲鑳藉姏鏃讹紝鍙傝€冨浘瀵圭収蹇呴』鐢辩敤鎴蜂汉宸ュ畬鎴愩€?- Agent 鍙兘鎻愰啋鐢ㄦ埛鎵撳紑瀵瑰簲椤甸潰銆佹彁渚涘弬鑰冨浘璺緞鍜屾鏌ョ偣锛屽苟鍦ㄧ敤鎴风‘璁ゅ悗璁板綍缁撴灉锛涗笉鑳戒粎鍑簮鐮併€佹瀯寤轰骇鐗╂垨鑷姩娴嬭瘯鑷澹版槑鈥滃弬鑰冨浘瀵圭収閫氳繃鈥濄€?- F25-F28 缃负 `passing` 鍓嶅繀椤昏褰曠敤鎴蜂汉宸ョ‘璁ゅ師鏂囨垨鍙鏌ユ埅鍥捐矾寰勶紱缂哄皯璇ヨ瘉鎹椂涓嶈兘 passing銆?- 宸叉墽琛?`npm.cmd run verify:harness`锛岀粨鏋滈€氳繃锛?8 涓?feature锛?4 涓?passing锛? 涓?not_started锛? warning锛? error銆?
+## F25-F28 reference-image gate 2026-06-04
+
+- 宸插皢鈥滃弬鑰冨浘鏁堟灉鈥濆崌绾т负 F25-F28 鐨勭‖楠屾敹瑕佹眰锛屼笉鍐嶅彧鏄緟鍔╁弬鑰冦€?- F25-F28 鐨?`feature.md` acceptance 鍧囪姹傞灞忔晥鏋滄槑鏄炬帴杩戝搴斿弬鑰冨浘鐨勪俊鎭眰绾с€佷富瑙嗚鏉冮噸銆佸崱鐗囧瘑搴︺€佹寜閽眰绾у拰鏁翠綋姘旇川銆?- F25-F28 鐨?`verification.md` manual smoke 鍜?passing evidence 鍧囪姹傝褰曞弬鑰冨浘瀵圭収缁撴灉锛涘鏋滄病鏈夋帴杩戝弬鑰冨浘锛屽繀椤昏鏄庡師鍥犲拰椋庨櫓锛屼笖涓嶈兘鐩存帴 passing銆?- F25-F28 鐨?`ref/image/README.md` 鍧囨槑纭細涓嶈姹傞€愬儚绱犺繕鍘燂紝浣嗚交寰牱寮忚皟鏁翠笉鑳介€氳繃楠屾敹銆?
+## F25-F28 feature contract thinning 2026-06-04
+
+- 宸叉敹钖?F25-F28 鐨?`feature.md`锛氶〉闈㈢粏鑺傜粺涓€浠?`docs/design/page/pages/` 涓搴旈〉闈㈡枃妗ｄ负鍑嗐€?- `feature.md` 鐜板湪鍙繚鐣欎换鍔¤竟鐣屻€佺敤鎴风粨鏋溿€乻cope銆佹潈濞佽璁℃枃妗ｆ寚鍚戙€侀€氱敤楠屾敹鍙ｅ緞鍜?completion rule銆?- F25 鎸囧悜 `docs/design/page/pages/today-page.md`锛汧26 鎸囧悜 `docs/design/page/pages/calendar-page.md`锛汧27 鎸囧悜 `docs/design/page/pages/create-goal-page.md`锛汧28 鎸囧悜 `docs/design/page/pages/profile-page.md`銆?- 杩欐牱閬垮厤 feature 鍚堝悓鍜岄〉闈㈣璁℃枃妗ｉ噸澶嶅畾涔夐〉闈㈢粏鑺傦紝鍚庣画椤甸潰鏀瑰姩浠ヨ璁℃枃妗ｄ负鍞竴椤甸潰缁嗚妭鏉ユ簮銆?
+## F25-F28 page redesign feature planning 2026-06-04
+
+- 鏂板鍥涗釜椤甸潰绾?UI feature锛屽潎涓?`not_started`锛岀敤浜庡湪 F24 鏍峰紡鍩虹嚎涔嬪悗閫愰〉閲嶈璁″皬绋嬪簭涓?Tab 椤甸潰銆?- `F25`锛氫粖鏃ヤ换鍔￠〉閲嶈璁★紝鍚堝悓鐩綍 `docs/harness/features/individual_feature/F25-today-page-redesign/`銆?- `F26`锛氫换鍔℃棩鍘嗛〉閲嶈璁★紝鍚堝悓鐩綍 `docs/harness/features/individual_feature/F26-calendar-page-redesign/`銆?- `F27`锛氬垱寤虹洰鏍囬〉閲嶈璁★紝鍚堝悓鐩綍 `docs/harness/features/individual_feature/F27-create-goal-page-redesign/`銆?- `F28`锛氭垜鐨勯〉閲嶈璁★紝鍚堝悓鐩綍 `docs/harness/features/individual_feature/F28-profile-page-redesign/`銆?- 鍥涗釜 feature 涓茶渚濊禆锛歚F24 -> F25 -> F26 -> F27 -> F28`銆傚悗缁墽琛屾椂涓嶅緱鍚屾椂鏀瑰涓〉闈?feature銆?- 鍙傝€冩枃妗ｅ彧鎸囧悜 `docs/design/page/pages/` 涓搴旈〉闈㈡枃妗ｏ紱`style-baseline.md` 宸茬敱 F24 浣跨敤锛屾湰杞〉闈?feature 涓嶉粯璁よ鍙栥€?- 鍙傝€冨浘鐗囬€氳繃鍚?feature 鐨?`ref/image/README.md` 鎸囧悜 `docs/design/page/reference_image/`銆?- 鏈鍙柊澧?feature 鍚堝悓锛屼笉淇敼灏忕▼搴忎笟鍔′唬鐮併€?
+## Feature template 2026-06-04
+
+- 鏂板 `docs/harness/features/feature-template.md`锛岀敤浜庤鏄庡悗缁?`docs/harness/features/individual_feature/` 涓嬬殑鏂?feature 搴斿浣曠紪鍐欍€?- 妯℃澘鏄庣‘ `feature.md` 绠′换鍔¤竟鐣屻€乣verification.md` 绠″畬鎴愯瘉鏄庛€乨esign docs 绠＄粏鑺傝璁°€?- 鏈鍙慨鏀?harness 鏂囨。锛屼笉鍒涘缓鏂扮殑涓氬姟 feature锛屼笉淇敼灏忕▼搴忎笟鍔′唬鐮併€?
 ## F24 passing 2026-06-03
 
-- `F24` UI 统一样式基线已完成并置为 `passing`。
-- 新增 `styles/ui.scss` 作为共享 Sass 基线，统一 canvas/surface/accent token、page-shell、card、primary/secondary/text button、status-tag、option-chip、soft-block 等规则；`App.vue`、四个主 Tab 页和 `AppPageHeader`、`TaskCard`、`TodayFocusCard`、`EmptyState`、`EnergySelector` 已接入该基线。
-- `pages.json` 仅调整原生视觉色值：navigation/background 对齐 `#faf8f3`，TabBar background 对齐 `#ffffff`；未修改页面顺序、TabBar list 或路由。
-- 相对 F20-F23 的可见变化：今日页的重点任务卡、状态卡、AI 建议和复盘入口统一为同一套卡片外壳，文本按钮降级为透明入口；日历页的目标计划、进度、7 天选择、远期阶段和建议卡统一圆角/边框/阴影；创建目标页的步骤卡、输入框、时间选项和偏好选项使用统一卡片与 option chip；我的页的目标、偏好、表达、最近推进和设置入口统一 panel、按钮和状态标签层级。
-- 视觉检查矩阵：Today 有任务状态检查 `<TodayFocusCard>` 仍为首个业务焦点；Today 无目标/无任务状态检查 `EmptyState` 动作入口；Calendar DDL 7 天内状态由 `tests/plan-calendar.test.ts` 的 tight pressure case 和 `progress-card` 产物覆盖；Calendar DDL 超过 7 天/远期阶段由 long bundle case 与 `stage-panel` 产物覆盖；Create Goal 初始输入状态检查 `step-list`、输入框和禁用主按钮；Create Goal 偏好展开状态检查 `preference-step`、`EnergySelector` 和 option chip；Profile 有目标状态检查 `goal-card`、进度和主/次按钮；Profile 无目标状态检查 `profile-empty` + `EmptyState`。
-- 构建入口检查：`project.config.json.miniprogramRoot` 当前为 `dist/dev/mp-weixin/`，现有 dev watcher 已在 `2026-06-03 19:26:12` 刷新 dev 产物；`npm.cmd run verify:system` 已在 `2026-06-03 19:26:35` 刷新 `dist/build/mp-weixin`。两边 `app.json` 均包含 `navigationBarBackgroundColor: "#faf8f3"`、`backgroundColor: "#faf8f3"` 和 TabBar `backgroundColor: "#ffffff"`，四个主 Tab WXSS 均包含 F24 page/card 基线。
-- 自动化结果：`npm.cmd run test -- ui-components navigation-shell today plan-calendar goal-create user-profile` 通过，54 个测试通过；`npm.cmd run verify:static` 通过；`npm.cmd run verify:system` 通过，仅有 Sass legacy JS API warning；`npm.cmd run verify:harness` 通过，仍有 F01-F07 legacy `completionGate` warning。
-- 本轮没有使用微信开发者工具截图；按 F24 `verification.md` 允许的“人工记录”方式，用源码、测试和 dev/build mp-weixin 产物完成视觉矩阵检查。所有矩阵状态均可构造，未记录无法验证状态。
-- 已确认未修改 `models/`、`services/`、`schemas/`、storage key、planner、replanner、AI/tarot 业务逻辑。当前工作树中 `docs/harness/verification-policy.md` 与 `docs/harness/instrumentation.md` 已不存在，F24 本轮按 feature 自带 `verification.md` 执行门禁。
-
+- `F24` UI 缁熶竴鏍峰紡鍩虹嚎宸插畬鎴愬苟缃负 `passing`銆?- 鏂板 `styles/ui.scss` 浣滀负鍏变韩 Sass 鍩虹嚎锛岀粺涓€ canvas/surface/accent token銆乸age-shell銆乧ard銆乸rimary/secondary/text button銆乻tatus-tag銆乷ption-chip銆乻oft-block 绛夎鍒欙紱`App.vue`銆佸洓涓富 Tab 椤靛拰 `AppPageHeader`銆乣TaskCard`銆乣TodayFocusCard`銆乣EmptyState`銆乣EnergySelector` 宸叉帴鍏ヨ鍩虹嚎銆?- `pages.json` 浠呰皟鏁村師鐢熻瑙夎壊鍊硷細navigation/background 瀵归綈 `#faf8f3`锛孴abBar background 瀵归綈 `#ffffff`锛涙湭淇敼椤甸潰椤哄簭銆乀abBar list 鎴栬矾鐢便€?- 鐩稿 F20-F23 鐨勫彲瑙佸彉鍖栵細浠婃棩椤电殑閲嶇偣浠诲姟鍗°€佺姸鎬佸崱銆丄I 寤鸿鍜屽鐩樺叆鍙ｇ粺涓€涓哄悓涓€濂楀崱鐗囧澹筹紝鏂囨湰鎸夐挳闄嶇骇涓洪€忔槑鍏ュ彛锛涙棩鍘嗛〉鐨勭洰鏍囪鍒掋€佽繘搴︺€? 澶╅€夋嫨銆佽繙鏈熼樁娈靛拰寤鸿鍗＄粺涓€鍦嗚/杈规/闃村奖锛涘垱寤虹洰鏍囬〉鐨勬楠ゅ崱銆佽緭鍏ユ銆佹椂闂撮€夐」鍜屽亸濂介€夐」浣跨敤缁熶竴鍗＄墖涓?option chip锛涙垜鐨勯〉鐨勭洰鏍囥€佸亸濂姐€佽〃杈俱€佹渶杩戞帹杩涘拰璁剧疆鍏ュ彛缁熶竴 panel銆佹寜閽拰鐘舵€佹爣绛惧眰绾с€?- 瑙嗚妫€鏌ョ煩闃碉細Today 鏈変换鍔＄姸鎬佹鏌?`<TodayFocusCard>` 浠嶄负棣栦釜涓氬姟鐒︾偣锛汿oday 鏃犵洰鏍?鏃犱换鍔＄姸鎬佹鏌?`EmptyState` 鍔ㄤ綔鍏ュ彛锛汣alendar DDL 7 澶╁唴鐘舵€佺敱 `tests/plan-calendar.test.ts` 鐨?tight pressure case 鍜?`progress-card` 浜х墿瑕嗙洊锛汣alendar DDL 瓒呰繃 7 澶?杩滄湡闃舵鐢?long bundle case 涓?`stage-panel` 浜х墿瑕嗙洊锛汣reate Goal 鍒濆杈撳叆鐘舵€佹鏌?`step-list`銆佽緭鍏ユ鍜岀鐢ㄤ富鎸夐挳锛汣reate Goal 鍋忓ソ灞曞紑鐘舵€佹鏌?`preference-step`銆乣EnergySelector` 鍜?option chip锛汸rofile 鏈夌洰鏍囩姸鎬佹鏌?`goal-card`銆佽繘搴﹀拰涓?娆℃寜閽紱Profile 鏃犵洰鏍囩姸鎬佹鏌?`profile-empty` + `EmptyState`銆?- 鏋勫缓鍏ュ彛妫€鏌ワ細`project.config.json.miniprogramRoot` 褰撳墠涓?`dist/dev/mp-weixin/`锛岀幇鏈?dev watcher 宸插湪 `2026-06-03 19:26:12` 鍒锋柊 dev 浜х墿锛沗npm.cmd run verify:system` 宸插湪 `2026-06-03 19:26:35` 鍒锋柊 `dist/build/mp-weixin`銆備袱杈?`app.json` 鍧囧寘鍚?`navigationBarBackgroundColor: "#faf8f3"`銆乣backgroundColor: "#faf8f3"` 鍜?TabBar `backgroundColor: "#ffffff"`锛屽洓涓富 Tab WXSS 鍧囧寘鍚?F24 page/card 鍩虹嚎銆?- 鑷姩鍖栫粨鏋滐細`npm.cmd run test -- ui-components navigation-shell today plan-calendar goal-create user-profile` 閫氳繃锛?4 涓祴璇曢€氳繃锛沗npm.cmd run verify:static` 閫氳繃锛沗npm.cmd run verify:system` 閫氳繃锛屼粎鏈?Sass legacy JS API warning锛沗npm.cmd run verify:harness` 閫氳繃锛屼粛鏈?F01-F07 legacy `completionGate` warning銆?- 鏈疆娌℃湁浣跨敤寰俊寮€鍙戣€呭伐鍏锋埅鍥撅紱鎸?F24 `verification.md` 鍏佽鐨勨€滀汉宸ヨ褰曗€濇柟寮忥紝鐢ㄦ簮鐮併€佹祴璇曞拰 dev/build mp-weixin 浜х墿瀹屾垚瑙嗚鐭╅樀妫€鏌ャ€傛墍鏈夌煩闃电姸鎬佸潎鍙瀯閫狅紝鏈褰曟棤娉曢獙璇佺姸鎬併€?- 宸茬‘璁ゆ湭淇敼 `models/`銆乣services/`銆乣schemas/`銆乻torage key銆乸lanner銆乺eplanner銆丄I/tarot 涓氬姟閫昏緫銆傚綋鍓嶅伐浣滄爲涓?`docs/harness/verification-policy.md` 涓?`docs/harness/instrumentation.md` 宸蹭笉瀛樺湪锛孎24 鏈疆鎸?feature 鑷甫 `verification.md` 鎵ц闂ㄧ銆?
 ## F24 feature design 2026-06-03
 
 - ??? F24?`docs/harness/features/individual_feature/F24-ui-overall-design/feature.md`?
@@ -157,74 +320,35 @@
 
 ## Feature registry migration 2026-06-01
 
-- 已创建 `docs/harness/features/feature-index.json` 作为当前 feature 轻量索引。
-- 已将 F01-F23 拆分到 `docs/harness/features/individual_feature/<feature-id>/feature.json`。
-- 来源映射：F01-F07 来自 `docs/log/v0.1/feature_list_v0.1.json`；F08-F11 来自 `docs/log/v0.2/feature_list_v0.2.json`；F12-F19 来自 `docs/log/v0.3/feature_list.json`；F20-F23 来自 `docs/log/v0.2/feature_list_v3_v2.json`。
-- `docs/log/v0.1/feature_list.json` 当前不包含 F01-F07，因此 v0.1 迁移源以 `docs/log/v0.1/feature_list_v0.1.json` 为准。
-- `AGENTS.md` 已切换为先读 feature index，再读取当前 feature 的 `feature.json`。
-- `scripts/harness-gate.mjs` 已支持 feature index 并展开单个 feature 合同；`npm.cmd run verify:harness` 默认校验新 registry。
-
+- 宸插垱寤?`docs/harness/features/feature-index.json` 浣滀负褰撳墠 feature 杞婚噺绱㈠紩銆?- 宸插皢 F01-F23 鎷嗗垎鍒?`docs/harness/features/individual_feature/<feature-id>/feature.json`銆?- 鏉ユ簮鏄犲皠锛欶01-F07 鏉ヨ嚜 `docs/log/v0.1/feature_list_v0.1.json`锛汧08-F11 鏉ヨ嚜 `docs/log/v0.2/feature_list_v0.2.json`锛汧12-F19 鏉ヨ嚜 `docs/log/v0.3/feature_list.json`锛汧20-F23 鏉ヨ嚜 `docs/log/v0.2/feature_list_v3_v2.json`銆?- `docs/log/v0.1/feature_list.json` 褰撳墠涓嶅寘鍚?F01-F07锛屽洜姝?v0.1 杩佺Щ婧愪互 `docs/log/v0.1/feature_list_v0.1.json` 涓哄噯銆?- `AGENTS.md` 宸插垏鎹负鍏堣 feature index锛屽啀璇诲彇褰撳墠 feature 鐨?`feature.json`銆?- `scripts/harness-gate.mjs` 宸叉敮鎸?feature index 骞跺睍寮€鍗曚釜 feature 鍚堝悓锛沗npm.cmd run verify:harness` 榛樿鏍￠獙鏂?registry銆?
 ## UI visibility fix 2026-06-01
 
-- 发现微信开发者工具入口 `project.config.json.miniprogramRoot` 指向 `dist/dev/mp-weixin/`，而当前系统验证和实际构建命令 `npm.cmd run verify:system` / `build:mp-weixin` 生成的是 `dist/build/mp-weixin/`。
-- `dist/dev/mp-weixin/` 仍是 2026-05-24 到 2026-05-26 的旧产物，导致开发者工具中看不到 F20-F23 的新版 UI。
-- 已将 `project.config.json.miniprogramRoot` 对齐到 `dist/build/mp-weixin/`，并在 `tests/navigation-shell.test.ts` 增加配置一致性测试，避免后续再次出现“构建成功但开发者工具看旧目录”的问题。
-
+- 鍙戠幇寰俊寮€鍙戣€呭伐鍏峰叆鍙?`project.config.json.miniprogramRoot` 鎸囧悜 `dist/dev/mp-weixin/`锛岃€屽綋鍓嶇郴缁熼獙璇佸拰瀹為檯鏋勫缓鍛戒护 `npm.cmd run verify:system` / `build:mp-weixin` 鐢熸垚鐨勬槸 `dist/build/mp-weixin/`銆?- `dist/dev/mp-weixin/` 浠嶆槸 2026-05-24 鍒?2026-05-26 鐨勬棫浜х墿锛屽鑷村紑鍙戣€呭伐鍏蜂腑鐪嬩笉鍒?F20-F23 鐨勬柊鐗?UI銆?- 宸插皢 `project.config.json.miniprogramRoot` 瀵归綈鍒?`dist/build/mp-weixin/`锛屽苟鍦?`tests/navigation-shell.test.ts` 澧炲姞閰嶇疆涓€鑷存€ф祴璇曪紝閬垮厤鍚庣画鍐嶆鍑虹幇鈥滄瀯寤烘垚鍔熶絾寮€鍙戣€呭伐鍏风湅鏃х洰褰曗€濈殑闂銆?
 ## Native navigation duplicate title fix 2026-06-01
 
-- 实机截图确认 F23 步骤式卡片已经生效，但微信原生导航栏标题和正文 `AppPageHeader` 标题重复，且页面顶部仍保留 `96rpx` 大留白，视觉上像旧版头图区仍存在。
-- 已将 `AppPageHeader` 收口为正文轻提示和可选 action，不再渲染同名大标题；五个页面的顶部 padding 调整为 `32rpx 32rpx 48rpx`，让原生导航栏下方直接进入页面核心内容。
-- 本地开发入口重新对齐到 `dist/dev/mp-weixin/`，匹配 `npm.cmd run dev:mp-weixin` 的输出目录；`tests/navigation-shell.test.ts` 增加该约束。
-- 已通过 `npm.cmd run test -- ui-components navigation-shell`、`npm.cmd run verify:static`、`npm.cmd run verify:system`、`npm.cmd run verify:harness`；dev/build 产物均确认不再包含正文 title。
-
+- 瀹炴満鎴浘纭 F23 姝ラ寮忓崱鐗囧凡缁忕敓鏁堬紝浣嗗井淇″師鐢熷鑸爮鏍囬鍜屾鏂?`AppPageHeader` 鏍囬閲嶅锛屼笖椤甸潰椤堕儴浠嶄繚鐣?`96rpx` 澶х暀鐧斤紝瑙嗚涓婂儚鏃х増澶村浘鍖轰粛瀛樺湪銆?- 宸插皢 `AppPageHeader` 鏀跺彛涓烘鏂囪交鎻愮ず鍜屽彲閫?action锛屼笉鍐嶆覆鏌撳悓鍚嶅ぇ鏍囬锛涗簲涓〉闈㈢殑椤堕儴 padding 璋冩暣涓?`32rpx 32rpx 48rpx`锛岃鍘熺敓瀵艰埅鏍忎笅鏂圭洿鎺ヨ繘鍏ラ〉闈㈡牳蹇冨唴瀹广€?- 鏈湴寮€鍙戝叆鍙ｉ噸鏂板榻愬埌 `dist/dev/mp-weixin/`锛屽尮閰?`npm.cmd run dev:mp-weixin` 鐨勮緭鍑虹洰褰曪紱`tests/navigation-shell.test.ts` 澧炲姞璇ョ害鏉熴€?- 宸查€氳繃 `npm.cmd run test -- ui-components navigation-shell`銆乣npm.cmd run verify:static`銆乣npm.cmd run verify:system`銆乣npm.cmd run verify:harness`锛沝ev/build 浜х墿鍧囩‘璁や笉鍐嶅寘鍚鏂?title銆?
 ## F23 update 2026-05-31
 
-- `F23` 创建目标与我的页收口已完成并置为 `passing`；F20-F23 当前轻量 UI 清单已全部完成。
-- `pages/goal-create/index.vue` 已改为步骤式卡片，按目标名称、截止日期、每日可用时间、补充说明、个性化安排偏好组织输入；偏好默认展开，包含工作时段、能量状态、仪式感表达和 MBTI。
-- 创建页仍只负责创建 Goal、保存 UserProfile、生成并保存 PlanBundle，同时写入 legacy DailyPlan[] 兼容视图；页面不展示任务日历或执行任务。
-- `pages/profile/index.vue` 已收口为当前目标、默认安排偏好、AI 表达与仪式感、最近推进和设置入口；有目标时提供查看计划/管理目标动作，无目标时突出创建目标。
-- 边界：不新增多目标完整管理、不新增完整设置页、不接入真实 Deepseek，不改变 PlanBundle、Goal、UserProfile 持久化结构或 storage key。
-- 已通过 `npm.cmd run test -- goal-create user-profile ui-components navigation-shell data-layer`、`npm.cmd run verify:static`、`npm.cmd run verify:system`、`npm.cmd run verify:harness`。
-
+- `F23` 鍒涘缓鐩爣涓庢垜鐨勯〉鏀跺彛宸插畬鎴愬苟缃负 `passing`锛汧20-F23 褰撳墠杞婚噺 UI 娓呭崟宸插叏閮ㄥ畬鎴愩€?- `pages/goal-create/index.vue` 宸叉敼涓烘楠ゅ紡鍗＄墖锛屾寜鐩爣鍚嶇О銆佹埅姝㈡棩鏈熴€佹瘡鏃ュ彲鐢ㄦ椂闂淬€佽ˉ鍏呰鏄庛€佷釜鎬у寲瀹夋帓鍋忓ソ缁勭粐杈撳叆锛涘亸濂介粯璁ゅ睍寮€锛屽寘鍚伐浣滄椂娈点€佽兘閲忕姸鎬併€佷华寮忔劅琛ㄨ揪鍜?MBTI銆?- 鍒涘缓椤典粛鍙礋璐ｅ垱寤?Goal銆佷繚瀛?UserProfile銆佺敓鎴愬苟淇濆瓨 PlanBundle锛屽悓鏃跺啓鍏?legacy DailyPlan[] 鍏煎瑙嗗浘锛涢〉闈笉灞曠ず浠诲姟鏃ュ巻鎴栨墽琛屼换鍔°€?- `pages/profile/index.vue` 宸叉敹鍙ｄ负褰撳墠鐩爣銆侀粯璁ゅ畨鎺掑亸濂姐€丄I 琛ㄨ揪涓庝华寮忔劅銆佹渶杩戞帹杩涘拰璁剧疆鍏ュ彛锛涙湁鐩爣鏃舵彁渚涙煡鐪嬭鍒?绠＄悊鐩爣鍔ㄤ綔锛屾棤鐩爣鏃剁獊鍑哄垱寤虹洰鏍囥€?- 杈圭晫锛氫笉鏂板澶氱洰鏍囧畬鏁寸鐞嗐€佷笉鏂板瀹屾暣璁剧疆椤点€佷笉鎺ュ叆鐪熷疄 Deepseek锛屼笉鏀瑰彉 PlanBundle銆丟oal銆乁serProfile 鎸佷箙鍖栫粨鏋勬垨 storage key銆?- 宸查€氳繃 `npm.cmd run test -- goal-create user-profile ui-components navigation-shell data-layer`銆乣npm.cmd run verify:static`銆乣npm.cmd run verify:system`銆乣npm.cmd run verify:harness`銆?
 ## F22 update 2026-05-31
 
-- `F22` 任务日历计划板已完成并置为 `passing`；下一步按依赖启动 `F23` 创建目标与我的页收口。
-- `pages/plan-calendar/index.vue` 已收口为目标计划板，展示当前目标、整体进度、时间压力、近 7 天任务、远期阶段和轻量调整计划入口。
-- 边界：继续通过 `migrateLegacyDailyPlans()`、`buildPlanBundleCalendarView()` 和 plan-view 视图模型读取 Goal/Plan/Stage/Task，不改 PlanBundle 持久化结构、storage key 或 replanner 顺延策略。
-- 已通过 `npm.cmd run test -- plan-calendar ui-components data-layer`、`npm.cmd run verify:static`、`npm.cmd run verify:system`、`npm.cmd run verify:harness`。
-
+- `F22` 浠诲姟鏃ュ巻璁″垝鏉垮凡瀹屾垚骞剁疆涓?`passing`锛涗笅涓€姝ユ寜渚濊禆鍚姩 `F23` 鍒涘缓鐩爣涓庢垜鐨勯〉鏀跺彛銆?- `pages/plan-calendar/index.vue` 宸叉敹鍙ｄ负鐩爣璁″垝鏉匡紝灞曠ず褰撳墠鐩爣銆佹暣浣撹繘搴︺€佹椂闂村帇鍔涖€佽繎 7 澶╀换鍔°€佽繙鏈熼樁娈靛拰杞婚噺璋冩暣璁″垝鍏ュ彛銆?- 杈圭晫锛氱户缁€氳繃 `migrateLegacyDailyPlans()`銆乣buildPlanBundleCalendarView()` 鍜?plan-view 瑙嗗浘妯″瀷璇诲彇 Goal/Plan/Stage/Task锛屼笉鏀?PlanBundle 鎸佷箙鍖栫粨鏋勩€乻torage key 鎴?replanner 椤哄欢绛栫暐銆?- 宸查€氳繃 `npm.cmd run test -- plan-calendar ui-components data-layer`銆乣npm.cmd run verify:static`銆乣npm.cmd run verify:system`銆乣npm.cmd run verify:harness`銆?
 ## F21 update 2026-05-31
 
-- `F21` 今日任务执行台改造已完成并置为 `passing`；下一步按依赖启动 `F22` 任务日历计划板。
-- 今日页首屏改为执行台信息层级：`TodayFocusCard` 是有任务状态下的第一张核心卡，只突出一个 focus task；多任务通过“今日共 N 个任务 / 查看全部”的轻量展开入口处理。
-- 今日状态卡展示能量、可用时间、当前状态和管理入口；AI 今日建议限制为最多 3 条短句；晚间复盘保留为轻量入口并跳转到 `pages/review/index`。
-- 数据读取继续经由 `migrateLegacyDailyPlans()` 与 `buildTodaySuggestionFromPlanBundle()` / `TodaySuggestionView`，页面未直接拼装底层 Plan/Stage/Task 存储结构，也未修改 planner、replanner、storage key 或任务状态写回逻辑。
-- 已通过 `npm.cmd run test -- today today-suggestion review ui-components`、`npm.cmd run verify:static`、`npm.cmd run verify:system`、`npm.cmd run verify:harness`。
-
+- `F21` 浠婃棩浠诲姟鎵ц鍙版敼閫犲凡瀹屾垚骞剁疆涓?`passing`锛涗笅涓€姝ユ寜渚濊禆鍚姩 `F22` 浠诲姟鏃ュ巻璁″垝鏉裤€?- 浠婃棩椤甸灞忔敼涓烘墽琛屽彴淇℃伅灞傜骇锛歚TodayFocusCard` 鏄湁浠诲姟鐘舵€佷笅鐨勭涓€寮犳牳蹇冨崱锛屽彧绐佸嚭涓€涓?focus task锛涘浠诲姟閫氳繃鈥滀粖鏃ュ叡 N 涓换鍔?/ 鏌ョ湅鍏ㄩ儴鈥濈殑杞婚噺灞曞紑鍏ュ彛澶勭悊銆?- 浠婃棩鐘舵€佸崱灞曠ず鑳介噺銆佸彲鐢ㄦ椂闂淬€佸綋鍓嶇姸鎬佸拰绠＄悊鍏ュ彛锛汚I 浠婃棩寤鸿闄愬埗涓烘渶澶?3 鏉＄煭鍙ワ紱鏅氶棿澶嶇洏淇濈暀涓鸿交閲忓叆鍙ｅ苟璺宠浆鍒?`pages/review/index`銆?- 鏁版嵁璇诲彇缁х画缁忕敱 `migrateLegacyDailyPlans()` 涓?`buildTodaySuggestionFromPlanBundle()` / `TodaySuggestionView`锛岄〉闈㈡湭鐩存帴鎷艰搴曞眰 Plan/Stage/Task 瀛樺偍缁撴瀯锛屼篃鏈慨鏀?planner銆乺eplanner銆乻torage key 鎴栦换鍔＄姸鎬佸啓鍥為€昏緫銆?- 宸查€氳繃 `npm.cmd run test -- today today-suggestion review ui-components`銆乣npm.cmd run verify:static`銆乣npm.cmd run verify:system`銆乣npm.cmd run verify:harness`銆?
 ## Current handoff 2026-05-31
 
-- `2026-05-31` 新增 `docs/design/page/02-f20-page-shell-component-baseline.md`，用于把 F20 的页面壳、TabBar 协同、组件基线、禁止项和验收点写成执行级设计合约。
-- `F20` 的 behavior 与 docs 引用已同步更新到 `docs/log/v0.2/feature_list_v3_v2.json` 和 `docs/log/v0.3/feature_list_v0.3.json`。
+- `2026-05-31` 鏂板 `docs/design/page/02-f20-page-shell-component-baseline.md`锛岀敤浜庢妸 F20 鐨勯〉闈㈠３銆乀abBar 鍗忓悓銆佺粍浠跺熀绾裤€佺姝㈤」鍜岄獙鏀剁偣鍐欐垚鎵ц绾ц璁″悎绾︺€?- `F20` 鐨?behavior 涓?docs 寮曠敤宸插悓姝ユ洿鏂板埌 `docs/log/v0.2/feature_list_v3_v2.json` 鍜?`docs/log/v0.3/feature_list_v0.3.json`銆?
+- 褰撳墠 UI 鏀归€犲叆鍙ｅ凡鍒囨崲涓?`docs/harness/features/feature-index.json`銆?- `docs/log/v0.2/feature_list_v3_v2.json` 鍙繚鐣?F20-F23锛岀敤浜庨檷浣庡悗缁?UI 浠诲姟鐨勪笂涓嬫枃鍗犵敤銆?- `docs/log/v0.3/feature_list_v0.3.json` 淇濈暀涓?F12-F23 鐨勫畬鏁村巻鍙叉竻鍗曪紝涓嶅啀浣滀负榛樿浠诲姟鍏ュ彛銆?- 褰撳墠 `active` feature锛氭棤銆?- `npm.cmd run verify:harness` 榛樿鏍￠獙杞婚噺娓呭崟锛涘闇€鏍￠獙瀹屾暣鍘嗗彶娓呭崟锛屽彲璁剧疆 `HARNESS_FEATURE_LIST=docs/log/v0.3/feature_list_v0.3.json` 鍚庤繍琛屻€?
+## 褰撳墠 feature
 
-- 当前 UI 改造入口已切换为 `docs/harness/features/feature-index.json`。
-- `docs/log/v0.2/feature_list_v3_v2.json` 只保留 F20-F23，用于降低后续 UI 任务的上下文占用。
-- `docs/log/v0.3/feature_list_v0.3.json` 保留为 F12-F23 的完整历史清单，不再作为默认任务入口。
-- 当前 `active` feature：无。
-- `npm.cmd run verify:harness` 默认校验轻量清单；如需校验完整历史清单，可设置 `HARNESS_FEATURE_LIST=docs/log/v0.3/feature_list_v0.3.json` 后运行。
+- 褰撳墠 `active` feature锛欶25
+- 鐘舵€侊細F20-F24 鍧囦负 `passing`锛孎25 涓?`active`
 
-## 当前 feature
+## 褰撳墠鐘舵€?
+- 椤圭洰闃舵锛欰pp v0.3 鏁版嵁妯″瀷涓庢湇鍔¤縼绉诲凡瀹屾垚锛孶I 鏀归€犲凡瀹屾垚 F20 椤甸潰澹充笌缁勪欢鍩虹嚎銆丗21 浠婃棩浠诲姟鎵ц鍙般€丗22 浠诲姟鏃ュ巻璁″垝鏉裤€丗23 鍒涘缓鐩爣涓庢垜鐨勯〉鏀跺彛銆丗24 UI 缁熶竴鏍峰紡鍩虹嚎銆?- Harness 鐘舵€侊細F12-F24 宸?`passing`锛涘綋鍓?feature registry 涓?F01-F24 鍧囦负 `passing`銆?- 褰撳墠宸ヤ綔鍔熻兘娓呭崟浣嶇疆锛歚docs/harness/features/feature-index.json`
 
-- 当前 `active` feature：无
-- 状态：F20-F24 均为 `passing`
-
-## 当前状态
-
-- 项目阶段：App v0.3 数据模型与服务迁移已完成，UI 改造已完成 F20 页面壳与组件基线、F21 今日任务执行台、F22 任务日历计划板、F23 创建目标与我的页收口、F24 UI 统一样式基线。
-- Harness 状态：F12-F24 已 `passing`；当前 feature registry 中 F01-F24 均为 `passing`。
-- 当前工作功能清单位置：`docs/harness/features/feature-index.json`
-
-## 功能状态摘要
-
+## 鍔熻兘鐘舵€佹憳瑕?
 - `F12` passing
 - `F13` passing
 - `F14` passing
@@ -238,214 +362,121 @@
 - `F22` passing
 - `F23` passing
 - `F24` passing
-- v0.3 版本化功能清单位置：`docs/log/v0.3/feature_list_v0.3.json`
-- v0.2 版本化功能清单位置：`docs/log/v0.2/feature_list_v0.2.json`
-- v0.1 归档功能清单位置：`docs/log/v0.1/feature_list.json`
+- v0.3 鐗堟湰鍖栧姛鑳芥竻鍗曚綅缃細`docs/log/v0.3/feature_list_v0.3.json`
+- v0.2 鐗堟湰鍖栧姛鑳芥竻鍗曚綅缃細`docs/log/v0.2/feature_list_v0.2.json`
+- v0.1 褰掓。鍔熻兘娓呭崟浣嶇疆锛歚docs/log/v0.1/feature_list.json`
 
-## 最近完成
+## 鏈€杩戝畬鎴?
+- `2026-05-31` F20 宸插畬鎴愰〉闈㈠３涓庡叏灞€缁勪欢鍩虹嚎锛氫簲涓〉闈娇鐢?`AppPageHeader`锛岀Щ闄ゆ鏂囬噸澶嶆爣棰?eyebrow 鏍峰紡鍜?today/calendar/profile 鐨勫悓绾?TabBar 鍏ュ彛鎸夐挳锛岀粍浠跺澹虫牱寮忔敹鏁涘埌鍏变韩缁勪欢锛涙湭淇敼鏁版嵁銆乻torage銆乸lanner銆乺eplanner 鎴?AI/tarot 閫昏緫銆?- `npm.cmd run test -- ui-components navigation-shell today plan-calendar review` 閫氳繃锛?6 涓祴璇曢€氳繃銆?- `npm.cmd run verify:static` 閫氳繃銆?- `npm.cmd run verify:system` 閫氳繃锛宮p-weixin 鏋勫缓鎴愬姛锛屼粎鏈?Sass legacy API warning銆?- `npm.cmd run verify:harness` 閫氳繃锛? 涓?feature锛? 涓?passing锛? 涓?not_started锛? warning / 0 error銆?- `2026-05-31` 宸插湪 `docs/log/v0.3/feature_list_v0.3.json` 杩藉姞 UI 鏀归€犱换鍔?F20-F23銆?- F20锛氶〉闈㈠３涓庡叏灞€缁勪欢鍩虹嚎銆?- F21锛氫粖鏃ヤ换鍔℃墽琛屽彴銆?- F22锛氫换鍔℃棩鍘嗚鍒掓澘銆?- F23锛氬垱寤虹洰鏍囦笌鎴戠殑椤垫敹鍙ｃ€?- 杩欎簺浠诲姟鎸?F20 -> F21 -> F22 -> F23 涓茶渚濊禆锛屽悗缁?agent 涓嶅簲鍚屾椂瀹炵幇澶氫釜 UI feature銆?
+- 灏嗙孩妗嗕腑鐨勯」鐩湴鍥俱€佺害鏉熴€佽鏍煎拰鍒濆鍖栨枃妗ｇЩ鍔ㄥ埌 `docs/harness/`
+- 淇濈暀 `docs/progress.md` 鍜?`docs/decisions.md` 浣滀负涓绘枃浠?- 灏嗗悗缁祦姘磋褰曠洰褰曡皟鏁翠负 `docs/log/`
+- 鍚屾 `AGENTS.md` 鍜?harness 鏂囨。涓殑璺緞寮曠敤
+- 瀹炵幇 F01 鍒涘缓鐩爣椤甸潰锛氱洰鏍囧悕绉般€佹埅姝㈡棩鏈熴€佹瘡鏃ュ彲鐢ㄦ椂闂淬€佸彲閫夎鏄庛€佹牎楠屾彁绀哄拰淇濆瓨鍙嶉
+- 鍦?`models/goal.ts` 澧炲姞鍒涘缓鐩爣杈撳叆鏍￠獙涓庣洰鏍囨瀯寤洪€昏緫
+- 鏂板 `tests/goal-create.test.ts` 瑕嗙洊蹇呭～鏍￠獙銆佹棤鏁堟椂闂存牎楠屽拰缁熶竴 storage 淇濆瓨鍏ュ彛
+- 淇 F01 鎵嬪姩鍐掔儫鍙戠幇鐨勯棶棰橈細鎴鏃ユ湡涓嶈兘鏃╀簬浠婂ぉ锛岄〉闈㈡寜 `docs/harness/DESIGN.md` 鍜?`docs/design/visual-system.md` 璋冩暣涓烘殩鐧界敾甯冦€乻urface 琛ㄥ崟鍖恒€乤ccent 涓绘寜閽拰浣庡帇鍔涙彁绀?
+## 褰撳墠楠岃瘉鐘舵€?
+- `docs/log/v0.2/feature_list_v0.2.json`锛歷0.2 褰掓。鍔熻兘娓呭崟锛? 涓?feature锛? 涓?active锛? 涓?passing锛? 涓?not_started
+- `npm.cmd run test -- goal-create`锛氶€氳繃锛? 涓祴璇曢€氳繃
+- `npm.cmd run verify:static`锛氶€氳繃
+- `npm.cmd run verify:system`锛氶€氳繃锛宍build:mp-weixin` 鏋勫缓鎴愬姛
+- `npm.cmd run check`锛氶€氳繃锛? 涓祴璇曟枃浠躲€? 涓祴璇曢€氳繃
+- `2026-05-23` 鐢ㄦ埛纭 F01 鏈€缁堟墜鍔ㄥ啋鐑熼€氳繃
+- `2026-05-23` F02 宸叉寜鍔熻兘閫夋嫨瑙勫垯鍚姩骞跺畬鎴愰獙璇?- `npm.cmd run test -- user-profile`锛氶€氳繃锛? 涓祴璇曢€氳繃
+- `npm.cmd run verify:static`锛氶€氳繃
+- `npm.cmd run verify:system`锛氶€氳繃锛宍build:mp-weixin` 鏋勫缓鎴愬姛
+- `npm.cmd run check`锛氶€氳繃锛? 涓祴璇曟枃浠躲€?1 涓祴璇曢€氳繃
+- F02 mixed verification锛氶〉闈㈠凡鎻愪緵鍋忓ソ宸ヤ綔鏃舵銆佸綋鍓嶈兘閲忕姸鎬併€佸彲閫?MBTI 鍜屼繚瀛樺亸濂藉姩浣滐紱鑷姩鍖栨祴璇曡鐩栫粺涓€ storage 淇濆瓨鍜岀害鏉熻竟鐣?- `2026-05-23` F03 宸叉寜鍔熻兘閫夋嫨瑙勫垯鍚姩骞跺畬鎴愰獙璇?- `npm.cmd run test -- planner`锛氶€氳繃锛? 涓?planner 娴嬭瘯鏂囦欢銆? 涓祴璇曢€氳繃
+- `npm.cmd run verify:static`锛氶€氳繃
+- `npm.cmd run verify:system`锛氶€氳繃锛宍build:mp-weixin` 鏋勫缓鎴愬姛
+- `npm.cmd run check`锛氶€氳繃锛? 涓祴璇曟枃浠躲€?9 涓祴璇曢€氳繃
+- F03 瀹炵幇纭畾鎬у垵濮嬫媶瑙ｏ細涓嶈皟鐢ㄧ湡瀹?AI锛涙寜鏃ユ湡鐢熸垚 DailyPlan锛涙瘡鏃ヤ换鍔℃€绘椂闀夸笉瓒呰繃 dailyAvailableMinutes锛涙瘡涓换鍔″寘鍚爣棰樸€侀璁℃椂闀裤€佷紭鍏堢骇鍜屾渶浣庡畬鎴愮嚎锛涗笉鍙鏃惰繑鍥?infeasible
+- `2026-05-23` 鎵嬪姩娴嬭瘯鍙戠幇 F03 闆嗘垚缂哄彛锛氱偣鍑?goal-create 鐨勨€滅敓鎴愯鍒掆€濆彧淇濆瓨鐩爣鍜屽亸濂斤紝鏈皟鐢?planner 鐢熸垚骞朵繚瀛?DailyPlan锛涘凡瀹氫綅涓洪〉闈㈠叆鍙ｆ湭涓茶仈 planner
+- `2026-05-23` F03 闆嗘垚缂哄彛宸蹭慨澶嶏細goal-create 鐨勨€滅敓鎴愯鍒掆€濈幇鍦ㄤ細鏋勫缓 UserProfile銆佽皟鐢?buildStarterPlan锛屽苟閫氳繃 saveDailyPlans 淇濆瓨 DailyPlan[]
+- `2026-05-23` F04 宸叉寜鍔熻兘閫夋嫨瑙勫垯鍚姩骞跺畬鎴愰獙璇侊紝鐢ㄦ埛纭鏈€缁堟墜鍔ㄥ啋鐑熼€氳繃
+- `npm.cmd run test -- plan-calendar`锛氶€氳繃锛? 涓祴璇曢€氳繃
+- `npm.cmd run verify:static`锛氶€氳繃
+- `npm.cmd run verify:system`锛氶€氳繃锛宍build:mp-weixin` 鏋勫缓鎴愬姛
+- `npm.cmd run check`锛氶€氳繃锛? 涓祴璇曟枃浠躲€?3 涓祴璇曢€氳繃
+- F04 鑷姩鍖栧疄鐜板凡瀹屾垚锛氫换鍔℃棩鍘嗛〉璇诲彇褰撳墠鐩爣涓?DailyPlan锛岄粯璁ゅ睍绀烘渶杩?7 澶╋紝浠诲姟鍗＄墖鏄剧ず鐘舵€併€侀璁℃椂闀裤€佷紭鍏堢骇鍜屾渶浣庡畬鎴愮嚎锛涙棤璁″垝鏃舵樉绀轰綆鍘嬪姏绌虹姸鎬侊紱浠婃棩浠诲姟鍏ュ彛娉ㄥ唽涓哄崰浣嶉〉
+- `2026-05-23` 鐢ㄦ埛纭 F04 鏈€缁堟墜鍔ㄥ啋鐑熼€氳繃
+- `2026-05-23` F05 宸叉寜鍔熻兘閫夋嫨瑙勫垯鍚姩骞跺畬鎴愰獙璇?- `npm.cmd run test -- today`锛氶€氳繃锛? 涓祴璇曢€氳繃
+- `npm.cmd run verify:static`锛氶€氳繃
+- `npm.cmd run verify:system`锛氶€氳繃锛宍build:mp-weixin` 鏋勫缓鎴愬姛
+- `npm.cmd run check`锛氶€氳繃锛? 涓祴璇曟枃浠躲€?9 涓祴璇曢€氳繃
+- F05 瀹炵幇浠婃棩浠诲姟椤碉細璇诲彇褰撳墠鐩爣銆丏ailyPlan 鍜?UserProfile锛涙樉绀轰粖鏃ユ渶閲嶈浠诲姟銆佹渶浣庡畬鎴愮嚎銆佹帹鑽愪笓娉ㄦ椂娈点€佽兘閲忕姸鎬佹彁绀哄拰浠婃棩浠诲姟鍒楄〃锛涗綆鑳介噺鐘舵€佷紭鍏堥檷浣庡帇鍔?- `2026-05-23` F06 宸叉寜鍔熻兘閫夋嫨瑙勫垯鍚姩骞跺畬鎴愰獙璇?- `npm.cmd run test -- review`锛氶€氳繃锛? 涓祴璇曢€氳繃
+- `npm.cmd run verify:static`锛氶€氳繃
+- `npm.cmd run verify:system`锛氶€氳繃锛宍build:mp-weixin` 鏋勫缓鎴愬姛
+- `npm.cmd run check`锛氶€氳繃锛? 涓祴璇曟枃浠躲€?4 涓祴璇曢€氳繃
+- F06 瀹炵幇鏅氶棿澶嶇洏椤碉細鍙褰曚换鍔″凡瀹屾垚銆侀儴鍒嗗畬鎴愭垨鏈畬鎴愶紱鍙褰曚粖鏃ヨ兘閲忕姸鎬侊紱鍙繚瀛樺彲閫夊娉紱澶囨敞涓虹┖鏃朵粛淇濆瓨缁撴瀯鍖?DailyReview
+- `2026-05-23` F07 宸叉寜鍔熻兘閫夋嫨瑙勫垯鍚姩骞跺畬鎴愰獙璇?- `npm.cmd run test -- replanner`锛氶€氳繃锛? 涓祴璇曢€氳繃
+- `npm.cmd run verify:static`锛氶€氳繃
+- `npm.cmd run verify:system`锛氶€氳繃锛宍build:mp-weixin` 鏋勫缓鎴愬姛
+- `npm.cmd run check`锛氶€氳繃锛? 涓祴璇曟枃浠躲€?9 涓祴璇曢€氳繃
+- F07 瀹炵幇鑷姩閲嶆帓鍚庣画璁″垝锛氭牴鎹櫄闂村鐩樻妸閮ㄥ垎瀹屾垚鍜屾湭瀹屾垚浠诲姟杞垚鍚庣画琛ュ仛浠诲姟锛涢珮浼樺厛绾т换鍔′紭鍏堟帓鍏ュ悗缁棩鏈燂紱姣忔棩浠诲姟鎬绘椂闀夸笉瓒呰繃 `dailyAvailableMinutes`锛涘鐩樺綋澶╁凡瀹屾垚銆侀儴鍒嗗畬鎴愬拰璺宠繃鐘舵€佷綔涓哄巻鍙蹭繚鐣欙紱涓嶅彲琛屾椂杩斿洖 `infeasible` 鍜岃皟鏁村缓璁?- 宸茬煡锛歅owerShell 鐩存帴鎵ц `npm run check` 浼氳鏈満 execution policy 鎷︽埅锛屽綋鍓嶇幆澧冧娇鐢?`npm.cmd run check`
+- `2026-05-24` harness 绗笁灞傚凡浠庣函鏂囨。瑙勫垯鍗囩骇涓鸿交閲忛棬绂侊細鏂板 `scripts/harness-gate.mjs` 鍜?`docs/log/smoke-template.md`
+- `2026-05-24` `package.json` 宸叉柊澧?`verify:harness`锛屽苟鎺ュ叆 `npm run check`
+- `2026-05-24` `docs/harness/verification-policy.md` 宸叉妸 L3 鎷嗕负 L3a 绯荤粺鏋勫缓纭鍜?L3b 鐢ㄦ埛璺緞璇佹嵁锛涙柊 active feature 蹇呴』瀹氫箟 `completionGate`
+- `2026-05-24` 璋冭瘯/楠岃瘉鏂囨。宸叉敹鏁涳細浜哄伐璇勪及琛ㄥ苟鍏?`docs/harness/verification-policy.md`锛宍docs/harness/instrumentation.md` 鏀逛负璁板綍浣嶇疆閫熸煡锛屽垹闄ょ嫭绔嬭瘎浼版枃妗?- `2026-05-24` `docs/template/**` 宸插姞鍏?ESLint ignore锛岄伩鍏嶄笅杞界殑鏁欑▼绀轰緥浠ｇ爜鍙備笌椤圭洰 lint
+- `npm.cmd run verify:harness`锛氶€氳繃锛涘綋鍓?7 涓棫 feature 缂哄皯 `completionGate`锛岃剼鏈互 legacy warning 姹囨€伙紝涓嶉樆濉?v0.1 鍩虹嚎
+- `npm.cmd run check`锛氶€氳繃锛? 涓祴璇曟枃浠躲€?9 涓祴璇曢€氳繃锛涙柊澧?harness gate 涔熼€氳繃
+- `2026-05-24` 璋冭瘯/楠岃瘉鏂囨。鏀舵暃鍚庨噸鏂版墽琛?`npm.cmd run check`锛氶€氳繃锛? 涓祴璇曟枃浠躲€?9 涓祴璇曢€氳繃锛涗粛鍙湁 F01-F07 legacy `completionGate` warning
+- `2026-05-24` v0.1 鍔熻兘娓呭崟宸插綊妗ｅ埌 `docs/log/v0.1/feature_list_v0.1.json`
+- `2026-05-24` v0.2 宸ヤ綔璁″垝宸插啓鍏?`docs/log/v0.2/work-plan.md`
+- `2026-05-24` v0.2 鍔熻兘娓呭崟宸茬敓鎴愶紝杩佺Щ鍚庡綊妗ｄ负 `docs/log/v0.2/feature_list_v0.2.json`锛汧08 涓?active锛孎09-F11 鎸変緷璧栭『搴?not_started
+- `2026-05-24` v0.2 娓呭崟鐢熸垚鍚庢墽琛?`npm.cmd run verify:harness`锛氶€氳繃锛? 涓?feature锛? 涓?active锛? 涓?not_started锛? warning锛? error
+- `2026-05-24` v0.2 娓呭崟鐢熸垚鍚庢墽琛?`npm.cmd run check`锛氶€氳繃锛? 涓祴璇曟枃浠躲€?9 涓祴璇曢€氳繃锛宮p-weixin 鏋勫缓閫氳繃锛宧arness gate 閫氳繃
+- `2026-05-24` v0.2 UI 瑙勫垯宸茶ˉ鍏咃細F09/F10 鏄庣‘瑕佹眰鍏堥伒瀹?`docs/harness/DESIGN.md`锛屽啀璇诲彇 `docs/design/visual-system.md` 鍜?`docs/design/components.md`锛沗docs/design/components.md` 涓?`docs/design/pages.md` 宸叉竻鐞嗕负 v0.2 鍙ｅ緞
 
-- `2026-05-31` F20 已完成页面壳与全局组件基线：五个页面使用 `AppPageHeader`，移除正文重复标题/eyebrow 样式和 today/calendar/profile 的同级 TabBar 入口按钮，组件外壳样式收敛到共享组件；未修改数据、storage、planner、replanner 或 AI/tarot 逻辑。
-- `npm.cmd run test -- ui-components navigation-shell today plan-calendar review` 通过：36 个测试通过。
-- `npm.cmd run verify:static` 通过。
-- `npm.cmd run verify:system` 通过，mp-weixin 构建成功，仅有 Sass legacy API warning。
-- `npm.cmd run verify:harness` 通过：4 个 feature，1 个 passing，3 个 not_started，0 warning / 0 error。
-- `2026-05-31` 已在 `docs/log/v0.3/feature_list_v0.3.json` 追加 UI 改造任务 F20-F23。
-- F20：页面壳与全局组件基线。
-- F21：今日任务执行台。
-- F22：任务日历计划板。
-- F23：创建目标与我的页收口。
-- 这些任务按 F20 -> F21 -> F22 -> F23 串行依赖，后续 agent 不应同时实现多个 UI feature。
+- `2026-05-24` F08 宸插畬鎴愭暟鎹眰鏁寸悊涓庡吋瀹硅竟鐣岋細鏂板鏃ф暟鎹?normalize 鍏煎銆乻torage `read*` 鏄庣‘鐘舵€佺粨鏋溿€乣today-suggestion` 璁＄畻瑙嗗浘鏈嶅姟锛涙湭寮曞叆鐪熷疄 Deepseek銆佸缃?UI 鎴栦簯绔瓨鍌?- `npm.cmd run test -- data-layer storage`锛氶€氳繃锛? 涓祴璇曟枃浠躲€?1 涓祴璇曢€氳繃
+- `npm.cmd run verify:static`锛氶€氳繃
+- `npm.cmd run verify:system`锛氶€氳繃锛宍build:mp-weixin` 鏋勫缓鎴愬姛
+- `npm.cmd run check`锛氶€氳繃锛?0 涓祴璇曟枃浠躲€?9 涓祴璇曢€氳繃锛宧arness gate 0 warning / 0 error
+- `npm.cmd run verify:harness`锛氶€氳繃锛孎08 passing 鐘舵€佷笅 4 涓?feature锛? warning锛? error
+- F08 L3b锛歚tests/data-layer.test.ts` 鑷姩鍖栬鐩栤€滃垱寤虹洰鏍?-> 淇濆瓨璁″垝 -> 鎵撳紑浠婃棩浠诲姟鐢熸垚寤鸿瑙嗗浘鈥濆拰鈥滄棤鏈湴鏁版嵁 -> 鏄庣‘绌虹粨鏋溾€濅袱鏉＄敤鎴疯矾寰?
+- `2026-05-24` F09 宸插畬鎴愬鑸３涓庨〉闈㈤『搴忥細`pages.json` 灏?today 璁句负绗竴鍏ュ彛锛屽簳閮?tab 涓?浠婃棩/鏃ュ巻/鍒涘缓/鎴戠殑锛屾柊澧?`pages/profile/index.vue` 鍜?`components/AppPageHeader.vue`
+- `npm.cmd run test -- navigation-shell`锛氶€氳繃锛? 涓祴璇曟枃浠躲€? 涓祴璇曢€氳繃
+- `npm.cmd run verify:static`锛氶€氳繃
+- `npm.cmd run verify:system`锛氶€氳繃锛宍build:mp-weixin` 鏋勫缓鎴愬姛锛宲rofile/today/plan-calendar/goal-create 椤甸潰 wxml/json 浜х墿瀛樺湪
+- `npm.cmd run check`锛氶€氳繃锛?1 涓祴璇曟枃浠躲€?4 涓祴璇曢€氳繃锛宧arness gate 0 warning / 0 error
+- `npm.cmd run verify:harness`锛氶€氳繃锛孎09 passing 鐘舵€佷笅 4 涓?feature锛? warning锛? error
+- F09 L3b锛歚tests/navigation-shell.test.ts` 鑷姩鍖栬鐩栭粯璁よ繘鍏ヤ粖鏃ヤ换鍔°€佸簳閮?tab 椤哄簭銆乼ab 椤甸潰娉ㄥ唽鍜?tab 椤典富璺緞 `switchTab`
 
-- 将红框中的项目地图、约束、规格和初始化文档移动到 `docs/harness/`
-- 保留 `docs/progress.md` 和 `docs/decisions.md` 作为主文件
-- 将后续流水记录目录调整为 `docs/log/`
-- 同步 `AGENTS.md` 和 harness 文档中的路径引用
-- 实现 F01 创建目标页面：目标名称、截止日期、每日可用时间、可选说明、校验提示和保存反馈
-- 在 `models/goal.ts` 增加创建目标输入校验与目标构建逻辑
-- 新增 `tests/goal-create.test.ts` 覆盖必填校验、无效时间校验和统一 storage 保存入口
-- 修复 F01 手动冒烟发现的问题：截止日期不能早于今天，页面按 `docs/harness/DESIGN.md` 和 `docs/design/visual-system.md` 调整为暖白画布、surface 表单区、accent 主按钮和低压力提示
+- `2026-05-24` F10 宸插畬鎴愭牳蹇冪粍浠朵笌椤甸潰瑙嗚鏁寸悊锛氭柊澧?`TaskCard`銆乣TodayFocusCard`銆乣EmptyState`銆乣EnergySelector`锛屽苟鎺ュ叆 today銆乸lan-calendar銆乬oal-create銆乺eview銆乸rofile
+- `npm.cmd run test -- ui-components today plan-calendar review`锛氶€氳繃锛? 涓祴璇曟枃浠躲€?0 涓祴璇曢€氳繃
+- `npm.cmd run verify:static`锛氶€氳繃
+- `npm.cmd run verify:system`锛氶€氳繃锛宍build:mp-weixin` 鏋勫缓鎴愬姛
+- `npm.cmd run check`锛氶€氳繃锛?2 涓祴璇曟枃浠躲€?9 涓祴璇曢€氳繃锛宧arness gate 0 warning / 0 error
+- `npm.cmd run verify:harness`锛氶€氳繃锛孎10 passing 鐘舵€佷笅 4 涓?feature锛? warning锛? error
+- F10 L3b锛歚tests/ui-components.test.ts` 鑷姩鍖栬鐩栨牳蹇冪粍浠剁粨鏋勫拰涓昏椤甸潰鎺ュ叆锛泃oday/calendar/review 鏃㈡湁璺緞娴嬭瘯缁х画閫氳繃
 
-## 当前验证状态
+- `2026-05-24` F11 宸插畬鎴?Deepseek 涓庡缃楁墿灞曟帴鍙ｉ鐣欙細鏂板 `AiTodaySuggestion`銆乣TarotDraw`銆丄I suggestion schema銆乼arot fallback 鍜?`today-suggestion` 鎵╁睍鍏ュ彛锛涙湭鎺ュ叆鐪熷疄 Deepseek 缃戠粶璇锋眰銆佷簯鍑芥暟銆佸畬鏁村缃?UI 鎴栭殣绉佹暟鎹笂浼犮€?- `npm.cmd run test -- ai-tarot-contract today-suggestion`锛氶€氳繃锛? 涓祴璇曟枃浠躲€?0 涓祴璇曢€氳繃銆?- `npm.cmd run verify:static`锛氶€氳繃銆?- `npm.cmd run verify:system`锛氶€氳繃锛宍build:mp-weixin` 鏋勫缓鎴愬姛銆?- `npm.cmd run check`锛氶€氳繃锛?4 涓祴璇曟枃浠躲€?0 涓祴璇曢€氳繃锛孎11 passing 鐘舵€佷笅 harness gate 0 warning / 0 error銆?- F11 L3b锛歚tests/today-suggestion.test.ts` 鑷姩鍖栬鐩栨棤 AI 鍑嵁 fallback銆佸彲閫?TarotDraw 褰卞搷琛ㄨ揪銆丄I 鎺掑簭/琛ㄨ揪褰卞搷鍜屼笉淇敼鍘熷 DailyPlan/Task.status锛沗tests/ai-tarot-contract.test.ts` 鑷姩鍖栬鐩栧缃楁枃妗堣竟鐣屻€丄I schema 杈圭晫鍜?typed fallback銆?
+- `npm.cmd run verify:harness`锛氶€氳繃锛孎11 passing 鐘舵€佷笅 4 涓?feature 鍏ㄩ儴 passing锛? warning / 0 error銆?- `2026-05-26` 宸插紑濮嬩笅涓€闃舵鏁版嵁妯″瀷鏁寸悊锛屽厛琛ユ灦鏋勬枃妗ｏ紝涓嶄慨鏀逛笟鍔′唬鐮侊細鏂板 `docs/architecture/goal-plan-task-state-model.md` 浣滀负 Goal / Plan / Stage / Task 鐩爣妯″瀷鍚堝悓銆?- `2026-05-26` 宸叉洿鏂?`docs/architecture/data-models.md`銆乣docs/architecture/services-boundary.md`銆乣docs/architecture/storage-strategy.md`锛屾槑纭綋鍓嶄唬鐮佷粛浠?`DailyPlan[]` 涓哄吋瀹圭粨鏋勶紝鍚庣画搴旇縼绉诲埌 `Plan + Stage + Task`锛屽苟淇濈暀鏃ф暟鎹鍙栥€?- `2026-05-26` 宸叉洿鏂?`docs/harness/ARCHITECTURE.md` 鍜?`AGENTS.md`锛歚ARCHITECTURE.md` 浣滀负鏋舵瀯 README锛宍AGENTS.md` 澧炲姞鏁版嵁妯″瀷銆乻torage銆乻ervices 鐨勬寜闇€璇诲彇鍜岃縼绉荤害鏉熴€?- `2026-05-26` 宸插畬鎴?`models/` 涓?`services/` 鍒濇瀹¤锛氬綋鍓嶄富瑕侀闄╂槸 `models/plan.ts` 娣峰悎棰嗗煙妯″瀷鍜岄〉闈㈣鍥俱€乣planner/replanner/storage/today-suggestion/ai-client` 浠嶅己渚濊禆 `DailyPlan[]`锛屽悗缁簲鍏堟柊澧炵洰鏍囩被鍨嬪拰 legacy adapter锛屽啀閫愭杩佺Щ鏈嶅姟杈撳嚭銆?- `2026-05-26` 宸茬敓鎴?App v0.3 宸ヤ綔璁″垝锛歚docs/log/v0.3/work-plan.md`銆?- `2026-05-26` 宸茬敓鎴?App v0.3 鍔熻兘娓呭崟锛歚docs/log/v0.3/feature_list_v0.3.json`锛汧12 涓?`active`锛孎13-F17 鎸変緷璧栭『搴?`not_started`銆?- `2026-05-26` `scripts/harness-gate.mjs` 宸蹭粠鍥哄畾瑕佹眰 `completionGate.version: "v0.2"` 璋冩暣涓烘帴鍙?`v0.x` 鐗堟湰鏍煎紡锛宍docs/harness/verification-policy.md` 宸插悓姝ヨ鏄庛€?
+- `2026-05-26` F12 宸插畬鎴愮洰鏍囨暟鎹ā鍨嬩笌 legacy adapter锛氭柊澧?`GoalStatus`銆乣PlanStatus`銆乣StageStatus`銆乣TaskType`銆乣Plan`銆乣Stage`銆乣PlanBundle`銆乣DailyTaskView`銆乣PlanProgress`锛屽苟鎻愪緵 `dailyPlansToPlanBundle()` / `planBundleToDailyPlans()` 鍙屽悜 adapter銆?- F12 鍏煎杈圭晫锛氭棫 `DailyPlan` 鏈垹闄わ紱鏃?`Task.date` 閫氳繃 adapter 鏄犲皠涓?`scheduledDate`锛沗DailyReview` 鏀寔鍙€?`taskResults`锛屾棫涓夌粍 task id 缁х画鍙锛涙湭淇敼 storage銆乸lanner銆乺eplanner銆乼oday-suggestion 鎴栭〉闈㈣繍琛屼富璺€?- `npm.cmd run test -- data-models-v0.3 data-layer`锛氶€氳繃锛? 涓祴璇曟枃浠躲€?1 涓祴璇曢€氳繃銆?- `npm.cmd run verify:static`锛氶€氳繃銆?- `npm.cmd run verify:system`锛氶€氳繃锛宍build:mp-weixin` 鏋勫缓鎴愬姛銆?- `npm.cmd run check`锛氶€氳繃锛?5 涓祴璇曟枃浠躲€?5 涓祴璇曢€氳繃锛孎12 active 鐘舵€佷笅 harness gate 0 warning / 0 error銆?- F12 L3b锛歚tests/data-models-v0.3.test.ts` 瑕嗙洊鏃?DailyPlan[] -> PlanBundle -> DailyPlan[]銆佹棫 Task.date 鏄犲皠銆丏ailyReview taskResults 鍏煎鍜?PlanProgress锛沗tests/data-layer.test.ts` 璇佹槑鏃т富璺緞浠嶅彲杩愯銆?
+- `npm.cmd run verify:harness`锛氶€氳繃锛孎12 passing 鐘舵€佷笅 6 涓?feature 涓?1 涓?passing銆? 涓?not_started锛? warning / 0 error銆?
+- `2026-05-26` F13 宸插畬鎴?storage PlanBundle 璇诲啓涓庢棫鏁版嵁杩佺Щ锛氭柊澧?`savePlanBundle()`銆乣readPlanBundle()`銆乣getActivePlanBundle()`銆乣migrateLegacyDailyPlans()`锛屽綋鍓?active bundle key 涓?`plan-bundle:{goalId}`銆?- F13 鍏煎杈圭晫锛歚daily-plans:{goalId}` 鏃?key 缁х画鍙锛涜縼绉讳紭鍏堣繑鍥炲凡鏈?PlanBundle锛岄噸澶嶆墽琛屼笉閲嶅鐢熸垚浠诲姟锛屼笉瑕嗙洊宸叉湁 done/partial/skipped 鐘舵€侊紱鏈慨鏀?planner銆乺eplanner 鎴栭〉闈?UI銆?- `npm.cmd run test -- storage data-layer`锛氶€氳繃锛? 涓祴璇曟枃浠躲€?5 涓祴璇曢€氳繃銆?- `npm.cmd run verify:static`锛氶€氳繃銆?- `npm.cmd run verify:system`锛氶€氳繃锛宍build:mp-weixin` 鏋勫缓鎴愬姛銆?- `npm.cmd run check`锛氶€氳繃锛?5 涓祴璇曟枃浠躲€?0 涓祴璇曢€氳繃锛孎13 active 鐘舵€佷笅 harness gate 0 warning / 0 error銆?- F13 L3b锛歚tests/storage.test.ts` 瑕嗙洊鏃?daily-plans 鏈湴鏁版嵁杩佺Щ涓?PlanBundle銆佸箓绛夎縼绉汇€佸潖鏁版嵁銆佽寮傚父鍜屽啓寮傚父锛沗tests/data-layer.test.ts` 璇佹槑鏃т富璺緞浠嶅彲杩愯銆?
+- `npm.cmd run verify:harness`锛氶€氳繃锛孎13 passing 鐘舵€佷笅 6 涓?feature 涓?2 涓?passing銆? 涓?not_started锛? warning / 0 error銆?
+- `2026-05-26` F14 宸插畬鎴?planner 杈撳嚭 PlanBundle锛氭柊澧?`buildStarterPlanBundle()`锛岃繎 7 澶╃敓鎴愬叿浣?Task锛岃繙鏈熷唴瀹硅繘鍏?Stage锛沗PlanBundle.plan` 涓嶅啓鍏?`dailyKeyword` 鎴?`recommendedFocusWindow`銆?- F14 鍏煎杈圭晫锛氭棫 `buildStarterPlan()` 缁х画閫氳繃 `buildLegacyDailyPlansFromBundle()` 杈撳嚭 `DailyPlan[]`锛涘垱寤虹洰鏍囬〉闈繚瀛樻柊 `PlanBundle`锛屽苟缁х画淇濆瓨 legacy `DailyPlan[]` 渚涙棫椤甸潰璇诲彇锛涙湭閲嶆瀯 replanner 鎴栨棩鍘嗛〉闈?UI銆?- `npm.cmd run test -- planner data-layer`锛氶€氳繃锛? 涓祴璇曟枃浠躲€?3 涓祴璇曢€氳繃銆?- `npm.cmd run verify:static`锛氶€氳繃銆?- `npm.cmd run verify:system`锛氶€氳繃锛宍build:mp-weixin` 鏋勫缓鎴愬姛銆?- `npm.cmd run check`锛氶€氳繃锛?5 涓祴璇曟枃浠躲€?3 涓祴璇曢€氳繃锛孎14 active 鐘舵€佷笅 harness gate 0 warning / 0 error銆?- F14 L3b锛歚tests/planner.test.ts` 瑕嗙洊 PlanBundle 杈撳嚭銆佽繎 7 澶?Task銆佽繙鏈?Stage銆佷綆鑳介噺鏈€浣庡畬鎴愮嚎鍜?PlanBundle 瀛樺偍锛沗tests/data-layer.test.ts` 瑕嗙洊淇濆瓨 PlanBundle + legacy DailyPlan[] 鍚庢棫 today-suggestion 璺緞浠嶅彲鐢ㄣ€?
+- `npm.cmd run verify:harness`锛氶€氳繃锛孎14 passing 鐘舵€佷笅 6 涓?feature 涓?3 涓?passing銆? 涓?not_started锛? warning / 0 error銆?
+- `2026-05-26` F15 宸插畬鎴愪粖鏃ヤ笌鏃ュ巻瑙嗗浘鏈嶅姟杩佺Щ锛歚services/today-suggestion.ts` 鏂板 `buildTodaySuggestionFromPlanBundle()` 鍜?`buildTodaySuggestionFromDailyTaskViews()`锛宍models/plan.ts` 鏂板 `buildPlanBundleCalendarView()` 姹囨€昏繎 7 澶╀换鍔°€佽繙鏈?Stage銆佽繘搴﹀拰 plan status銆?- F15 AI 杈圭晫锛歚services/ai-client.ts` 鏂板 `requestTodayTaskSuggestion()`锛屾柊鍏ュ彛鍙帴鏀跺彈鎺х殑浠婃棩浠诲姟涓婁笅鏂囷紱鏃?`requestTodaySuggestion()` 缁х画鍏煎 `DailyPlan[]`锛屼絾浼氬厛鎻愬彇褰撳ぉ浠诲姟鍐嶅鎵樼粰鏂板叆鍙ｃ€?- F15 琛ㄨ揪/鎺掑簭杈圭晫锛欰I/濉旂綏浠嶅彧褰卞搷 task 鎺掑簭銆乨ailyKeyword銆乵inimumLine/caution 琛ㄨ揪锛屼笉鍐欏洖 `Task.status`銆乣DailyReview` 鎴栧巻鍙?`Plan`銆?- `npm.cmd run test -- today-suggestion ai-tarot-contract plan-calendar today`锛氶€氳繃锛? 涓祴璇曟枃浠躲€?5 涓祴璇曢€氳繃銆?- `npm.cmd run verify:static`锛氶€氳繃銆?- `npm.cmd run verify:system`锛氶€氳繃锛宍build:mp-weixin` 鏋勫缓鎴愬姛銆?- `npm.cmd run check`锛氶€氳繃锛?5 涓祴璇曟枃浠躲€?7 涓祴璇曢€氳繃锛孎15 active 鐘舵€佷笅 harness gate 0 warning / 0 error銆?- F15 L3b锛歚tests/today-suggestion.test.ts` 瑕嗙洊 PlanBundle/DailyTaskView -> TodaySuggestionView锛沗tests/plan-calendar.test.ts` 瑕嗙洊 PlanBundle -> 杩?7 澶╀换鍔?+ 杩滄湡 Stage + progress + plan status锛涢〉闈㈠叏闈㈡帴鍏ヤ繚鐣欏埌 F17銆?
+- `npm.cmd run verify:harness`锛氶€氳繃锛孎15 passing 鐘舵€佷笅 6 涓?feature 涓?4 涓?passing銆? 涓?not_started锛? warning / 0 error銆?
+- `2026-05-26` F16 宸插畬鎴?replanner 鍩轰簬 Plan/Task 閲嶆帓锛氭柊澧?`replanPlanBundleAfterReview()`锛屼互 `PlanBundle + DailyReview + UserProfile` 鐢熸垚鏇存柊鍚庣殑 `PlanBundle` 鎴栨槑纭?`infeasible`銆?- F16 椤哄欢绛栫暐锛氫笉鐢熸垚琛ュ仛 Task锛屼繚鐣欏師 Task id 骞舵洿鏂?`scheduledDate`锛涢€氳繃 `rescheduledFromDate`銆乣rescheduledFromStatus`銆乣rescheduleReason` 璁板綍鏉ユ簮鍏崇郴銆?- F16 鍘嗗彶杈圭晫锛歞one 浠诲姟淇濈暀瀹屾垚鐘舵€侊紱partial/skipped 涓嶉潤榛樹涪澶憋紱`DailyReview` 浣滀负鍘嗗彶浜嬪疄淇濈暀锛宺eplanner 涓嶆敼鍐?review锛涘閲忎笉瓒虫椂杩斿洖 infeasible锛屼笉瑕嗙洊鍘?PlanBundle銆?- `npm.cmd run test -- replanner data-layer storage`锛氶€氳繃锛? 涓祴璇曟枃浠躲€?5 涓祴璇曢€氳繃銆?- `npm.cmd run verify:static`锛氶€氳繃銆?- `npm.cmd run verify:system`锛氶€氳繃锛宍build:mp-weixin` 鏋勫缓鎴愬姛銆?- `npm.cmd run check`锛氶€氳繃锛?5 涓祴璇曟枃浠躲€?1 涓祴璇曢€氳繃锛孎16 active 鐘舵€佷笅 harness gate 0 warning / 0 error銆?- F16 L3b锛歚tests/replanner.test.ts` 瑕嗙洊 PlanBundle 閲嶆帓銆佷换鍔″巻鍙层€佷笉鍙鐘舵€佸拰浣庤兘閲忓帇鍔涙帶鍒讹紱`tests/data-layer.test.ts` 瑕嗙洊淇濆瓨 PlanBundle -> 淇濆瓨 DailyReview -> 閲嶆帓 -> 淇濆瓨骞惰鍥?PlanBundle锛沗tests/storage.test.ts` 瑕嗙洊閲嶆帓杩借釜瀛楁璇诲啓銆?
+- `npm.cmd run verify:harness`锛氶€氳繃锛孎16 passing 鐘舵€佷笅 6 涓?feature 涓?5 涓?passing銆? 涓?not_started锛? warning / 0 error銆?
+- `2026-05-26` F17 宸插畬鎴愰〉闈?UI 涓庢柊鏁版嵁瑙嗗浘鎺ュ叆锛氬垱寤虹洰鏍囬〉淇濆瓨 PlanBundle锛涗粖鏃ラ〉浣跨敤 `buildTodaySuggestionFromPlanBundle()`锛涙棩鍘嗛〉浣跨敤 `buildPlanBundleCalendarView()`锛涘鐩橀〉淇濆瓨 `DailyReview.taskResults` 鍚庤皟鐢?`replanPlanBundleAfterReview()`锛涙垜鐨勯〉浣跨敤 `buildPlanProgress()`銆?- F17 鍏煎杈圭晫锛歵oday/calendar/review/profile 鍧囬€氳繃 `migrateLegacyDailyPlans()` 鍏煎鏃?`DailyPlan[]` 鏈湴鏁版嵁锛況eview 閲嶆帓鎴愬姛鍚庡悓鏃跺洖鍐?PlanBundle 鍜?legacy DailyPlan[]锛屾棫椤甸潰璺緞浠嶅彲鎺с€?- `npm.cmd run test -- today plan-calendar goal-create review ui-components navigation-shell`锛氶€氳繃锛? 涓祴璇曟枃浠躲€?9 涓祴璇曢€氳繃銆?- `npm.cmd run verify:static`锛氶€氳繃銆?- `npm.cmd run verify:system`锛氶€氳繃锛宍build:mp-weixin` 鏋勫缓鎴愬姛锛宼oday/calendar/goal-create/review/profile 椤甸潰 wxml 浜х墿鍧囧瓨鍦ㄣ€?- `npm.cmd run check`锛氶€氳繃锛?5 涓祴璇曟枃浠躲€?2 涓祴璇曢€氳繃锛孎17 active 鐘舵€佷笅 harness gate 0 warning / 0 error銆?- F17 L3b/manual smoke锛氭瀯寤轰骇鐗╂鏌ョ‘璁や簲涓〉闈骇鐗╁瓨鍦紱婧愮爜璺緞妫€鏌ョ‘璁ゆ柊 PlanBundle銆乴egacy migration銆乺eplanner 鍜?progress 鍏ュ彛鍧囨帴鍏ワ紱鏃犳暟鎹矾寰勭敱 EmptyState 瑕嗙洊锛涢〉闈㈡病鏈夋妸濉旂綏銆丮BTI銆佹瘡鏃ュ叧閿瘝浣滀负浠诲姟鍐崇瓥渚濇嵁銆?
+- `npm.cmd run verify:harness`锛氶€氳繃锛孎17 passing 鐘舵€佷笅 6 涓?feature 鍏ㄩ儴 passing锛? warning / 0 error銆?
+## 闃诲椤?
+- F01 鏃犲墿浣欓樆濉為」锛孉05 鏈€缁堥〉闈㈡墜鍔ㄥ啋鐑熷凡鐢辩敤鎴风‘璁ら€氳繃
+- F02 鏃犲墿浣欓樆濉為」
+- F03 鏃犲墿浣欓樆濉為」
+- F04 鏃犲墿浣欓樆濉為」
+- F05 鏃犲墿浣欓樆濉為」
+- F06 鏃犲墿浣欓樆濉為」
+- F07 鏃犲墿浣欓樆濉為」
 
-- `docs/log/v0.2/feature_list_v0.2.json`：v0.2 归档功能清单，4 个 feature，0 个 active，1 个 passing，3 个 not_started
-- `npm.cmd run test -- goal-create`：通过，6 个测试通过
-- `npm.cmd run verify:static`：通过
-- `npm.cmd run verify:system`：通过，`build:mp-weixin` 构建成功
-- `npm.cmd run check`：通过，2 个测试文件、7 个测试通过
-- `2026-05-23` 用户确认 F01 最终手动冒烟通过
-- `2026-05-23` F02 已按功能选择规则启动并完成验证
-- `npm.cmd run test -- user-profile`：通过，4 个测试通过
-- `npm.cmd run verify:static`：通过
-- `npm.cmd run verify:system`：通过，`build:mp-weixin` 构建成功
-- `npm.cmd run check`：通过，3 个测试文件、11 个测试通过
-- F02 mixed verification：页面已提供偏好工作时段、当前能量状态、可选 MBTI 和保存偏好动作；自动化测试覆盖统一 storage 保存和约束边界
-- `2026-05-23` F03 已按功能选择规则启动并完成验证
-- `npm.cmd run test -- planner`：通过，2 个 planner 测试文件、9 个测试通过
-- `npm.cmd run verify:static`：通过
-- `npm.cmd run verify:system`：通过，`build:mp-weixin` 构建成功
-- `npm.cmd run check`：通过，4 个测试文件、19 个测试通过
-- F03 实现确定性初始拆解：不调用真实 AI；按日期生成 DailyPlan；每日任务总时长不超过 dailyAvailableMinutes；每个任务包含标题、预计时长、优先级和最低完成线；不可行时返回 infeasible
-- `2026-05-23` 手动测试发现 F03 集成缺口：点击 goal-create 的“生成计划”只保存目标和偏好，未调用 planner 生成并保存 DailyPlan；已定位为页面入口未串联 planner
-- `2026-05-23` F03 集成缺口已修复：goal-create 的“生成计划”现在会构建 UserProfile、调用 buildStarterPlan，并通过 saveDailyPlans 保存 DailyPlan[]
-- `2026-05-23` F04 已按功能选择规则启动并完成验证，用户确认最终手动冒烟通过
-- `npm.cmd run test -- plan-calendar`：通过，4 个测试通过
-- `npm.cmd run verify:static`：通过
-- `npm.cmd run verify:system`：通过，`build:mp-weixin` 构建成功
-- `npm.cmd run check`：通过，5 个测试文件、23 个测试通过
-- F04 自动化实现已完成：任务日历页读取当前目标与 DailyPlan，默认展示最近 7 天，任务卡片显示状态、预计时长、优先级和最低完成线；无计划时显示低压力空状态；今日任务入口注册为占位页
-- `2026-05-23` 用户确认 F04 最终手动冒烟通过
-- `2026-05-23` F05 已按功能选择规则启动并完成验证
-- `npm.cmd run test -- today`：通过，6 个测试通过
-- `npm.cmd run verify:static`：通过
-- `npm.cmd run verify:system`：通过，`build:mp-weixin` 构建成功
-- `npm.cmd run check`：通过，6 个测试文件、29 个测试通过
-- F05 实现今日任务页：读取当前目标、DailyPlan 和 UserProfile；显示今日最重要任务、最低完成线、推荐专注时段、能量状态提示和今日任务列表；低能量状态优先降低压力
-- `2026-05-23` F06 已按功能选择规则启动并完成验证
-- `npm.cmd run test -- review`：通过，5 个测试通过
-- `npm.cmd run verify:static`：通过
-- `npm.cmd run verify:system`：通过，`build:mp-weixin` 构建成功
-- `npm.cmd run check`：通过，7 个测试文件、34 个测试通过
-- F06 实现晚间复盘页：可记录任务已完成、部分完成或未完成；可记录今日能量状态；可保存可选备注；备注为空时仍保存结构化 DailyReview
-- `2026-05-23` F07 已按功能选择规则启动并完成验证
-- `npm.cmd run test -- replanner`：通过，5 个测试通过
-- `npm.cmd run verify:static`：通过
-- `npm.cmd run verify:system`：通过，`build:mp-weixin` 构建成功
-- `npm.cmd run check`：通过，8 个测试文件、39 个测试通过
-- F07 实现自动重排后续计划：根据晚间复盘把部分完成和未完成任务转成后续补做任务；高优先级任务优先排入后续日期；每日任务总时长不超过 `dailyAvailableMinutes`；复盘当天已完成、部分完成和跳过状态作为历史保留；不可行时返回 `infeasible` 和调整建议
-- 已知：PowerShell 直接执行 `npm run check` 会被本机 execution policy 拦截，当前环境使用 `npm.cmd run check`
-- `2026-05-24` harness 第三层已从纯文档规则升级为轻量门禁：新增 `scripts/harness-gate.mjs` 和 `docs/log/smoke-template.md`
-- `2026-05-24` `package.json` 已新增 `verify:harness`，并接入 `npm run check`
-- `2026-05-24` `docs/harness/verification-policy.md` 已把 L3 拆为 L3a 系统构建确认和 L3b 用户路径证据；新 active feature 必须定义 `completionGate`
-- `2026-05-24` 调试/验证文档已收敛：人工评估表并入 `docs/harness/verification-policy.md`，`docs/harness/instrumentation.md` 改为记录位置速查，删除独立评估文档
-- `2026-05-24` `docs/template/**` 已加入 ESLint ignore，避免下载的教程示例代码参与项目 lint
-- `npm.cmd run verify:harness`：通过；当前 7 个旧 feature 缺少 `completionGate`，脚本以 legacy warning 汇总，不阻塞 v0.1 基线
-- `npm.cmd run check`：通过，8 个测试文件、39 个测试通过；新增 harness gate 也通过
-- `2026-05-24` 调试/验证文档收敛后重新执行 `npm.cmd run check`：通过，8 个测试文件、39 个测试通过；仍只有 F01-F07 legacy `completionGate` warning
-- `2026-05-24` v0.1 功能清单已归档到 `docs/log/v0.1/feature_list_v0.1.json`
-- `2026-05-24` v0.2 工作计划已写入 `docs/log/v0.2/work-plan.md`
-- `2026-05-24` v0.2 功能清单已生成，迁移后归档为 `docs/log/v0.2/feature_list_v0.2.json`；F08 为 active，F09-F11 按依赖顺序 not_started
-- `2026-05-24` v0.2 清单生成后执行 `npm.cmd run verify:harness`：通过，4 个 feature，1 个 active，3 个 not_started，0 warning，0 error
-- `2026-05-24` v0.2 清单生成后执行 `npm.cmd run check`：通过，8 个测试文件、39 个测试通过，mp-weixin 构建通过，harness gate 通过
-- `2026-05-24` v0.2 UI 规则已补充：F09/F10 明确要求先遵守 `docs/harness/DESIGN.md`，再读取 `docs/design/visual-system.md` 和 `docs/design/components.md`；`docs/design/components.md` 与 `docs/design/pages.md` 已清理为 v0.2 口径
+## 涓嬩竴姝?
+- v0.3 F12-F17 宸插叏閮ㄥ畬鎴愬苟閫氳繃闂ㄧ锛汧18銆丗19 涓?2026-05-27 瀹¤鍚庤ˉ鍏呯殑鍚庣画淇椤广€?
+## 浜ゆ帴璇存槑
 
-- `2026-05-24` F08 已完成数据层整理与兼容边界：新增旧数据 normalize 兼容、storage `read*` 明确状态结果、`today-suggestion` 计算视图服务；未引入真实 Deepseek、塔罗 UI 或云端存储
-- `npm.cmd run test -- data-layer storage`：通过，2 个测试文件、11 个测试通过
-- `npm.cmd run verify:static`：通过
-- `npm.cmd run verify:system`：通过，`build:mp-weixin` 构建成功
-- `npm.cmd run check`：通过，10 个测试文件、49 个测试通过，harness gate 0 warning / 0 error
-- `npm.cmd run verify:harness`：通过，F08 passing 状态下 4 个 feature，0 warning，0 error
-- F08 L3b：`tests/data-layer.test.ts` 自动化覆盖“创建目标 -> 保存计划 -> 打开今日任务生成建议视图”和“无本地数据 -> 明确空结果”两条用户路径
-
-- `2026-05-24` F09 已完成导航壳与页面顺序：`pages.json` 将 today 设为第一入口，底部 tab 为 今日/日历/创建/我的，新增 `pages/profile/index.vue` 和 `components/AppPageHeader.vue`
-- `npm.cmd run test -- navigation-shell`：通过，1 个测试文件、5 个测试通过
-- `npm.cmd run verify:static`：通过
-- `npm.cmd run verify:system`：通过，`build:mp-weixin` 构建成功，profile/today/plan-calendar/goal-create 页面 wxml/json 产物存在
-- `npm.cmd run check`：通过，11 个测试文件、54 个测试通过，harness gate 0 warning / 0 error
-- `npm.cmd run verify:harness`：通过，F09 passing 状态下 4 个 feature，0 warning，0 error
-- F09 L3b：`tests/navigation-shell.test.ts` 自动化覆盖默认进入今日任务、底部 tab 顺序、tab 页面注册和 tab 页主路径 `switchTab`
-
-- `2026-05-24` F10 已完成核心组件与页面视觉整理：新增 `TaskCard`、`TodayFocusCard`、`EmptyState`、`EnergySelector`，并接入 today、plan-calendar、goal-create、review、profile
-- `npm.cmd run test -- ui-components today plan-calendar review`：通过，4 个测试文件、20 个测试通过
-- `npm.cmd run verify:static`：通过
-- `npm.cmd run verify:system`：通过，`build:mp-weixin` 构建成功
-- `npm.cmd run check`：通过，12 个测试文件、59 个测试通过，harness gate 0 warning / 0 error
-- `npm.cmd run verify:harness`：通过，F10 passing 状态下 4 个 feature，0 warning，0 error
-- F10 L3b：`tests/ui-components.test.ts` 自动化覆盖核心组件结构和主要页面接入；today/calendar/review 既有路径测试继续通过
-
-- `2026-05-24` F11 已完成 Deepseek 与塔罗扩展接口预留：新增 `AiTodaySuggestion`、`TarotDraw`、AI suggestion schema、tarot fallback 和 `today-suggestion` 扩展入口；未接入真实 Deepseek 网络请求、云函数、完整塔罗 UI 或隐私数据上传。
-- `npm.cmd run test -- ai-tarot-contract today-suggestion`：通过，2 个测试文件、10 个测试通过。
-- `npm.cmd run verify:static`：通过。
-- `npm.cmd run verify:system`：通过，`build:mp-weixin` 构建成功。
-- `npm.cmd run check`：通过，14 个测试文件、70 个测试通过，F11 passing 状态下 harness gate 0 warning / 0 error。
-- F11 L3b：`tests/today-suggestion.test.ts` 自动化覆盖无 AI 凭据 fallback、可选 TarotDraw 影响表达、AI 排序/表达影响和不修改原始 DailyPlan/Task.status；`tests/ai-tarot-contract.test.ts` 自动化覆盖塔罗文案边界、AI schema 边界和 typed fallback。
-
-- `npm.cmd run verify:harness`：通过，F11 passing 状态下 4 个 feature 全部 passing，0 warning / 0 error。
-- `2026-05-26` 已开始下一阶段数据模型整理，先补架构文档，不修改业务代码：新增 `docs/architecture/goal-plan-task-state-model.md` 作为 Goal / Plan / Stage / Task 目标模型合同。
-- `2026-05-26` 已更新 `docs/architecture/data-models.md`、`docs/architecture/services-boundary.md`、`docs/architecture/storage-strategy.md`，明确当前代码仍以 `DailyPlan[]` 为兼容结构，后续应迁移到 `Plan + Stage + Task`，并保留旧数据读取。
-- `2026-05-26` 已更新 `docs/harness/ARCHITECTURE.md` 和 `AGENTS.md`：`ARCHITECTURE.md` 作为架构 README，`AGENTS.md` 增加数据模型、storage、services 的按需读取和迁移约束。
-- `2026-05-26` 已完成 `models/` 与 `services/` 初步审计：当前主要风险是 `models/plan.ts` 混合领域模型和页面视图、`planner/replanner/storage/today-suggestion/ai-client` 仍强依赖 `DailyPlan[]`，后续应先新增目标类型和 legacy adapter，再逐步迁移服务输出。
-- `2026-05-26` 已生成 App v0.3 工作计划：`docs/log/v0.3/work-plan.md`。
-- `2026-05-26` 已生成 App v0.3 功能清单：`docs/log/v0.3/feature_list_v0.3.json`；F12 为 `active`，F13-F17 按依赖顺序 `not_started`。
-- `2026-05-26` `scripts/harness-gate.mjs` 已从固定要求 `completionGate.version: "v0.2"` 调整为接受 `v0.x` 版本格式，`docs/harness/verification-policy.md` 已同步说明。
-
-- `2026-05-26` F12 已完成目标数据模型与 legacy adapter：新增 `GoalStatus`、`PlanStatus`、`StageStatus`、`TaskType`、`Plan`、`Stage`、`PlanBundle`、`DailyTaskView`、`PlanProgress`，并提供 `dailyPlansToPlanBundle()` / `planBundleToDailyPlans()` 双向 adapter。
-- F12 兼容边界：旧 `DailyPlan` 未删除；旧 `Task.date` 通过 adapter 映射为 `scheduledDate`；`DailyReview` 支持可选 `taskResults`，旧三组 task id 继续可读；未修改 storage、planner、replanner、today-suggestion 或页面运行主路。
-- `npm.cmd run test -- data-models-v0.3 data-layer`：通过，2 个测试文件、11 个测试通过。
-- `npm.cmd run verify:static`：通过。
-- `npm.cmd run verify:system`：通过，`build:mp-weixin` 构建成功。
-- `npm.cmd run check`：通过，15 个测试文件、75 个测试通过，F12 active 状态下 harness gate 0 warning / 0 error。
-- F12 L3b：`tests/data-models-v0.3.test.ts` 覆盖旧 DailyPlan[] -> PlanBundle -> DailyPlan[]、旧 Task.date 映射、DailyReview taskResults 兼容和 PlanProgress；`tests/data-layer.test.ts` 证明旧主路径仍可运行。
-
-- `npm.cmd run verify:harness`：通过，F12 passing 状态下 6 个 feature 中 1 个 passing、5 个 not_started，0 warning / 0 error。
-
-- `2026-05-26` F13 已完成 storage PlanBundle 读写与旧数据迁移：新增 `savePlanBundle()`、`readPlanBundle()`、`getActivePlanBundle()`、`migrateLegacyDailyPlans()`，当前 active bundle key 为 `plan-bundle:{goalId}`。
-- F13 兼容边界：`daily-plans:{goalId}` 旧 key 继续可读；迁移优先返回已有 PlanBundle，重复执行不重复生成任务，不覆盖已有 done/partial/skipped 状态；未修改 planner、replanner 或页面 UI。
-- `npm.cmd run test -- storage data-layer`：通过，2 个测试文件、15 个测试通过。
-- `npm.cmd run verify:static`：通过。
-- `npm.cmd run verify:system`：通过，`build:mp-weixin` 构建成功。
-- `npm.cmd run check`：通过，15 个测试文件、80 个测试通过，F13 active 状态下 harness gate 0 warning / 0 error。
-- F13 L3b：`tests/storage.test.ts` 覆盖旧 daily-plans 本地数据迁移为 PlanBundle、幂等迁移、坏数据、读异常和写异常；`tests/data-layer.test.ts` 证明旧主路径仍可运行。
-
-- `npm.cmd run verify:harness`：通过，F13 passing 状态下 6 个 feature 中 2 个 passing、4 个 not_started，0 warning / 0 error。
-
-- `2026-05-26` F14 已完成 planner 输出 PlanBundle：新增 `buildStarterPlanBundle()`，近 7 天生成具体 Task，远期内容进入 Stage；`PlanBundle.plan` 不写入 `dailyKeyword` 或 `recommendedFocusWindow`。
-- F14 兼容边界：旧 `buildStarterPlan()` 继续通过 `buildLegacyDailyPlansFromBundle()` 输出 `DailyPlan[]`；创建目标页面保存新 `PlanBundle`，并继续保存 legacy `DailyPlan[]` 供旧页面读取；未重构 replanner 或日历页面 UI。
-- `npm.cmd run test -- planner data-layer`：通过，4 个测试文件、23 个测试通过。
-- `npm.cmd run verify:static`：通过。
-- `npm.cmd run verify:system`：通过，`build:mp-weixin` 构建成功。
-- `npm.cmd run check`：通过，15 个测试文件、83 个测试通过，F14 active 状态下 harness gate 0 warning / 0 error。
-- F14 L3b：`tests/planner.test.ts` 覆盖 PlanBundle 输出、近 7 天 Task、远期 Stage、低能量最低完成线和 PlanBundle 存储；`tests/data-layer.test.ts` 覆盖保存 PlanBundle + legacy DailyPlan[] 后旧 today-suggestion 路径仍可用。
-
-- `npm.cmd run verify:harness`：通过，F14 passing 状态下 6 个 feature 中 3 个 passing、3 个 not_started，0 warning / 0 error。
-
-- `2026-05-26` F15 已完成今日与日历视图服务迁移：`services/today-suggestion.ts` 新增 `buildTodaySuggestionFromPlanBundle()` 和 `buildTodaySuggestionFromDailyTaskViews()`，`models/plan.ts` 新增 `buildPlanBundleCalendarView()` 汇总近 7 天任务、远期 Stage、进度和 plan status。
-- F15 AI 边界：`services/ai-client.ts` 新增 `requestTodayTaskSuggestion()`，新入口只接收受控的今日任务上下文；旧 `requestTodaySuggestion()` 继续兼容 `DailyPlan[]`，但会先提取当天任务再委托给新入口。
-- F15 表达/排序边界：AI/塔罗仍只影响 task 排序、dailyKeyword、minimumLine/caution 表达，不写回 `Task.status`、`DailyReview` 或历史 `Plan`。
-- `npm.cmd run test -- today-suggestion ai-tarot-contract plan-calendar today`：通过，4 个测试文件、25 个测试通过。
-- `npm.cmd run verify:static`：通过。
-- `npm.cmd run verify:system`：通过，`build:mp-weixin` 构建成功。
-- `npm.cmd run check`：通过，15 个测试文件、87 个测试通过，F15 active 状态下 harness gate 0 warning / 0 error。
-- F15 L3b：`tests/today-suggestion.test.ts` 覆盖 PlanBundle/DailyTaskView -> TodaySuggestionView；`tests/plan-calendar.test.ts` 覆盖 PlanBundle -> 近 7 天任务 + 远期 Stage + progress + plan status；页面全面接入保留到 F17。
-
-- `npm.cmd run verify:harness`：通过，F15 passing 状态下 6 个 feature 中 4 个 passing、2 个 not_started，0 warning / 0 error。
-
-- `2026-05-26` F16 已完成 replanner 基于 Plan/Task 重排：新增 `replanPlanBundleAfterReview()`，以 `PlanBundle + DailyReview + UserProfile` 生成更新后的 `PlanBundle` 或明确 `infeasible`。
-- F16 顺延策略：不生成补做 Task，保留原 Task id 并更新 `scheduledDate`；通过 `rescheduledFromDate`、`rescheduledFromStatus`、`rescheduleReason` 记录来源关系。
-- F16 历史边界：done 任务保留完成状态；partial/skipped 不静默丢失；`DailyReview` 作为历史事实保留，replanner 不改写 review；容量不足时返回 infeasible，不覆盖原 PlanBundle。
-- `npm.cmd run test -- replanner data-layer storage`：通过，3 个测试文件、25 个测试通过。
-- `npm.cmd run verify:static`：通过。
-- `npm.cmd run verify:system`：通过，`build:mp-weixin` 构建成功。
-- `npm.cmd run check`：通过，15 个测试文件、91 个测试通过，F16 active 状态下 harness gate 0 warning / 0 error。
-- F16 L3b：`tests/replanner.test.ts` 覆盖 PlanBundle 重排、任务历史、不可行状态和低能量压力控制；`tests/data-layer.test.ts` 覆盖保存 PlanBundle -> 保存 DailyReview -> 重排 -> 保存并读回 PlanBundle；`tests/storage.test.ts` 覆盖重排追踪字段读写。
-
-- `npm.cmd run verify:harness`：通过，F16 passing 状态下 6 个 feature 中 5 个 passing、1 个 not_started，0 warning / 0 error。
-
-- `2026-05-26` F17 已完成页面 UI 与新数据视图接入：创建目标页保存 PlanBundle；今日页使用 `buildTodaySuggestionFromPlanBundle()`；日历页使用 `buildPlanBundleCalendarView()`；复盘页保存 `DailyReview.taskResults` 后调用 `replanPlanBundleAfterReview()`；我的页使用 `buildPlanProgress()`。
-- F17 兼容边界：today/calendar/review/profile 均通过 `migrateLegacyDailyPlans()` 兼容旧 `DailyPlan[]` 本地数据；review 重排成功后同时回写 PlanBundle 和 legacy DailyPlan[]，旧页面路径仍可控。
-- `npm.cmd run test -- today plan-calendar goal-create review ui-components navigation-shell`：通过，7 个测试文件、39 个测试通过。
-- `npm.cmd run verify:static`：通过。
-- `npm.cmd run verify:system`：通过，`build:mp-weixin` 构建成功，today/calendar/goal-create/review/profile 页面 wxml 产物均存在。
-- `npm.cmd run check`：通过，15 个测试文件、92 个测试通过，F17 active 状态下 harness gate 0 warning / 0 error。
-- F17 L3b/manual smoke：构建产物检查确认五个页面产物存在；源码路径检查确认新 PlanBundle、legacy migration、replanner 和 progress 入口均接入；无数据路径由 EmptyState 覆盖；页面没有把塔罗、MBTI、每日关键词作为任务决策依据。
-
-- `npm.cmd run verify:harness`：通过，F17 passing 状态下 6 个 feature 全部 passing，0 warning / 0 error。
-
-## 阻塞项
-
-- F01 无剩余阻塞项，A05 最终页面手动冒烟已由用户确认通过
-- F02 无剩余阻塞项
-- F03 无剩余阻塞项
-- F04 无剩余阻塞项
-- F05 无剩余阻塞项
-- F06 无剩余阻塞项
-- F07 无剩余阻塞项
-
-## 下一步
-
-- v0.3 F12-F17 已全部完成并通过门禁；F18、F19 为 2026-05-27 审计后补充的后续修复项。
-
-## 交接说明
-
-- 任务开始先读 `docs/harness/features/feature-index.json`、本文件，再读取当前 feature 的 `feature_folder/feature.json`
-- 完成判断按 `docs/harness/verification-policy.md`
-- 失败详情或手动冒烟详情写入 `docs/log/`
+- 浠诲姟寮€濮嬪厛璇?`docs/harness/features/feature-index.json`銆佹湰鏂囦欢锛屽啀璇诲彇褰撳墠 feature 鐨?`feature_folder/feature.json`
+- 瀹屾垚鍒ゆ柇鎸?`docs/harness/verification-policy.md`
+- 澶辫触璇︽儏鎴栨墜鍔ㄥ啋鐑熻鎯呭啓鍏?`docs/log/`
